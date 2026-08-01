@@ -7,6 +7,10 @@ use Cake\Http\Response;
 use Cake\Core\Configure;
 use Cake\Http\Exception\ForbiddenException;
 use League\OAuth2\Client\Provider\GenericProvider;
+use Square\SquareClient;
+use Square\Environments;
+use Square\OAuth\Requests\RevokeTokenRequest;
+
 
 class AuthController extends AppController
 {
@@ -124,6 +128,41 @@ class AuthController extends AppController
     public function logout(): Response
     {
         $session = $this->request->getSession();
+        $accessToken = $session->read('square_access_token');
+
+        try {
+            if ($accessToken) {
+                $clientId = env('SQUARE_CLIENT_ID', '');
+                $clientSecret = env('SQUARE_CLIENT_SECRET', '');
+
+                // Determine which Square environment based on config
+                $environment = Configure::read('debug')
+                    ? Environments::Sandbox
+                    : Environments::Production;
+
+                // The revoke endpoint requires "Authorization: Client {APPLICATION_SECRET}"
+                // instead of the usual "Bearer {token}" format
+                $client = new SquareClient(
+                    token: $accessToken,
+                    options: [
+                        'baseUrl' => $environment->value,
+                        'headers' => [
+                            'Authorization' => 'Client ' . $clientSecret,
+                        ],
+                    ],
+                );
+
+                $client->oAuth->revokeToken(
+                    new RevokeTokenRequest([
+                        'clientId' => $clientId,
+                        'accessToken' => $accessToken,
+                    ])
+                );
+            }
+        } catch (\Throwable $e) {
+            // Don't block logout if revocation fails - just log it
+            \Cake\Log\Log::error('Failed to revoke Square token: ' . $e->getMessage());
+        }
         
         // Clear all Square OAuth data from session
         $session->delete('square_access_token');
