@@ -163,17 +163,17 @@ class AuthController extends AppController
             // Don't block logout if revocation fails - just log it
             \Cake\Log\Log::error('Failed to revoke Square token: ' . $e->getMessage());
         }
-        
+
         // Clear all Square OAuth data from session
         $session->delete('square_access_token');
         $session->delete('square_token_payload');
         $session->delete('oauth2state');
         $session->delete('oauth2pkceCode');
         $session->delete('redirect_after_auth');
-        
+
         // Destroy the entire session
         $session->destroy();
-        
+
         return $this->redirect(['controller' => 'Auth', 'action' => 'index']);
     }
 
@@ -195,15 +195,22 @@ class AuthController extends AppController
 
     private function createProvider(): GenericProvider
     {
-        // Configure the provider with the Square sandbox endpoints and PKCE support.
+        // Determine which Square environment to hit based on CakePHP debug mode
+        $environment = Configure::read('debug')
+            ? Environments::Sandbox
+            : Environments::Production;
+
+        $baseUrl = $environment->value;
+
+        // Configure the provider with the correct Square endpoints and PKCE support.
         return new GenericProvider([
             'clientId' => env('SQUARE_CLIENT_ID', ''),
             'redirectUri' => env('SQUARE_REDIRECT_URI', ''),
-            'urlAuthorize' => 'https://connect.squareupsandbox.com/oauth2/authorize',
-            'urlAccessToken' => 'https://connect.squareupsandbox.com/oauth2/token',
-            'urlResourceOwnerDetails' => 'https://connect.squareupsandbox.com/v2/merchants/me',
+            'urlAuthorize' => $baseUrl . '/oauth2/authorize',
+            'urlAccessToken' => $baseUrl . '/oauth2/token',
+            'urlResourceOwnerDetails' => $baseUrl . '/v2/merchants/me',
             'pkceMethod' => GenericProvider::PKCE_METHOD_S256,
-            'scopeSeparator' => ' ', 
+            'scopeSeparator' => ' ',
         ]);
     }
 }
