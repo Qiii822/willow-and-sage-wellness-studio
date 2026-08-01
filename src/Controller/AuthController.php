@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Http\Response;
+use Cake\Core\Configure;
 use Cake\Http\Exception\ForbiddenException;
 use League\OAuth2\Client\Provider\GenericProvider;
 
@@ -25,7 +26,7 @@ class AuthController extends AppController
         //Build auth parameters (we do this because we need to add session=false in prod)
         $authParams = ['scope' => $scope];
 
-        if ( !env('DEBUG') ) {
+        if ( !Configure::read('debug') ) {
             // Only add session=false in production as required by Square
             $authParams['session'] = 'false';
         }
