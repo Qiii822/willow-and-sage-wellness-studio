@@ -110,7 +110,7 @@ class AuthController extends AppController
             'urlAccessToken' => 'https://connect.squareupsandbox.com/oauth2/token',
             'urlResourceOwnerDetails' => 'https://connect.squareupsandbox.com/v2/merchants/me',
             'pkceMethod' => GenericProvider::PKCE_METHOD_S256,
-            'scopeSeparator' => '+', 
+            'scopeSeparator' => ' ', 
         ]);
     }
 }
