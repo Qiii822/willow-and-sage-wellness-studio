@@ -24,7 +24,7 @@ class AuthController extends AppController
         //Build auth parameters (we do this because we need to add session=false in prod)
         $authParams = ['scope' => $scope];
 
-        if ( env('DEBUG') ) {
+        if ( !env('DEBUG') ) {
             // Only add session=false in production as required by Square
             $authParams['session'] = 'false';
         }
@@ -50,10 +50,6 @@ class AuthController extends AppController
 
         $code = (string)$this->request->getQuery('code');
         $state = (string)$this->request->getQuery('state');
-
-        // Debug: Check what we're getting
-        \Cake\Log\Log::debug('OAuth callback received - Code: ' . $code . ', State: ' . $state);
-
         $expectedState = (string)$session->read('oauth2state');
         $pkceCode = (string)$session->read('oauth2pkceCode');
 
