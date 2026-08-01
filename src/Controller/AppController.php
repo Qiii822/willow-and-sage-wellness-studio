@@ -43,10 +43,40 @@ class AppController extends Controller
 
         $this->loadComponent('Flash');
 
+        
         /*
          * Enable the following component for recommended CakePHP form protection settings.
          * see https://book.cakephp.org/5/en/controllers/components/form-protection.html
          */
         //$this->loadComponent('FormProtection');
+
+        // Square OAuth requirement
+        //Requires the user be authenticated to access any page of the website
+        //Redirects to /auth if not
+        $this->middleware(function ($request, $handler) {
+        // Allow auth controller actions without authentication
+        $allowedActions = ['Auth', 'Auth.index', 'Auth.login', 'Auth.callback'];
+        $currentAction = $request->getParam('controller') . '.' . $request->getParam('action');
+        
+        if (in_array($currentAction, $allowedActions)) {
+            return $handler->handle($request);
+        }
+        
+        // Check if user is authenticated via Square
+        $session = $request->getSession();
+        $accessToken = $session->read('square_access_token');
+        $merchantId = $session->read('square_token_payload.merchant_id');
+        $authorizedMerchantId = env('SQUARE_AUTHORIZED_MERCHANT_ID');
+        
+        if (!$accessToken || $merchantId !== $authorizedMerchantId) {
+            // Not authenticated or wrong merchant
+            return $this->getResponse()
+                ->withStatus(302)
+                ->withLocation('/auth');
+        }
+        
+        return $handler->handle($request);
+        });
+
     }
 }
