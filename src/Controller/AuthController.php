@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Http\Response;
+use Cake\Http\Exception\ForbiddenException;
 use League\OAuth2\Client\Provider\GenericProvider;
 
 class AuthController extends AppController
@@ -68,7 +69,22 @@ class AuthController extends AppController
                 'code' => $code,
             ]);
 
-            // Store the token and its details in the session for later use
+            $tokenPayload = $accessToken->jsonSerialize();
+            $merchantId = $tokenPayload['merchant_id'] ?? null;
+            $authorizedMerchantId = env('SQUARE_AUTHORIZED_MERCHANT_ID');
+
+            // Verify the merchant is authorized
+            // We do this because we only want access to our client.
+            if ($merchantId !== $authorizedMerchantId) {
+                // Wrong merchant, reject
+                $session->delete('oauth2state');
+                $session->delete('oauth2pkceCode');
+                throw new ForbiddenException(
+                    'This Square account is not authorized to access this application.'
+                );
+            }
+
+            // Correct merchant, store the token and its details in the session for later use
             $session->write('square_access_token', $accessToken->getToken());
             $session->write('square_token_payload', $accessToken->jsonSerialize());
 
