@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Http\Response;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use League\OAuth2\Client\Provider\GenericProvider;
 
 class AuthController extends AppController
