@@ -121,6 +121,23 @@ class AuthController extends AppController
         }
     }
 
+    public function logout(): Response
+    {
+        $session = $this->request->getSession();
+        
+        // Clear all Square OAuth data from session
+        $session->delete('square_access_token');
+        $session->delete('square_token_payload');
+        $session->delete('oauth2state');
+        $session->delete('oauth2pkceCode');
+        $session->delete('redirect_after_auth');
+        
+        // Destroy the entire session
+        $session->destroy();
+        
+        return $this->redirect(['controller' => 'Auth', 'action' => 'index']);
+    }
+
     public function success(): Response
     {
         // Show the token details on a simple success page after the exchange succeeds.
