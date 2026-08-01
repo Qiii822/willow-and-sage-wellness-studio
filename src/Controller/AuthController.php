@@ -147,6 +147,7 @@ class AuthController extends AppController
 
             // Validate it's an internal URL
             if (!$redirectUrl || !str_starts_with($redirectUrl, '/')) {
+                //If not or there was none, redirect home
                 $redirectUrl = '/';
             }
             
