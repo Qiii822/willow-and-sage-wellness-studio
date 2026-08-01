@@ -140,12 +140,17 @@ class AuthController extends AppController
 
     public function success(): Response
     {
-        // Show the token details on a simple success page after the exchange succeeds.
-        $session = $this->request->getSession();
-        $this->set('accessToken', $session->read('square_access_token'));
-        $this->set('tokenPayload', $session->read('square_token_payload'));
+            // Redirect user back to originally requested URL if there was one
+            $session = $this->request->getSession();
+            $redirectUrl = $session->read('redirect_after_auth');
+            $session->delete('redirect_after_auth');
 
-        return $this->render();
+            // Validate it's an internal URL
+            if (!$redirectUrl || !str_starts_with($redirectUrl, '/')) {
+                $redirectUrl = '/';
+            }
+            
+            return $this->redirect($redirectUrl);
     }
 
     private function createProvider(): GenericProvider

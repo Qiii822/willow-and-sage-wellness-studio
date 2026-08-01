@@ -69,6 +69,8 @@ class AppController extends Controller
         $authorizedMerchantId = env('SQUARE_AUTHORIZED_MERCHANT_ID');
         
         if (!$accessToken || $merchantId !== $authorizedMerchantId) {
+            // Save the original URL they tried to access
+            $session->write('redirect_after_auth', $request->getRequestTarget());
             // Not authenticated or wrong merchant
             return $this->getResponse()
                 ->withStatus(302)
