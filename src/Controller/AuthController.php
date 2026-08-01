@@ -49,6 +49,20 @@ class AuthController extends AppController
         $provider = $this->createProvider();
         $session = $this->request->getSession();
 
+        // Check if Square returns an error
+        // For example the user denied auth
+        $error = $this->request->getQuery('error');
+        $errorDescription = $this->request->getQuery('error_description');
+        
+        if ($error) {
+            $session->delete('oauth2state');
+            $session->delete('oauth2pkceCode');
+            throw new \RuntimeException(
+                'Square authorization denied: ' . $error . 
+                ($errorDescription ? ' - ' . $errorDescription : '')
+            );
+        }
+
         $code = (string)$this->request->getQuery('code');
         $state = (string)$this->request->getQuery('state');
         $expectedState = (string)$session->read('oauth2state');
