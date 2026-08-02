@@ -9,6 +9,7 @@
 /webroot/uploads/packages/*
 !/webroot/uploads/profiles/.gitkeep
 !/webroot/uploads/packages/.gitkeep
+config/Migrations/schema-dump-default.lock
 
 # OS generated files #
 ######################
