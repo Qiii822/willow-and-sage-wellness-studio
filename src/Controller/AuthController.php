@@ -198,24 +198,20 @@ class AuthController extends AppController
 
     private function saveSquareTokens(array $tokenPayload): string
     {
-        $key = env('TOKEN_ENCRYPTION_KEY');
+        $identitiesTable = $this->fetchTable('Identities');
         $merchantId = $tokenPayload['merchant_id'] ?? null;
 
         if (!$merchantId) {
             throw new \Exception('merchant_id is required in token payload');
         }
 
-        $tokensToEncrypt = json_encode([
+        $encrypted = $identitiesTable->encryptTokens([
             'access_token' => $tokenPayload['access_token'] ?? null,
             'refresh_token' => $tokenPayload['refresh_token'] ?? null,
         ]);
 
-        $encrypted = Security::encrypt($tokensToEncrypt, $key);
-
-        $identitiesTable = $this->fetchTable('Identities');
-
         // Find existing record for this merchant, or create a new one
-        $record = $identitiesTable->findByMerchantId($merchantId)->first() 
+        $record = $identitiesTable->findByMerchantId($merchantId)->first()
             ?? $identitiesTable->newEmptyEntity();
 
         // Patch and save
@@ -260,10 +256,7 @@ class AuthController extends AppController
         $identitiesTable = $this->fetchTable('Identities');
 
         try {
-            $key = env('TOKEN_ENCRYPTION_KEY');
-            $decrypted = Security::decrypt(base64_decode($identity->tokens), $key);
-            $tokens = json_decode($decrypted, true);
-            $accessToken = $tokens['access_token'] ?? null;
+            $accessToken = $this->identitiesTable->getDecryptedAccessToken($identity);
 
             if ($accessToken) {
                 $clientId = env('SQUARE_CLIENT_ID', '');
