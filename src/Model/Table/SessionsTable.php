@@ -7,6 +7,7 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\I18n\FrozenTime;
 
 /**
  * Sessions Model
@@ -93,5 +94,17 @@ class SessionsTable extends Table
         $rules->add($rules->existsIn(['identity_id'], 'Identities'), ['errorField' => 'identity_id']);
 
         return $rules;
+    }
+
+    public function findValidById(string $sessionId)
+    {
+        return $this->find()
+            ->where([
+                'Sessions.id' => $sessionId,
+                'Sessions.revoked' => false,
+            ])
+            ->andWhere(['Sessions.expires_at >' => FrozenTime::now()])
+            ->contain(['Identities'])
+            ->first();
     }
 }
