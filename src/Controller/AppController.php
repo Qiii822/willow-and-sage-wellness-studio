@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Controller\Controller;
+use App\Service\SquareAuthService;
 
 /**
  * Application Controller
@@ -63,37 +64,20 @@ class AppController extends Controller
             }
 
             $session = $request->getSession();
-            $authorizedMerchantId = env('SQUARE_AUTHORIZED_MERCHANT_ID');
 
             // Read session_id from the cookie (source of truth), not PHP session
             $sessionId = $request->getCookie('session_id');
 
-            if ($sessionId) {
-                $sessionsTable = $this->fetchTable('Sessions');
-                $sessionRecord = $sessionsTable->find()
-                    ->where([
-                        'Sessions.id' => $sessionId,
-                        'Sessions.revoked' => false
-                    ])
-                    ->andWhere(['Sessions.expires_at >' => \Cake\I18n\FrozenTime::now()])
-                    ->contain(['Identities'])
-                    ->first();
+            $squareAuth = new SquareAuthService();
+            $sessionRecord = $squareAuth->validateSession($sessionId);
 
-                // Make sure the session is good and the identity behind it hasn't
-                // been revoked, and it's actually our authorized merchant
-                if (
-                    $sessionRecord
-                    && $sessionRecord->identity
-                    && !$sessionRecord->identity->revoked
-                    && $sessionRecord->identity->merchant_id === $authorizedMerchantId
-                ) {
-                    // Rehydrate PHP session for convenience this request cycle
-                    $session->write('identity_id', $sessionRecord->identity_id);
-                    $session->write('merchant_id', $sessionRecord->identity->merchant_id);
-                    $session->write('session_id', $sessionRecord->id);
+            if ($sessionRecord) {
+                // Rehydrate PHP session for convenience this request cycle
+                $session->write('identity_id', $sessionRecord->identity_id);
+                $session->write('merchant_id', $sessionRecord->identity->merchant_id);
+                $session->write('session_id', $sessionRecord->id);
 
-                    return $handler->handle($request);
-                }
+                return $handler->handle($request);
             }
 
             // Not logged in (or session's dead), remember where they were headed

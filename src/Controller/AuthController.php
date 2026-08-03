@@ -6,16 +6,20 @@ namespace App\Controller;
 use Cake\Http\Response;
 use Cake\Core\Configure;
 use Cake\Http\Exception\ForbiddenException;
-use Cake\Utility\Security;
-use Cake\I18n\FrozenTime;
 use Cake\Http\Cookie\Cookie;
-use League\OAuth2\Client\Provider\GenericProvider;
-use Square\SquareClient;
-use Square\Environments;
-use Square\OAuth\Requests\RevokeTokenRequest;
+use App\Service\SquareAuthService;
 
 class AuthController extends AppController
 {
+    protected SquareAuthService $squareAuth;
+
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->squareAuth = new SquareAuthService();
+    }
+
     public function index(): Response
     {
         // If already authenticated, skip straight to dashboard
@@ -27,11 +31,19 @@ class AuthController extends AppController
         return $this->render();
     }
 
+    /**
+     * Builds the OAuth provider and redirects the user to Square's
+     * authorization page so they can approve access. Persists the OAuth
+     * `state` and PKCE code verifier in the session so the callback can
+     * be verified against them later.
+     *
+     * @return \Cake\Http\Response Redirect to Square's authorization URL.
+     */
     public function login(): Response
     {
         //SQUARE OAUTH Flow STEP 1 //
         // Build the OAuth provider and ask Square for permission.
-        $provider = $this->createProvider();
+        $provider = $this->squareAuth->createProvider();
         $scope = explode(',', env('SQUARE_SCOPE', 'MERCHANT_PROFILE_READ'));
 
         //Build auth parameters (we do this because we need to add session=false in prod)
@@ -52,6 +64,23 @@ class AuthController extends AppController
         return $this->redirect($authorizationUrl);
     }
 
+    /**
+     * Handles Square's redirect back after the user interacts with square.
+     * Validates the returned `state` against the one stored in
+     * session, exchanges the authorization code for an access/refresh
+     * token pair, and verifies the returned merchant_id matches our
+     * authorized merchant.
+     * 
+     * On success, persists the encrypted tokens,
+     * creates a session record + cookie, and redirects the user back to
+     * wherever they originally tried to go. On failure (denied access,
+     * state mismatch, wrong merchant, or token exchange error), throws.
+     *
+     * @return \Cake\Http\Response Redirect to the original requested page, or `/`.
+     * @throws \RuntimeException If Square denies authorization or the token exchange fails.
+     * @throws \UnexpectedValueException If the OAuth `state` does not match.
+     * @throws \Cake\Http\Exception\ForbiddenException If the authenticated merchant is not the authorized one.
+     */
     public function callback(): Response
     {
         //SQUARE OAUTH Flow STEP 2 & 3 //
@@ -59,7 +88,7 @@ class AuthController extends AppController
         // We exchange the code for an access token using the provider.
         \Cake\Log\Log::debug('Callback started');
 
-        $provider = $this->createProvider();
+        $provider = $this->squareAuth->createProvider();
         $session = $this->request->getSession();
 
         // Check if Square returns an error
@@ -111,7 +140,7 @@ class AuthController extends AppController
             }
 
             // Correct merchant, persist the tokens (encrypted) to the database
-            $identityId = $this->saveSquareTokens($tokenPayload);
+            $identityId = $this->squareAuth->saveSquareTokens($tokenPayload);
             \Cake\Log\Log::debug('Identity saved: ' . $identityId);
 
             // Create session and cookie
@@ -147,18 +176,29 @@ class AuthController extends AppController
         }
     }
 
+    /**
+     * Logs the current user out.
+     * Optionally revokes the Square access token via Square's revoke
+     * endpoint (if `revoke_square` is passed in the request data), marks
+     * the associated session record as revoked in the database, clears
+     * all OAuth/session data from the PHP session, destroys the session,
+     * and expires the `session_id` cookie.
+     *
+     * @return \Cake\Http\Response Redirect to the auth index page with an expired session cookie.
+     */
     public function logout(): Response
     {
         $revokeSquare = (bool)$this->request->getData('revoke_square', false);
 
         $session = $this->request->getSession();
+        $sessionId = $this->request->getCookie('session_id');
 
         if ($revokeSquare) {
-            $this->revokeSquareTokens();
+            $this->squareAuth->revokeSquareTokenForSession($sessionId);
         }
 
         // Remove the persisted session from the database
-        $this->revokeSession();
+        $this->squareAuth->revokeSessionById($sessionId);
 
         // Clear all Square OAuth data from session
         $session->delete('identity_id');
@@ -175,155 +215,18 @@ class AuthController extends AppController
         return $response->withExpiredCookie(new Cookie('session_id'));
     }
 
-    private function createProvider(): GenericProvider
-    {
-        // Determine which Square environment to hit based on CakePHP debug mode
-        $environment = Configure::read('debug')
-            ? Environments::Sandbox
-            : Environments::Production;
-
-        $baseUrl = $environment->value;
-
-        // Configure the provider with the correct Square endpoints and PKCE support.
-        return new GenericProvider([
-            'clientId' => env('SQUARE_CLIENT_ID', ''),
-            'redirectUri' => env('SQUARE_REDIRECT_URI', ''),
-            'urlAuthorize' => $baseUrl . '/oauth2/authorize',
-            'urlAccessToken' => $baseUrl . '/oauth2/token',
-            'urlResourceOwnerDetails' => $baseUrl . '/v2/merchants/me',
-            'pkceMethod' => GenericProvider::PKCE_METHOD_S256,
-            'scopeSeparator' => ' ',
-        ]);
-    }
-
-    private function saveSquareTokens(array $tokenPayload): string
-    {
-        $key = env('TOKEN_ENCRYPTION_KEY');
-        $merchantId = $tokenPayload['merchant_id'] ?? null;
-
-        if (!$merchantId) {
-            throw new \Exception('merchant_id is required in token payload');
-        }
-
-        $tokensToEncrypt = json_encode([
-            'access_token' => $tokenPayload['access_token'] ?? null,
-            'refresh_token' => $tokenPayload['refresh_token'] ?? null,
-        ]);
-
-        $encrypted = Security::encrypt($tokensToEncrypt, $key);
-
-        $identitiesTable = $this->fetchTable('Identities');
-
-        // Find existing record for this merchant, or create a new one
-        $record = $identitiesTable->findByMerchantId($merchantId)->first() 
-            ?? $identitiesTable->newEmptyEntity();
-
-        // Patch and save
-        $record = $identitiesTable->patchEntity($record, [
-            'merchant_id' => $merchantId,
-            'tokens' => base64_encode($encrypted),
-            'created_at' => $record->isNew() ? FrozenTime::now() : $record->created_at,
-            'expires_at' => FrozenTime::parse($tokenPayload['expires_at']),
-            'refreshed_at' => null,
-            'revoked' => false,
-            'revoked_at' => null,
-        ]);
-
-        if (!$identitiesTable->save($record)) {
-            \Cake\Log\Log::error('Failed to save identity: ' . json_encode($record->getErrors()));
-            throw new \RuntimeException('Failed to save identity record');
-        }
-        
-
-        return (string)$record->id;
-    }
-
-    private function revokeSquareTokens(): void
-    {
-        $sessionId = $this->request->getCookie('session_id');
-
-        if (!$sessionId) {
-            return;
-        }
-
-        $sessionsTable = $this->fetchTable('Sessions');
-        $sessionRecord = $sessionsTable->find()
-            ->where(['Sessions.id' => $sessionId])
-            ->contain(['Identities'])
-            ->first();
-
-        if (!$sessionRecord || !$sessionRecord->identity) {
-            return;
-        }
-
-        $identity = $sessionRecord->identity;
-        $identitiesTable = $this->fetchTable('Identities');
-
-        try {
-            $key = env('TOKEN_ENCRYPTION_KEY');
-            $decrypted = Security::decrypt(base64_decode($identity->tokens), $key);
-            $tokens = json_decode($decrypted, true);
-            $accessToken = $tokens['access_token'] ?? null;
-
-            if ($accessToken) {
-                $clientId = env('SQUARE_CLIENT_ID', '');
-                $clientSecret = env('SQUARE_CLIENT_SECRET', '');
-
-                // Determine which Square environment based on config
-                $environment = Configure::read('debug')
-                    ? Environments::Sandbox
-                    : Environments::Production;
-
-                // The revoke endpoint requires "Authorization: Client {APPLICATION_SECRET}"
-                // instead of the usual "Bearer {token}" format
-                $client = new SquareClient(
-                    token: $accessToken,
-                    options: [
-                        'baseUrl' => $environment->value,
-                        'headers' => [
-                            'Authorization' => 'Client ' . $clientSecret,
-                        ],
-                    ],
-                );
-
-                $client->oAuth->revokeToken(
-                    new RevokeTokenRequest([
-                        'clientId' => $clientId,
-                        'accessToken' => $accessToken,
-                    ])
-                );
-            }
-        } catch (\Throwable $e) {
-            // Don't block logout if revocation fails just log it
-            \Cake\Log\Log::error('Failed to revoke Square token: ' . $e->getMessage());
-        }
-
-        // Set identity to revoked
-        $identity = $identitiesTable->patchEntity($identity, [
-            'revoked' => true,
-            'revoked_at' => FrozenTime::now(),
-        ]);
-        $identitiesTable->save($identity);
-    }
-
+    /**
+     * Persists a new session record for the given identity and writes
+     * the corresponding session_id cookie + PHP session values.
+     *
+     * @param string $identityId The identity this session belongs to.
+     * @param string $merchantId The merchant_id associated with this identity.
+     * @return void
+     */
     private function saveSession(string $identityId, string $merchantId): void
     {
         $session = $this->request->getSession();
-        $sessionsTable = $this->fetchTable('Sessions');
-        $expiresAt = FrozenTime::now()->addHours(24);
-
-        // Create a session record in the database
-        $sessionRecord = $sessionsTable->newEntity([
-            'identity_id' => $identityId,
-            'created_at' => FrozenTime::now(),
-            'expires_at' => $expiresAt,
-            'revoked' => false,
-        ]);
-
-        if (!$sessionsTable->save($sessionRecord)) {
-            \Cake\Log\Log::error('Failed to save session: ' . json_encode($sessionRecord->getErrors()));
-            throw new \RuntimeException('Failed to save session record');
-        }
+        $sessionRecord = $this->squareAuth->createSession($identityId);
 
         // Store session identifier in PHP session
         $session->write('identity_id', $identityId);
@@ -335,7 +238,7 @@ class AuthController extends AppController
             ->withCookie(new Cookie(
                 'session_id',
                 (string)$sessionRecord->id,
-                $expiresAt,
+                $sessionRecord->expires_at,
                 '/',
                 '',
                 true,
@@ -344,53 +247,14 @@ class AuthController extends AppController
             ));
     }
 
-    private function revokeSession(): void
-    {
-        $sessionId = $this->request->getCookie('session_id');
-
-        if (!$sessionId) {
-            // Nothing to clear
-            return;
-        }
-
-        $sessionsTable = $this->fetchTable('Sessions');
-        $sessionRecord = $sessionsTable->find()
-            ->where(['id' => $sessionId])
-            ->first();
-
-        if ($sessionRecord) {
-            $sessionRecord = $sessionsTable->patchEntity($sessionRecord, [
-                'revoked' => true,
-                'revoked_at' => FrozenTime::now(),
-            ]);
-
-            if (!$sessionsTable->save($sessionRecord)) {
-                \Cake\Log\Log::error('Failed to save session: ' . json_encode($sessionRecord->getErrors()));
-                throw new \RuntimeException('Failed to save session record');
-            }
-        }
-    }
+    /**
+     * Checks whether the current request has a valid, unrevoked session
+     * tied to the authorized merchant.
+     */
     private function isAuthenticated(): bool
     {
         $sessionId = $this->request->getCookie('session_id');
 
-        if (!$sessionId) {
-            return false;
-        }
-
-        $sessionsTable = $this->fetchTable('Sessions');
-        $sessionRecord = $sessionsTable->find()
-            ->where([
-                'Sessions.id' => $sessionId,
-                'Sessions.revoked' => false,
-            ])
-            ->andWhere(['Sessions.expires_at >' => \Cake\I18n\FrozenTime::now()])
-            ->contain(['Identities'])
-            ->first();
-
-        return $sessionRecord
-            && $sessionRecord->identity
-            && !$sessionRecord->identity->revoked
-            && $sessionRecord->identity->merchant_id === env('SQUARE_AUTHORIZED_MERCHANT_ID');
+        return $this->squareAuth->validateSession($sessionId) !== null;
     }
 }

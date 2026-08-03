@@ -7,6 +7,8 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Utility\Security;
+use Cake\Datasource\EntityInterface;
 
 /**
  * Identities Model
@@ -89,5 +91,35 @@ class IdentitiesTable extends Table
             ->allowEmptyDateTime('revoked_at');
 
         return $validator;
+    }
+
+    private function decryptedTokens(EntityInterface $identity): array
+    {
+        $key = env('TOKEN_ENCRYPTION_KEY');
+        $decrypted = Security::decrypt(base64_decode($identity->tokens), $key);
+
+        return json_decode($decrypted, true) ?? [];
+    }
+
+    public function encryptTokens(array $tokens): string
+    {
+        $key = env('TOKEN_ENCRYPTION_KEY');
+        $encrypted = Security::encrypt(json_encode($tokens), $key);
+
+        return base64_encode($encrypted);
+    }
+
+    public function getDecryptedAccessToken(EntityInterface $identity): ?string
+    {
+        $tokens = $this->decryptedTokens($identity);
+
+        return $tokens['access_token'] ?? null;
+    }
+
+    public function getDecryptedRefreshToken(EntityInterface $identity): ?string
+    {
+        $tokens = $this->decryptedTokens($identity);
+
+        return $tokens['refresh_token'] ?? null;
     }
 }
