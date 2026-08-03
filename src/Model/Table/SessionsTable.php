@@ -7,7 +7,7 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 
 /**
  * Sessions Model
@@ -103,7 +103,7 @@ class SessionsTable extends Table
                 'Sessions.id' => $sessionId,
                 'Sessions.revoked' => false,
             ])
-            ->andWhere(['Sessions.expires_at >' => FrozenTime::now()])
+            ->andWhere(['Sessions.expires_at >' => DateTime::now()])
             ->contain(['Identities'])
             ->first();
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use Cake\Core\Configure;
-use Cake\I18n\FrozenTime;
+use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
 use Cake\Datasource\EntityInterface;
 use League\OAuth2\Client\Provider\GenericProvider;
@@ -86,8 +86,8 @@ class SquareAuthService
         $record = $this->identitiesTable->patchEntity($record, [
             'merchant_id' => $merchantId,
             'tokens' => $encrypted,
-            'created_at' => $record->isNew() ? FrozenTime::now() : $record->created_at,
-            'expires_at' => FrozenTime::parse($tokenPayload['expires_at']),
+            'created_at' => $record->isNew() ? DateTime::now() : $record->created_at,
+            'expires_at' => DateTime::parse($tokenPayload['expires_at']),
             'refreshed_at' => null,
             'revoked' => false,
             'revoked_at' => null,
@@ -103,11 +103,11 @@ class SquareAuthService
 
     public function createSession(string $identityId): EntityInterface
     {
-        $expiresAt = FrozenTime::now()->addHours(24);
+        $expiresAt = DateTime::now()->addHours(24);
 
         $sessionRecord = $this->sessionsTable->newEntity([
             'identity_id' => $identityId,
-            'created_at' => FrozenTime::now(),
+            'created_at' => DateTime::now(),
             'expires_at' => $expiresAt,
             'revoked' => false,
         ]);
@@ -134,7 +134,7 @@ class SquareAuthService
         if ($sessionRecord) {
             $sessionRecord = $this->sessionsTable->patchEntity($sessionRecord, [
                 'revoked' => true,
-                'revoked_at' => FrozenTime::now(),
+                'revoked_at' => DateTime::now(),
             ]);
 
             if (!$this->sessionsTable->save($sessionRecord)) {
@@ -200,7 +200,7 @@ class SquareAuthService
         // Set identity to revoked
         $identity = $this->identitiesTable->patchEntity($identity, [
             'revoked' => true,
-            'revoked_at' => FrozenTime::now(),
+            'revoked_at' => DateTime::now(),
         ]);
         $this->identitiesTable->save($identity);
     }
