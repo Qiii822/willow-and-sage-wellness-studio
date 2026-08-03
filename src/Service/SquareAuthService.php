@@ -14,8 +14,8 @@ use Square\OAuth\Requests\RevokeTokenRequest;
 
 class SquareAuthService
 {
-    protected $identitiesTable;
-    protected $sessionsTable;
+    protected \Cake\ORM\Table $identitiesTable;
+    protected \Cake\ORM\Table $sessionsTable;
 
     public function __construct()
     {
