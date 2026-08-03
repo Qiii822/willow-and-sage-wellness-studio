@@ -23,6 +23,11 @@ class SquareAuthService
         $this->sessionsTable = TableRegistry::getTableLocator()->get('Sessions');
     }
 
+    /**
+     * Builds the League OAuth2 provider configured for Square's endpoints.
+     *
+     * @return \League\OAuth2\Client\Provider\GenericProvider
+     */
     public function createProvider(): GenericProvider
     {
         // Determine which Square environment to hit based on CakePHP debug mode
@@ -44,6 +49,14 @@ class SquareAuthService
         ]);
     }
 
+    /**
+     * Validates a session_id cookie value against the database.
+     * Makes sure the session is good, the identity behind it hasn't been
+     * revoked, and it's actually our authorized merchant.
+     *
+     * @param string|null $sessionId The session_id cookie value.
+     * @return \Cake\Datasource\EntityInterface|null The session record (with ->identity loaded), or null.
+     */
     public function validateSession(?string $sessionId): ?EntityInterface
     {
         if (!$sessionId) {
@@ -65,6 +78,13 @@ class SquareAuthService
         return null;
     }
 
+    /**
+     * Encrypts and persists the access/refresh tokens returned by Square,
+     * creating or updating the Identity record for this merchant.
+     *
+     * @param array $tokenPayload The token payload returned from the OAuth exchange.
+     * @return string The saved identity's id.
+     */
     public function saveSquareTokens(array $tokenPayload): string
     {
         $merchantId = $tokenPayload['merchant_id'] ?? null;
@@ -101,6 +121,12 @@ class SquareAuthService
         return (string)$record->id;
     }
 
+    /**
+     * Creates a new session record in the database for the given identity.
+     *
+     * @param string $identityId The identity to attach this session to.
+     * @return \Cake\Datasource\EntityInterface The saved session record.
+     */
     public function createSession(string $identityId): EntityInterface
     {
         $expiresAt = DateTime::now()->addHours(24);
@@ -120,6 +146,12 @@ class SquareAuthService
         return $sessionRecord;
     }
 
+    /**
+     * Marks a session record as revoked. Safe to call with a null/missing id.
+     *
+     * @param string|null $sessionId The session_id cookie value.
+     * @return void
+     */
     public function revokeSessionById(?string $sessionId): void
     {
         if (!$sessionId) {
@@ -144,6 +176,13 @@ class SquareAuthService
         }
     }
 
+    /**
+     * Revokes the Square access token tied to a session's identity (calling
+     * Square's revoke endpoint) and marks that identity as revoked locally.
+     *
+     * @param string|null $sessionId The session_id cookie value.
+     * @return void
+     */
     public function revokeSquareTokenForSession(?string $sessionId): void
     {
         if (!$sessionId) {

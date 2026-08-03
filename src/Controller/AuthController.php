@@ -31,6 +31,14 @@ class AuthController extends AppController
         return $this->render();
     }
 
+    /**
+     * Builds the OAuth provider and redirects the user to Square's
+     * authorization page so they can approve access. Persists the OAuth
+     * `state` and PKCE code verifier in the session so the callback can
+     * be verified against them later.
+     *
+     * @return \Cake\Http\Response Redirect to Square's authorization URL.
+     */
     public function login(): Response
     {
         //SQUARE OAUTH Flow STEP 1 //
@@ -56,6 +64,23 @@ class AuthController extends AppController
         return $this->redirect($authorizationUrl);
     }
 
+    /**
+     * Handles Square's redirect back after the user interacts with square.
+     * Validates the returned `state` against the one stored in
+     * session, exchanges the authorization code for an access/refresh
+     * token pair, and verifies the returned merchant_id matches our
+     * authorized merchant.
+     * 
+     * On success, persists the encrypted tokens,
+     * creates a session record + cookie, and redirects the user back to
+     * wherever they originally tried to go. On failure (denied access,
+     * state mismatch, wrong merchant, or token exchange error), throws.
+     *
+     * @return \Cake\Http\Response Redirect to the original requested page, or `/`.
+     * @throws \RuntimeException If Square denies authorization or the token exchange fails.
+     * @throws \UnexpectedValueException If the OAuth `state` does not match.
+     * @throws \Cake\Http\Exception\ForbiddenException If the authenticated merchant is not the authorized one.
+     */
     public function callback(): Response
     {
         //SQUARE OAUTH Flow STEP 2 & 3 //
@@ -151,6 +176,16 @@ class AuthController extends AppController
         }
     }
 
+    /**
+     * Logs the current user out.
+     * Optionally revokes the Square access token via Square's revoke
+     * endpoint (if `revoke_square` is passed in the request data), marks
+     * the associated session record as revoked in the database, clears
+     * all OAuth/session data from the PHP session, destroys the session,
+     * and expires the `session_id` cookie.
+     *
+     * @return \Cake\Http\Response Redirect to the auth index page with an expired session cookie.
+     */
     public function logout(): Response
     {
         $revokeSquare = (bool)$this->request->getData('revoke_square', false);
@@ -180,6 +215,14 @@ class AuthController extends AppController
         return $response->withExpiredCookie(new Cookie('session_id'));
     }
 
+    /**
+     * Persists a new session record for the given identity and writes
+     * the corresponding session_id cookie + PHP session values.
+     *
+     * @param string $identityId The identity this session belongs to.
+     * @param string $merchantId The merchant_id associated with this identity.
+     * @return void
+     */
     private function saveSession(string $identityId, string $merchantId): void
     {
         $session = $this->request->getSession();
@@ -204,6 +247,10 @@ class AuthController extends AppController
             ));
     }
 
+    /**
+     * Checks whether the current request has a valid, unrevoked session
+     * tied to the authorized merchant.
+     */
     private function isAuthenticated(): bool
     {
         $sessionId = $this->request->getCookie('session_id');

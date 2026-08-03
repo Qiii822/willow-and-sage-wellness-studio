@@ -8,6 +8,7 @@ use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\I18n\DateTime;
+use Cake\Datasource\EntityInterface;
 
 /**
  * Sessions Model
@@ -96,7 +97,15 @@ class SessionsTable extends Table
         return $rules;
     }
 
-    public function findValidById(string $sessionId)
+    /**
+     * Finds a session by id, but only if it's unrevoked, unexpired, and
+     * loaded with its Identity. Used by the auth middleware and
+     * anywhere else that needs to check session validity.
+     *
+     * @param string $sessionId The session_id cookie value.
+     * @return \Cake\Datasource\EntityInterface|null
+     */
+    public function findValidById(string $sessionId): ?EntityInterface
     {
         return $this->find()
             ->where([
