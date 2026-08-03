@@ -1,0 +1,10 @@
+.sidebar li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.sidebar li i {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
