@@ -6,19 +6,17 @@
 2. Run `php composer.phar create-project --prefer-dist cakephp/app [app_name]`.
 3. Ensure composer is up to date with `composer install`
 4. Setup your database with `bin/cake migrations migrate`
+5. Seed the database with `bin/cake seeds run`
 
+## Usage
 
-You can now either use your machine's webserver to view the default home page, or start
-up the built-in webserver with:
+The default credentials are `wendy@example.com` and `admin123`.
+Logon and go to the dashboard and connect with Square.
 
-```bash
-bin/cake server -p 8765
-```
+## Connecting with Square in Sandbox
 
-Then visit `http://localhost:8765` to see the welcome page.
-
-## Layout
-
-The app skeleton uses [Milligram](https://milligram.io/) (v1.3) minimalist CSS
-framework by default. You can, however, replace it with any other library or
-custom styles.
+1. Go to <https://app.squareup.com/launchpad>
+2. Click View Dashboard for our account.
+3. Go to <https://developer.squareup.com/apps>
+4. Click Sandbox test accounts.
+5. Click Square Dashboard for the `Auth` user.
