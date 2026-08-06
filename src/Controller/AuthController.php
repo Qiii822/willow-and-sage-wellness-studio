@@ -39,7 +39,7 @@ class AuthController extends AppController
      *
      * @return \Cake\Http\Response Redirect to Square's authorization URL.
      */
-    public function login(): Response
+    public function beginAuth(): Response
     {
         //SQUARE OAUTH Flow STEP 1 //
         // Build the OAuth provider and ask Square for permission.
