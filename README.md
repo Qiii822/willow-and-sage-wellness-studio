@@ -8,7 +8,6 @@
 4. Setup your database with `bin/cake migrations migrate`
 5. Seed the database with `bin/cake seeds run`
 6. Fill in the values at the top of the `.env.example` file.
-7. 
 
 ## Usage
 
