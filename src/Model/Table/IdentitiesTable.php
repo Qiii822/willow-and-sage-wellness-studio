@@ -122,4 +122,17 @@ class IdentitiesTable extends Table
 
         return $tokens['refresh_token'] ?? null;
     }
+
+    /**
+     * Returns the app's currently active (non-revoked) Square Identity, or
+     * null if Square has never been connected or has been disconnected.
+     *
+     */
+    public function getActiveConnection(): ?\Cake\Datasource\EntityInterface
+    {
+        return $this->find()
+            ->where(['revoked' => false])
+            ->orderDesc('created_at')
+            ->first();
+    }
 }

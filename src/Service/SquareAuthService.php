@@ -6,21 +6,27 @@ namespace App\Service;
 use Cake\Core\Configure;
 use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
-use Cake\Datasource\EntityInterface;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Square\SquareClient;
 use Square\Environments;
 use Square\OAuth\Requests\RevokeTokenRequest;
 
+/**
+ * Manages the app's single, shared connection to Square.
+ *
+ * This service has nothing to do with staff login/logout - it owns only
+ * the OAuth mechanics (building the provider, exchanging codes for tokens)
+ * and the one active Identity record that every user's API calls rely on.
+ * There is exactly one active (non-revoked) Identity at a time; this class
+ * does not key anything off a particular user or session.
+ */
 class SquareAuthService
 {
     protected \Cake\ORM\Table $identitiesTable;
-    protected \Cake\ORM\Table $sessionsTable;
 
     public function __construct()
     {
         $this->identitiesTable = TableRegistry::getTableLocator()->get('Identities');
-        $this->sessionsTable = TableRegistry::getTableLocator()->get('Sessions');
     }
 
     /**
@@ -50,37 +56,9 @@ class SquareAuthService
     }
 
     /**
-     * Validates a session_id cookie value against the database.
-     * Makes sure the session is good, the identity behind it hasn't been
-     * revoked, and it's actually our authorized merchant.
-     *
-     * @param string|null $sessionId The session_id cookie value.
-     * @return \Cake\Datasource\EntityInterface|null The session record (with ->identity loaded), or null.
-     */
-    public function validateSession(?string $sessionId): ?EntityInterface
-    {
-        if (!$sessionId) {
-            return null;
-        }
-
-        $sessionRecord = $this->sessionsTable->findValidById($sessionId);
-        $authorizedMerchantId = env('SQUARE_AUTHORIZED_MERCHANT_ID');
-
-        if (
-            $sessionRecord
-            && $sessionRecord->identity
-            && !$sessionRecord->identity->revoked
-            && $sessionRecord->identity->merchant_id === $authorizedMerchantId
-        ) {
-            return $sessionRecord;
-        }
-
-        return null;
-    }
-
-    /**
      * Encrypts and persists the access/refresh tokens returned by Square,
-     * creating or updating the Identity record for this merchant.
+     * creating or updating the single Identity record for the authorized
+     * merchant.
      *
      * @param array $tokenPayload The token payload returned from the OAuth exchange.
      * @return string The saved identity's id.
@@ -98,7 +76,12 @@ class SquareAuthService
             'refresh_token' => $tokenPayload['refresh_token'] ?? null,
         ]);
 
-        // Find existing record for this merchant, or create a new one
+        // Find existing record for this merchant, or create a new one.
+        // In practice there should only ever be one merchant record, since
+        // callback() already rejects any merchant_id other than the
+        // authorized one - this find-or-create just makes reconnecting
+        // (e.g. after a manual revoke) update the same row instead of
+        // piling up duplicates.
         $record = $this->identitiesTable->findByMerchantId($merchantId)->first()
             ?? $this->identitiesTable->newEmptyEntity();
 
@@ -122,83 +105,35 @@ class SquareAuthService
     }
 
     /**
-     * Creates a new session record in the database for the given identity.
+     * Returns the app's currently active (non-revoked) Square Identity, or
+     * null if Square has never been connected or the connection has been
+     * revoked.
      *
-     * @param string $identityId The identity to attach this session to.
-     * @return \Cake\Datasource\EntityInterface The saved session record.
+     * @return \Cake\Datasource\EntityInterface|null
      */
-    public function createSession(string $identityId): EntityInterface
+    public function getActiveIdentity(): ?\Cake\Datasource\EntityInterface
     {
-        $expiresAt = DateTime::now()->addHours(24);
-
-        $sessionRecord = $this->sessionsTable->newEntity([
-            'identity_id' => $identityId,
-            'created_at' => DateTime::now(),
-            'expires_at' => $expiresAt,
-            'revoked' => false,
-        ]);
-
-        if (!$this->sessionsTable->save($sessionRecord)) {
-            \Cake\Log\Log::error('Failed to save session: ' . json_encode($sessionRecord->getErrors()));
-            throw new \RuntimeException('Failed to save session record');
-        }
-
-        return $sessionRecord;
+        return $this->identitiesTable->getActiveConnection();
     }
 
     /**
-     * Marks a session record as revoked. Safe to call with a null/missing id.
+     * Revokes the app's active Square connection: calls Square's revoke
+     * endpoint for the current access token, then marks the Identity
+     * record as revoked locally regardless of whether the remote call
+     * succeeded (so a failed revoke call never leaves the app thinking
+     * it still has a usable connection).
      *
-     * @param string|null $sessionId The session_id cookie value.
+     * No-ops if there is no active connection to revoke.
+     *
      * @return void
      */
-    public function revokeSessionById(?string $sessionId): void
+    public function revokeActiveConnection(): void
     {
-        if (!$sessionId) {
-            // Nothing to clear
+        $identity = $this->getActiveIdentity();
+
+        if (!$identity) {
             return;
         }
-
-        $sessionRecord = $this->sessionsTable->find()
-            ->where(['id' => $sessionId])
-            ->first();
-
-        if ($sessionRecord) {
-            $sessionRecord = $this->sessionsTable->patchEntity($sessionRecord, [
-                'revoked' => true,
-                'revoked_at' => DateTime::now(),
-            ]);
-
-            if (!$this->sessionsTable->save($sessionRecord)) {
-                \Cake\Log\Log::error('Failed to save session: ' . json_encode($sessionRecord->getErrors()));
-                throw new \RuntimeException('Failed to save session record');
-            }
-        }
-    }
-
-    /**
-     * Revokes the Square access token tied to a session's identity (calling
-     * Square's revoke endpoint) and marks that identity as revoked locally.
-     *
-     * @param string|null $sessionId The session_id cookie value.
-     * @return void
-     */
-    public function revokeSquareTokenForSession(?string $sessionId): void
-    {
-        if (!$sessionId) {
-            return;
-        }
-
-        $sessionRecord = $this->sessionsTable->find()
-            ->where(['Sessions.id' => $sessionId])
-            ->contain(['Identities'])
-            ->first();
-
-        if (!$sessionRecord || !$sessionRecord->identity) {
-            return;
-        }
-
-        $identity = $sessionRecord->identity;
 
         try {
             $accessToken = $this->identitiesTable->getDecryptedAccessToken($identity);
@@ -232,11 +167,15 @@ class SquareAuthService
                 );
             }
         } catch (\Throwable $e) {
-            // Don't block logout if revocation fails just log it
+            // Don't block disconnecting locally if the remote revoke call
+            // fails - just log it. Square-side revocation is best-effort;
+            // marking our own record revoked below is what actually stops
+            // the app from using this connection.
             \Cake\Log\Log::error('Failed to revoke Square token: ' . $e->getMessage());
         }
 
-        // Set identity to revoked
+        // Mark the identity as revoked locally regardless of whether the
+        // Square API call above succeeded.
         $identity = $this->identitiesTable->patchEntity($identity, [
             'revoked' => true,
             'revoked_at' => DateTime::now(),

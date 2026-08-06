@@ -10,21 +10,6 @@ class CustomersController extends AppController
 {
     public function index(): Response
     {
-        $session = $this->request->getSession();
-        $identityId = $session->read('identity_id');
-
-        if (!$identityId) {
-            // Shouldn't happen if middleware is working, but be safe
-            return $this->redirect(['controller' => 'Auth', 'action' => 'login']);
-        }
-
-        $identitiesTable = $this->fetchTable('Identities');
-        $identity = $identitiesTable->get($identityId);
-
-        if (!$identity || $identity->revoked) {
-            return $this->redirect(['controller' => 'Auth', 'action' => 'logout']);
-        }
-
         // Optional query params for quick manual testing, e.g.
         // /customers?limit=10&sortField=CREATED_AT&sortOrder=DESC
         $limit = (int)$this->request->getQuery('limit', 100);
@@ -36,7 +21,6 @@ class CustomersController extends AppController
 
         try {
             $customers = $squareApi->listCustomers(
-                $identity,
                 $cursor,
                 $limit,
                 $sortField,
@@ -55,24 +39,10 @@ class CustomersController extends AppController
 
     public function view(string $id): Response
     {
-        $session = $this->request->getSession();
-        $identityId = $session->read('identity_id');
-
-        if (!$identityId) {
-            return $this->redirect(['controller' => 'Auth', 'action' => 'login']);
-        }
-
-        $identitiesTable = $this->fetchTable('Identities');
-        $identity = $identitiesTable->get($identityId);
-
-        if (!$identity || $identity->revoked) {
-            return $this->redirect(['controller' => 'Auth', 'action' => 'logout']);
-        }
-
         $squareApi = new SquareApiService();
 
         try {
-            $customer = $squareApi->getCustomerById($identity, $id);
+            $customer = $squareApi->getCustomerById($id);
         } catch (\Throwable $e) {
             \Cake\Log\Log::error('Failed to get customer: ' . $e->getMessage());
             $this->Flash->error('Could not load customer from Square: ' . $e->getMessage());
