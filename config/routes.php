@@ -57,8 +57,8 @@ return function (RouteBuilder $routes): void {
          */
         $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
 
-        $builder->connect('/auth', ['controller' => 'Auth', 'action' => 'index']);
-        $builder->connect('/auth/login', ['controller' => 'Auth', 'action' => 'login']);
+        $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
+        $builder->connect('/auth', ['controller' => 'Auth', 'action' => 'beginAuth']);
         $builder->connect('/auth/callback', ['controller' => 'Auth', 'action' => 'callback']);
 
         /*
