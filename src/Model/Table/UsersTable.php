@@ -77,9 +77,13 @@ class UsersTable extends Table
         $validator
             ->scalar('password');
 
+        $validator
+            ->scalar('password_confirm');
+
         if ($requirePresence) {
             $validator
-                ->requirePresence('password', 'create');
+                ->requirePresence('password', 'create')
+                ->requirePresence('password_confirm', 'create');
         }
 
         $validator
@@ -103,6 +107,14 @@ class UsersTable extends Table
                     return (bool)preg_match('/[0-9]/', $value);
                 },
                 'message' => 'Password must contain at least one number',
+            ]);
+
+        // Validate the confirmation matches the password
+        $validator
+            ->notEmptyString('password_confirm', 'Please confirm your password')
+            ->add('password_confirm', 'compareWith', [
+                'rule' => ['compareWith', 'password'],
+                'message' => 'Passwords do not match',
             ]);
 
         return $validator;

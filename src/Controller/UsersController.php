@@ -88,8 +88,13 @@ class UsersController extends AppController
 
                 return $this->redirect(['controller' => 'Users', 'action' => 'profile']);
             }
-            $this->Flash->error('The password could not be updated. Please try again.');
+
+            // Persist validation errors to the view so the template can show reasons why save failed
+            $errors = $user->getErrors();
+            $this->set(compact('errors'));
+            $this->Flash->error('The password could not be updated. Please correct the errors below.');
         }
+
         $this->set(compact('user'));
     }
 
