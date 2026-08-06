@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Controller\Controller;
-use App\Service\SquareAuthService;
 
 /**
  * Application Controller
@@ -52,45 +51,6 @@ class AppController extends Controller
          * see https://book.cakephp.org/5/en/controllers/components/form-protection.html
          */
         //$this->loadComponent('FormProtection');
-        
-
-        // Square OAuth requirement
-        // Requires the user be authenticated to access any page of the website
-        // Redirects to /auth if not
-        // $this->middleware(function ($request, $handler) {
-        //     // Allow auth controller actions without authentication
-        //     $allowedActions = ['Auth', 'Auth.index', 'Auth.login', 'Auth.callback', 'Auth.logout', 'Auth.success', 'Users.login'];
-        //     $currentAction = $request->getParam('controller') . '.' . $request->getParam('action');
-
-        //     if (in_array($currentAction, $allowedActions)) {
-        //         return $handler->handle($request);
-        //     }
-
-        //     $session = $request->getSession();
-
-        //     // Read session_id from the cookie (source of truth), not PHP session
-        //     $sessionId = $request->getCookie('session_id');
-
-        //     $squareAuth = new SquareAuthService();
-        //     $sessionRecord = $squareAuth->validateSession($sessionId);
-
-        //     if ($sessionRecord) {
-        //         // Rehydrate PHP session for convenience this request cycle
-        //         $session->write('identity_id', $sessionRecord->identity_id);
-        //         $session->write('merchant_id', $sessionRecord->identity->merchant_id);
-        //         $session->write('session_id', $sessionRecord->id);
-
-        //         return $handler->handle($request);
-        //     }
-
-        //     // Not logged in (or session's dead), remember where they were headed
-        //     // so we can send them back after they log in
-        //     $session->write('redirect_after_auth', $request->getRequestTarget());
-        //     return $this->getResponse()
-        //         ->withStatus(302)
-        //         ->withLocation('/auth');
-        // });
-
     }
 
     protected function requireAdmin(): void
