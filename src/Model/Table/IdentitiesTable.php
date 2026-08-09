@@ -13,7 +13,6 @@ use Cake\Datasource\EntityInterface;
 /**
  * Identities Model
  *
- * @property \App\Model\Table\SessionsTable&\Cake\ORM\Association\HasMany $Sessions
  *
  * @method \App\Model\Entity\Identity newEmptyEntity()
  * @method \App\Model\Entity\Identity newEntity(array $data, array $options = [])
@@ -44,10 +43,6 @@ class IdentitiesTable extends Table
         $this->setTable('identities');
         $this->setDisplayField('merchant_id');
         $this->setPrimaryKey('id');
-
-        $this->hasMany('Sessions', [
-            'foreignKey' => 'identity_id',
-        ]);
     }
 
     /**

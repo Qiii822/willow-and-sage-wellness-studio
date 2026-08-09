@@ -16,8 +16,6 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime|null $refreshed_at
  * @property bool $revoked
  * @property \Cake\I18n\DateTime|null $revoked_at
- *
- * @property \App\Model\Entity\Session[] $sessions
  */
 class Identity extends Entity
 {
@@ -38,6 +36,5 @@ class Identity extends Entity
         'refreshed_at' => true,
         'revoked' => true,
         'revoked_at' => true,
-        'sessions' => true,
     ];
 }
