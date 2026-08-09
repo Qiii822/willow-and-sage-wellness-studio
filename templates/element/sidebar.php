@@ -45,7 +45,7 @@
     </ul>
 
     <div class="logout-section">
-        <?= $this->Form->create(null, ['url' => ['controller' => 'Auth', 'action' => 'logout']]) ?>
+        <?= $this->Form->create(null, ['url' => ['controller' => 'Users', 'action' => 'logout']]) ?>
         <?= $this->Form->button('Logout') ?>
         <?= $this->Form->end() ?>
     </div>

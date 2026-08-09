@@ -29,24 +29,45 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
 
     <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake']) ?>
 
+    <?= $this->Html->css('login') ?>
+
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
 </head>
 <body>
+<?php if (
+    !(
+        $this->request->getParam('controller') === 'Users' &&
+        $this->request->getParam('action') === 'login'
+    )
+): ?>
+
     <nav class="top-nav">
         <div class="top-nav-title">
-            <a href="<?= $this->Url->build('/') ?>"><span>Cake</span>PHP</a>
+            <a href="<?= $this->Url->build('/') ?>">
+                <span>Cake</span>PHP
+            </a>
         </div>
+
         <div class="top-nav-links">
             <?php $identity = $this->request->getAttribute('identity'); ?>
+
             <?php if ($identity): ?>
-                <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'profile']) ?>">Profile</a>
+                <!-- keep your existing logged-in links here -->
             <?php else: ?>
-                <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'login']) ?>">Login</a>
+                <?= $this->Html->link(
+                    'Login',
+                    ['controller' => 'Users', 'action' => 'login']
+                ) ?>
             <?php endif; ?>
         </div>
     </nav>
+
+<?php endif; ?>
     <main class="main">
         <div class="container">
             <?= $this->Flash->render() ?>
@@ -55,5 +76,12 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     </main>
     <footer>
     </footer>
+
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+
 </body>
 </html>
