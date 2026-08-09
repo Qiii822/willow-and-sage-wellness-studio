@@ -301,9 +301,8 @@ main.main > .container {
 }
 
 .password-wrapper .form-control {
-    padding-right: 52px;
+    padding-right: 54px;
 }
-
 .password-toggle {
     position: absolute;
     top: 50%;
@@ -316,21 +315,19 @@ main.main > .container {
     width: 36px;
     height: 36px;
 
+    margin: 0;
     padding: 0;
 
     color: var(--login-secondary);
 
     background: transparent;
-    border: 0;
+    border: none;
     border-radius: 10px;
 
     cursor: pointer;
 
     transform: translateY(-50%);
-
-    transition:
-        color 0.2s ease,
-        background 0.2s ease;
+    line-height: 1;
 }
 
 .password-toggle:hover {
@@ -339,8 +336,13 @@ main.main > .container {
 }
 
 .password-toggle svg {
-    width: 19px;
-    height: 19px;
+    display: block;
+
+    width: 18px;
+    height: 18px;
+
+    margin: 0;
+    padding: 0;
 
     stroke-width: 1.8;
 }
