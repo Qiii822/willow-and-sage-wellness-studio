@@ -3,25 +3,23 @@
    ========================================================= */
 
 :root {
-    --primary: #7c5cff;
-    --primary-dark: #6547eb;
-    --primary-light: #f1edff;
+    --primary: #7657f6;
+    --primary-dark: #6044da;
+    --primary-light: #eeeaff;
 
-    --background: #f4f5f9;
-    --surface: rgba(255, 255, 255, 0.94);
+    --background: #f7f8fc;
+    --surface: #ffffff;
 
-    --text-primary: #1d1d1f;
-    --text-secondary: #7b7b86;
+    --text-primary: #202033;
+    --text-secondary: #73738c;
 
-    --border: rgba(60, 60, 67, 0.12);
+    --border: #e9e9f2;
     --success: #26b96f;
     --danger: #e45d68;
 
     --sidebar-width: 250px;
-    --card-radius: 22px;
-
-    --shadow:
-        0 8px 30px rgba(28, 28, 38, 0.06);
+    --card-radius: 16px;
+    --shadow: 0 6px 24px rgba(39,35,80,.07);
 }
 
 /* =========================================================
