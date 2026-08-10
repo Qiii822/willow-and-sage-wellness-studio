@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\SquareAuthService;
+
 /**
  * Users Controller
  *
@@ -32,8 +34,8 @@ class UsersController extends AppController
         if ($result && $result->isValid()) {
             $identity = $this->Authentication->getIdentity();
             $fallbackLocation = $identity && $identity->roles === 'admin'
-                ? '/profile'
-                : ['controller' => 'Users', 'action' => 'profile'];
+                ? '/dashboard'
+                : ['controller' => 'Dashboard', 'action' => 'index'];
             // Always use role-based redirect, unless user was trying to access a specific page
             $loginRedirect = $this->Authentication->getLoginRedirect();
             $isDefaultRedirect = !$loginRedirect || str_contains((string)$loginRedirect, '/login');
@@ -96,6 +98,28 @@ class UsersController extends AppController
         }
 
         $this->set(compact('user'));
+    }
+
+    /**
+     * Admin settings page: shows and manages the app's Square connection
+     * (connect/disconnect/sync status). Admin-only.
+     *
+     * @return void
+     */
+    public function settings(): void
+    {
+        $this->requireAdmin();
+
+        $squareAuth = new SquareAuthService();
+        $squareIdentity = $squareAuth->getActiveIdentity();
+
+        // TODO: once the Imports table exists, replace this with a real
+        // lookup, e.g. the most recent completed Import's finished_at.
+        $lastSyncedAt = null;
+
+        $this->set('squareIdentity', $squareIdentity);
+        $this->set('lastSyncedAt', $lastSyncedAt);
+        $this->set('justConnected', (bool)$this->request->getQuery('connected'));
     }
 
 }

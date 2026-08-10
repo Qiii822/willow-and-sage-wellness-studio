@@ -21,6 +21,9 @@
     </table>
 
     <div class="actions">
+        <?php if (($identity->roles ?? $identity->role ?? null) === 'admin'): ?>
+            <?= $this->Html->link(__('Settings'), ['controller' => 'Users', 'action' => 'settings'], ['class' => 'button']) ?>
+        <?php endif; ?>
         <?= $this->Html->link(__('Reset Password'), ['controller' => 'Users', 'action' => 'changePassword'], ['class' => 'button']) ?>
         <?= $this->Form->postLink(__('Logout'), ['controller' => 'Users', 'action' => 'logout'], ['confirm' => __('Are you sure you want to logout?'), 'class' => 'button']) ?>
     </div>
