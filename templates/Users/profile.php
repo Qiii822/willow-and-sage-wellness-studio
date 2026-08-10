@@ -21,7 +21,8 @@
     </table>
 
     <div class="actions">
-        <?php if (($identity->roles ?? $identity->role ?? null) === 'admin'): ?>
+        <?php $role = ($identity->roles ?? $identity->role ?? null); ?>
+        <?php if (in_array($role, ['admin', 'superadmin'], true)): ?>
             <?= $this->Html->link(__('Settings'), ['controller' => 'Users', 'action' => 'settings'], ['class' => 'button']) ?>
         <?php endif; ?>
         <?= $this->Html->link(__('Reset Password'), ['controller' => 'Users', 'action' => 'changePassword'], ['class' => 'button']) ?>

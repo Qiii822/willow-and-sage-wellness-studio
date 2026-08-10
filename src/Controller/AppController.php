@@ -56,9 +56,20 @@ class AppController extends Controller
     protected function requireAdmin(): void
     {
         $user = $this->request->getAttribute('identity');
+        $role = $user->roles ?? $user->role ?? null;
 
-        if (!$user || $user->roles !== 'admin') {
+        if (!$user || ($role !== 'admin' && $role !== 'superadmin')) {
             throw new \Cake\Http\Exception\ForbiddenException('Admin access only.');
+        }
+    }
+
+    protected function requireSuperAdmin(): void
+    {
+        $user = $this->request->getAttribute('identity');
+        $role = $user->roles ?? $user->role ?? null;
+
+        if (!$user || $role !== 'superadmin') {
+            throw new \Cake\Http\Exception\ForbiddenException('Super Admin access only.');
         }
     }
  

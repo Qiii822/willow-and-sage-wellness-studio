@@ -33,7 +33,8 @@ class UsersController extends AppController
         // if user passes authentication, grant access to the system
         if ($result && $result->isValid()) {
             $identity = $this->Authentication->getIdentity();
-            $fallbackLocation = $identity && $identity->roles === 'admin'
+            $role = $identity->roles ?? $identity->role ?? null;
+            $fallbackLocation = $role === 'admin' || $role === 'superadmin'
                 ? '/dashboard'
                 : ['controller' => 'Dashboard', 'action' => 'index'];
             // Always use role-based redirect, unless user was trying to access a specific page

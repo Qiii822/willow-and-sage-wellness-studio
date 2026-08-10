@@ -30,8 +30,8 @@ class AuthController extends AppController
 
         $this->squareAuth = new SquareAuthService();
 
-        // Only admins may view, create, or revoke the app's Square connection.
-        $this->requireAdmin();
+        // Only super admins may view, create, or revoke the app's Square connection.
+        $this->requireSuperAdmin();
     }
 
     /**
