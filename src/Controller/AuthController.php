@@ -30,14 +30,8 @@ class AuthController extends AppController
 
         $this->squareAuth = new SquareAuthService();
 
-        // Only admins may view, create, or revoke the app's Square connection.
-        $identity = $this->Authentication->getIdentity();
-
-        if (!$identity || $identity->role !== 'admin') {
-            throw new ForbiddenException(
-                'Only admins can manage the Square connection.'
-            );
-        }
+        // Only super admins may view, create, or revoke the app's Square connection.
+        $this->requireSuperAdmin();
     }
 
     /**
@@ -176,7 +170,14 @@ class AuthController extends AppController
 
             $this->Flash->success('Square account connected successfully.');
 
-            return $this->redirect(['controller' => 'Auth', 'action' => 'index']);
+            // Send the admin to the Settings page (where connection status
+            // and sync controls live) with a flag so it can prompt them to
+            // run a sync now that a connection exists.
+            return $this->redirect([
+                'controller' => 'Users',
+                'action' => 'settings',
+                '?' => ['connected' => 1],
+            ]);
         } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
             // Square-specific OAuth error.
             throw new \RuntimeException(
@@ -217,6 +218,34 @@ class AuthController extends AppController
 
         $this->Flash->success('Square connection disconnected.');
 
-        return $this->redirect(['controller' => 'Auth', 'action' => 'index']);
+        return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
+    }
+
+    /**
+     * Manually triggers a customer sync from Square.
+     *
+     * STUB - this does not yet perform a real sync. It exists so the
+     * "Sync now" button on the Settings page has a working endpoint to
+     * call. Once the import/reconciliation logic is built (Imports /
+     * Customer_changes tables + sync service), this should call that
+     * service instead of just flashing a message.
+     *
+     * @return \Cake\Http\Response Redirect to the Settings page.
+     */
+    public function sync(): Response
+    {
+        $this->request->allowMethod(['post']);
+
+        if (!$this->squareAuth->getActiveIdentity()) {
+            $this->Flash->error('Cannot sync - Square is not connected.');
+
+            return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
+        }
+
+        // TODO: replace with a real call once the sync service exists, e.g.
+        // (new CustomerSyncService())->run(source: 'manual');
+        $this->Flash->info('Sync isn\'t implemented yet - coming soon.');
+
+        return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
     }
 }

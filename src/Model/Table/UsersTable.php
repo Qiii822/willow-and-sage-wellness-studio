@@ -57,6 +57,11 @@ class UsersTable extends Table
             ->notEmptyString('active');
 
         $validator
+            ->scalar('roles')
+            ->inList('roles', ['user', 'admin', 'superadmin'], 'Role must be either user, admin, or superadmin.')
+            ->notEmptyString('roles');
+
+        $validator
             ->dateTime('created_at')
             ->notEmptyDateTime('created_at');
 
