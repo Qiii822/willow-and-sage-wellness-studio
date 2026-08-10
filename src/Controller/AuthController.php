@@ -31,13 +31,7 @@ class AuthController extends AppController
         $this->squareAuth = new SquareAuthService();
 
         // Only admins may view, create, or revoke the app's Square connection.
-        $identity = $this->Authentication->getIdentity();
-
-        if (!$identity || $identity->role !== 'admin') {
-            throw new ForbiddenException(
-                'Only admins can manage the Square connection.'
-            );
-        }
+        $this->requireAdmin();
     }
 
     /**
