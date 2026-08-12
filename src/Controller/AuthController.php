@@ -203,6 +203,14 @@ class AuthController extends AppController
      * (if `revoke_square` is passed in the request data) and marks the
      * active Identity record as revoked in the database.
      *
+     * Refuses to disconnect while a sync is currently running, since
+     * revoking the token mid-sync would just cause Square API calls to
+     * start failing partway through, rather than failing cleanly.
+     *
+     * Local customer data (Customers/Imports/Customer_changes) is left
+     * untouched on disconnect - see Users/settings.php for the staleness
+     * indicator shown once Square is disconnected.
+     *
      * This does not touch the admin's own login session - disconnecting
      * Square and logging out of the app are unrelated actions. Staff
      * login/logout is handled entirely by UsersController.
@@ -211,6 +219,14 @@ class AuthController extends AppController
      */
     public function disconnect(): Response
     {
+        $importsTable = \Cake\ORM\TableRegistry::getTableLocator()->get('Imports');
+
+        if ($importsTable->hasRunningImport()) {
+            $this->Flash->error('Cannot disconnect while a sync is running - try again shortly.');
+
+            return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
+        }
+
         $revokeSquare = (bool)$this->request->getData('revoke_square', false);
 
         if ($revokeSquare) {
