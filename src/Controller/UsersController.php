@@ -114,9 +114,9 @@ class UsersController extends AppController
         $squareAuth = new SquareAuthService();
         $squareIdentity = $squareAuth->getActiveIdentity();
 
-        // TODO: once the Imports table exists, replace this with a real
-        // lookup, e.g. the most recent completed Import's finished_at.
-        $lastSyncedAt = null;
+        $importsTable = \Cake\ORM\TableRegistry::getTableLocator()->get('Imports');
+        $lastImport = $importsTable->getLastCompleted();
+        $lastSyncedAt = $lastImport?->finished_at;
 
         $this->set('squareIdentity', $squareIdentity);
         $this->set('lastSyncedAt', $lastSyncedAt);
