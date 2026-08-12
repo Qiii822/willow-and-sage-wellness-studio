@@ -65,6 +65,12 @@
         <?php else: ?>
             <p style="margin-bottom: 0.75rem;">Square is not connected.</p>
 
+            <?php if ($lastSyncedAt): ?>
+                <p style="color: #b45309; margin-bottom: 0.75rem;">
+                    Customer data may be stale - last synced <?= h($lastSyncedAt->timeAgoInWords()) ?>, before Square was disconnected.
+                </p>
+            <?php endif; ?>
+
             <?php if ($isSuperAdmin): ?>
                 <?= $this->Html->link(
                     'Connect Square',
