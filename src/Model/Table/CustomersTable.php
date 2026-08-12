@@ -31,6 +31,17 @@ class CustomersTable extends Table
         $this->setTable('customers');
         $this->setDisplayField('given_name');
         $this->setPrimaryKey('id');
+
+        // Auto-populates created_at on insert and updated_at on every
+        // save - neither is set explicitly by CustomerSyncService.
+        $this->addBehavior('Timestamp', [
+            'events' => [
+                'Model.beforeSave' => [
+                    'created_at' => 'new',
+                    'updated_at' => 'always',
+                ],
+            ],
+        ]);
     }
 
     public function validationDefault(Validator $validator): Validator
