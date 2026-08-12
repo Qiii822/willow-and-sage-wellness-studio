@@ -7,6 +7,7 @@ use Cake\Http\Response;
 use Cake\Core\Configure;
 use Cake\Http\Exception\ForbiddenException;
 use App\Service\SquareAuthService;
+use App\Service\SyncService;
 
 /**
  * Handles the app's connection to Square.
@@ -224,27 +225,19 @@ class AuthController extends AppController
     /**
      * Manually triggers a customer sync from Square.
      *
-     * STUB - this does not yet perform a real sync. It exists so the
-     * "Sync now" button on the Settings page has a working endpoint to
-     * call. Once the import/reconciliation logic is built (Imports /
-     * Customer_changes tables + sync service), this should call that
-     * service instead of just flashing a message.
-     *
      * @return \Cake\Http\Response Redirect to the Settings page.
      */
     public function sync(): Response
     {
         $this->request->allowMethod(['post']);
 
-        if (!$this->squareAuth->getActiveIdentity()) {
-            $this->Flash->error('Cannot sync - Square is not connected.');
-
-            return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
+        try {
+            (new SyncService())->syncCustomers('manual');
+            $this->Flash->success('Sync completed successfully.');
+        } catch (\Throwable $e) {
+            \Cake\Log\Log::error('Manual sync failed: ' . $e->getMessage());
+            $this->Flash->error('Sync failed: ' . $e->getMessage());
         }
-
-        // TODO: replace with a real call once the sync service exists, e.g.
-        // (new CustomerSyncService())->run(source: 'manual');
-        $this->Flash->info('Sync isn\'t implemented yet - coming soon.');
 
         return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
     }
