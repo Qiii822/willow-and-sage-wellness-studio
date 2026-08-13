@@ -301,12 +301,16 @@ main.main > .container {
 }
 
 .password-wrapper .form-control {
-    padding-right: 54px;
+    width: 100%;
+    min-height: 50px;
+
+    padding: 12px 52px 12px 14px;
 }
+
 .password-toggle {
     position: absolute;
-    top: 50%;
-    right: 12px;
+    top: 38%;
+    right: 10px;
 
     display: flex;
     align-items: center;
@@ -345,6 +349,7 @@ main.main > .container {
     padding: 0;
 
     stroke-width: 1.8;
+    flex-shrink: 0;
 }
 
 /* =========================================================
