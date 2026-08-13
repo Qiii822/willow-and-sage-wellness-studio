@@ -134,7 +134,9 @@ class CustomerSyncService
             'square_updated_at' => $squareCustomer->getUpdatedAt()
                 ? DateTime::parse($squareCustomer->getUpdatedAt())
                 : null,
-            'synced_at' => DateTime::now(),
+            'square_created_at' => $squareCustomer->getCreatedAt()
+                ? DateTime::parse($squareCustomer->getCreatedAt())
+                : null,
             'deleted_at' => null, // un-delete, if this customer had previously disappeared
         ];
 
@@ -146,7 +148,7 @@ class CustomerSyncService
         if ($action === 'update' && empty($diff)) {
             $entity = $this->customersTable->patchEntity($existing, [
                 'square_version' => $newVersion,
-                'synced_at' => DateTime::now(),
+                'updated_at' => DateTime::now(),
             ]);
             $this->customersTable->saveOrFail($entity);
 
@@ -182,7 +184,7 @@ class CustomerSyncService
         foreach ($query as $customer) {
             $entity = $this->customersTable->patchEntity($customer, [
                 'deleted_at' => DateTime::now(),
-                'synced_at' => DateTime::now(),
+                'updated_at' => DateTime::now(),
             ]);
             $this->customersTable->saveOrFail($entity);
 

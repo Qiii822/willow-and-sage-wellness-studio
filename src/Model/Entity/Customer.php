@@ -20,7 +20,7 @@ use Cake\ORM\Entity;
  * @property string|null $phone_number
  * @property int $square_version
  * @property \Cake\I18n\DateTime|null $square_updated_at
- * @property \Cake\I18n\DateTime $synced_at
+ * @property \Cake\I18n\DateTime $square_created_att
  * @property \Cake\I18n\DateTime|null $deleted_at
  * @property \Cake\I18n\DateTime $created_at
  * @property \Cake\I18n\DateTime $updated_at
@@ -35,7 +35,7 @@ class Customer extends Entity
         'phone_number' => true,
         'square_version' => true,
         'square_updated_at' => true,
-        'synced_at' => true,
+        'square_created_at' => true,
         'deleted_at' => true,
         'created_at' => true,
         'updated_at' => true,

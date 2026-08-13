@@ -82,9 +82,9 @@ class CustomersTable extends Table
             ->allowEmptyDateTime('square_updated_at');
 
         $validator
-            ->dateTime('synced_at')
-            ->requirePresence('synced_at', 'create')
-            ->notEmptyDateTime('synced_at');
+            ->dateTime('square_created_at')
+            ->requirePresence('square_created_at', 'create')
+            ->notEmptyDateTime('square_created_at');
 
         $validator
             ->dateTime('deleted_at')
