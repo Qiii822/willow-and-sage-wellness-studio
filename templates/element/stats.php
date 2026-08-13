@@ -12,8 +12,11 @@
                 </div>
             </div>
 
-            <h2><?= number_format(1248) ?></h2>
-            <p class="positive">+12.7%</p>
+            <h2><?= number_format($totalCustomers) ?></h2>
+
+            <p class="positive">
+                <?= number_format($customersThisWeek) ?> new this week
+            </p>
 
         </div>
     </div>

@@ -63,7 +63,7 @@
                     ctx.fillStyle = '#2f2d2b';
                     ctx.font = '700 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
 
-                    ctx.fillText('1,248', centreX, centreY);
+                    ctx.fillText('<?= number_format($totalCustomers) ?>', centreX, centreY);
 
                     ctx.fillStyle = '#8a847f';
                     ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';

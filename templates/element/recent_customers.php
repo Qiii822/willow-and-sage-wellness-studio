@@ -3,12 +3,16 @@
     <div class="table-header">
         <div>
             <h3>Recent Customers</h3>
-            <p>Latest customer activity</p>
+            <p>Latest customers added from Square</p>
         </div>
 
-        <button type="button" class="table-action">
-View all
-</button>
+        <button
+            type="button"
+            class="table-action"
+            id="view-all-customers"
+        >
+            View all
+        </button>
     </div>
 
     <div class="table-responsive">
@@ -17,62 +21,72 @@ View all
             <tr>
                 <th>Customer</th>
                 <th>Email</th>
-                <th>Bookings</th>
-                <th>Total Spent</th>
-                <th>Status</th>
+                <th>Phone</th>
+                <th>Account Created</th>
             </tr>
             </thead>
 
             <tbody>
-            <tr>
-                <td>Olivia Chen</td>
-                <td>olivia@example.com</td>
-                <td>6</td>
-                <td>$820</td>
-                <td>
-                    <span class="status-badge active">
-Active
-                    </span>
-                </td>
-            </tr>
+            <?php foreach ($recentCustomers as $index => $customer): ?>
+                <tr
+                    class="<?= $index >= 5 ? 'extra-customer-row' : '' ?>"
+                >
+                    <td>
+                        <?= h(trim(
+                            ($customer->given_name ?? '') . ' ' .
+                            ($customer->family_name ?? '')
+                        )) ?>
+                    </td>
 
-            <tr>
-                <td>Mia Wilson</td>
-                <td>mia@example.com</td>
-                <td>4</td>
-                <td>$540</td>
-                <td>
-                    <span class="status-badge active">
-Active
-                    </span>
-                </td>
-            </tr>
+                    <td>
+                        <?= h($customer->email_address ?? '—') ?>
+                    </td>
 
-            <tr>
-                <td>Noah Smith</td>
-                <td>noah@example.com</td>
-                <td>3</td>
-                <td>$390</td>
-                <td>
-                    <span class="status-badge new">
-New
-                    </span>
-                </td>
-            </tr>
+                    <td>
+                        <?= h($customer->phone_number ?? '—') ?>
+                    </td>
 
-            <tr>
-                <td>Ava Brown</td>
-                <td>ava@example.com</td>
-                <td>5</td>
-                <td>$710</td>
-                <td>
-                    <span class="status-badge active">
-Active
-                    </span>
-                </td>
-            </tr>
+                    <td>
+                        <?php if ($customer->square_created_at): ?>
+                            <?= h(
+                                $customer->square_created_at
+                                    ->format('d/m/Y H:i:s')
+                            ) ?>
+                        <?php else: ?>
+                            —
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
             </tbody>
         </table>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const button = document.getElementById('view-all-customers');
+        const extraRows = document.querySelectorAll('.extra-customer-row');
+
+        if (!button) {
+            return;
+        }
+
+        let expanded = false;
+
+        button.addEventListener('click', function () {
+            expanded = !expanded;
+
+            extraRows.forEach(function (row) {
+                row.style.display = expanded ? 'table-row' : 'none';
+            });
+
+            button.textContent = expanded ? 'Show less' : 'View all';
+        });
+
+        extraRows.forEach(function (row) {
+            row.style.display = 'none';
+        });
+    });
+</script>
