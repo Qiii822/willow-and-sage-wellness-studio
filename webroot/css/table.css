@@ -1,7 +1,7 @@
-.table-card {
+.card.table-card {
     margin-top: 22px;
 
-    height: auto !important;
+    height: fit-content !important;
     min-height: 0 !important;
 
     align-self: flex-start;
@@ -38,6 +38,7 @@
     font-size: 13px;
     font-weight: 700;
 
+
     background: var(--primary);
     border: none;
     border-radius: 10px;
@@ -56,6 +57,7 @@
 
 .table-responsive {
     width: 100%;
+    height: auto;
     overflow-x: auto;
 }
 
@@ -102,7 +104,6 @@
 .dashboard-table tbody tr:hover {
     background: rgba(139, 126, 116, 0.04);
 }
-
 /* Status badges */
 
 .status-badge {
@@ -121,34 +122,16 @@
     border-radius: 999px;
 }
 
-/* Same green family as New Customers */
-.status-badge.active {
-    color: #64806c;
-    background: #edf3ee;
-    border: 1px solid #d8e5dc;
-}
-
-/* Same blue family as Total Customers */
-.status-badge.new {
-    color: #58728a;
-    background: #edf2f6;
-    border: 1px solid #d8e1e8;
-}
-
 /* Active */
-
 .status-badge.active {
     color: #285438;
-
     background: #dcecdf;
     border: 1px solid #bdd8c2;
 }
 
 /* New */
-
 .status-badge.new {
     color: #34566d;
-
     background: #deebf3;
     border: 1px solid #bfd4e1;
 }

@@ -11,15 +11,30 @@ $today = \Cake\I18n\FrozenDate::today()->format('Y-m-d');
     </div>
 
     <div class="top-actions">
+        <button class="notification" type="button">
+            <i data-lucide="bell"></i>
+        </button>
 
-
-        <input
-            type="date"
-            max="<?= h($today) ?>"
-            value="<?= h($today) ?>"
+        <form
+                method="get"
+                action="<?= $this->Url->build([
+                    'controller' => 'Dashboard',
+                    'action' => 'index'
+                ]) ?>"
         >
+            <input
+                    type="date"
+                    name="date"
+                    max="<?= h($today) ?>"
+                    value="<?= h($selectedDate ?? $today) ?>"
+                    onchange="this.form.submit()"
+            >
+        </form>
 
-
+        <button class="export-btn" type="button">
+            <i data-lucide="download"></i>
+            Export
+        </button>
 
         <div class="profile">W</div>
     </div>

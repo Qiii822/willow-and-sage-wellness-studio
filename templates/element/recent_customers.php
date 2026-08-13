@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var iterable $recentCustomers
+ */
+?>
+
 <div class="card table-card">
 
     <div class="table-header">
@@ -7,9 +14,9 @@
         </div>
 
         <button
-            type="button"
-            class="table-action"
-            id="view-all-customers"
+                type="button"
+                class="table-action"
+                id="view-all-customers"
         >
             View all
         </button>
@@ -28,9 +35,7 @@
 
             <tbody>
             <?php foreach ($recentCustomers as $index => $customer): ?>
-                <tr
-                    class="<?= $index >= 5 ? 'extra-customer-row' : '' ?>"
-                >
+                <tr class="<?= $index >= 5 ? 'extra-customer-row' : '' ?>">
                     <td>
                         <?= h(trim(
                             ($customer->given_name ?? '') . ' ' .
@@ -75,6 +80,10 @@
 
         let expanded = false;
 
+        extraRows.forEach(function (row) {
+            row.style.display = 'none';
+        });
+
         button.addEventListener('click', function () {
             expanded = !expanded;
 
@@ -83,10 +92,6 @@
             });
 
             button.textContent = expanded ? 'Show less' : 'View all';
-        });
-
-        extraRows.forEach(function (row) {
-            row.style.display = 'none';
         });
     });
 </script>

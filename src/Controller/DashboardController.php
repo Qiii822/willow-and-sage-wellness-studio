@@ -12,62 +12,49 @@ class DashboardController extends AppController
     {
         $customersTable = $this->fetchTable('Customers');
 
-        // Total number of customers
+        // Selected dashboard date.
+        // If no date is selected, use today.
+        $selectedDate = $this->request->getQuery('date')
+            ?? FrozenTime::now()->format('Y-m-d');
+
+        // Start and end of selected day
+        $dayStart = new FrozenTime($selectedDate . ' 00:00:00');
+        $dayEnd = $dayStart->addDays(1);
+
+        // Total customers that existed by the selected date
         $totalCustomers = $customersTable
             ->find()
-            ->count();
-
-        // Beginning of this week
-        $thisWeekStart = FrozenTime::now()->startOfWeek();
-
-        // Beginning of next week
-        $nextWeekStart = $thisWeekStart->addDays(7);
-
-        // Beginning of last week
-        $lastWeekStart = $thisWeekStart->subDays(7);
-
-        // Customers created this week
-        $customersThisWeek = $customersTable
-            ->find()
             ->where([
-                'square_created_at >=' => $thisWeekStart,
-                'square_created_at <' => $nextWeekStart,
+                'square_created_at <' => $dayEnd,
             ])
             ->count();
 
-        // Customers created last week
-        $customersLastWeek = $customersTable
+        // Customers created on the selected date only
+        $customersSelectedDate = $customersTable
             ->find()
             ->where([
-                'square_created_at >=' => $lastWeekStart,
-                'square_created_at <' => $thisWeekStart,
+                'square_created_at >=' => $dayStart,
+                'square_created_at <' => $dayEnd,
             ])
             ->count();
 
-        // Weekly growth percentage
-        if ($customersLastWeek > 0) {
-            $weeklyGrowth =
-                (($customersThisWeek - $customersLastWeek)
-                    / $customersLastWeek) * 100;
-        } elseif ($customersThisWeek > 0) {
-            $weeklyGrowth = 100;
-        } else {
-            $weeklyGrowth = 0;
-        }
-
+        // Customers that existed by the selected date
+        // Newest first
         $recentCustomers = $customersTable
             ->find()
+            ->where([
+                'square_created_at <' => $dayEnd,
+            ])
             ->orderBy([
-                'square_created_at' => 'DESC'
+                'square_created_at' => 'DESC',
             ])
             ->all();
 
         // Send data to dashboard
         $this->set(compact(
+            'selectedDate',
             'totalCustomers',
-            'customersThisWeek',
-            'customersLastWeek',
-            'weeklyGrowth',
+            'customersSelectedDate',
             'recentCustomers'
         ));
 

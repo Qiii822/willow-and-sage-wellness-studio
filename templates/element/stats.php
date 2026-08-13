@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var int $totalCustomers
+ * @var int $customersSelectedDate
+ */
+?>
+
 <div class="row g-4 stats">
 
     <!-- Card 1 -->
@@ -15,7 +23,7 @@
             <h2><?= number_format($totalCustomers) ?></h2>
 
             <p class="positive">
-                <?= number_format($customersThisWeek) ?> new this week
+                as of selected date
             </p>
 
         </div>
@@ -33,8 +41,11 @@
                 </div>
             </div>
 
-            <h2>86</h2>
-            <p class="positive">+8.4%</p>
+            <h2><?= number_format($customersSelectedDate) ?></h2>
+
+            <p class="positive">
+                new on selected date
+            </p>
 
         </div>
     </div>
