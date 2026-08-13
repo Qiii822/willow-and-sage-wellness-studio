@@ -10,10 +10,7 @@ $today = \Cake\I18n\FrozenDate::today()->format('Y-m-d');
         </p>
     </div>
 
-    <div class="top-actions">
-        <button class="notification" type="button">
-            <i data-lucide="bell"></i>
-        </button>
+
 
         <input
             type="date"
@@ -21,10 +18,7 @@ $today = \Cake\I18n\FrozenDate::today()->format('Y-m-d');
             value="<?= h($today) ?>"
         >
 
-        <button class="export-btn" type="button">
-            <i data-lucide="download"></i>
-            Export
-        </button>
+
 
         <div class="profile">W</div>
     </div>

@@ -13,35 +13,7 @@
             Dashboard
         </li>
 
-        <li>
-            <i data-lucide="users"></i>
-            Customers
-        </li>
 
-        <li>
-            <i data-lucide="calendar-days"></i>
-            Bookings
-        </li>
-
-        <li>
-            <i data-lucide="credit-card"></i>
-            Sales & Payments
-        </li>
-
-        <li>
-            <i data-lucide="message-square"></i>
-            Feedback
-        </li>
-
-        <li>
-            <i data-lucide="bar-chart-3"></i>
-            Reports
-        </li>
-
-        <li>
-            <i data-lucide="settings"></i>
-            Settings
-        </li>
     </ul>
 
     <div class="logout-section">
