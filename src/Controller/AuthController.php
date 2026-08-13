@@ -7,6 +7,7 @@ use Cake\Http\Response;
 use Cake\Core\Configure;
 use Cake\Http\Exception\ForbiddenException;
 use App\Service\SquareAuthService;
+use App\Service\SyncService;
 
 /**
  * Handles the app's connection to Square.
@@ -202,6 +203,14 @@ class AuthController extends AppController
      * (if `revoke_square` is passed in the request data) and marks the
      * active Identity record as revoked in the database.
      *
+     * Refuses to disconnect while a sync is currently running, since
+     * revoking the token mid-sync would just cause Square API calls to
+     * start failing partway through, rather than failing cleanly.
+     *
+     * Local customer data (Customers/Imports/Customer_changes) is left
+     * untouched on disconnect - see Users/settings.php for the staleness
+     * indicator shown once Square is disconnected.
+     *
      * This does not touch the admin's own login session - disconnecting
      * Square and logging out of the app are unrelated actions. Staff
      * login/logout is handled entirely by UsersController.
@@ -210,6 +219,14 @@ class AuthController extends AppController
      */
     public function disconnect(): Response
     {
+        $importsTable = \Cake\ORM\TableRegistry::getTableLocator()->get('Imports');
+
+        if ($importsTable->hasRunningImport()) {
+            $this->Flash->error('Cannot disconnect while a sync is running - try again shortly.');
+
+            return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
+        }
+
         $revokeSquare = (bool)$this->request->getData('revoke_square', false);
 
         if ($revokeSquare) {
@@ -224,27 +241,19 @@ class AuthController extends AppController
     /**
      * Manually triggers a customer sync from Square.
      *
-     * STUB - this does not yet perform a real sync. It exists so the
-     * "Sync now" button on the Settings page has a working endpoint to
-     * call. Once the import/reconciliation logic is built (Imports /
-     * Customer_changes tables + sync service), this should call that
-     * service instead of just flashing a message.
-     *
      * @return \Cake\Http\Response Redirect to the Settings page.
      */
     public function sync(): Response
     {
         $this->request->allowMethod(['post']);
 
-        if (!$this->squareAuth->getActiveIdentity()) {
-            $this->Flash->error('Cannot sync - Square is not connected.');
-
-            return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
+        try {
+            (new SyncService())->syncCustomers('manual');
+            $this->Flash->success('Sync completed successfully.');
+        } catch (\Throwable $e) {
+            \Cake\Log\Log::error('Manual sync failed: ' . $e->getMessage());
+            $this->Flash->error('Sync failed: ' . $e->getMessage());
         }
-
-        // TODO: replace with a real call once the sync service exists, e.g.
-        // (new CustomerSyncService())->run(source: 'manual');
-        $this->Flash->info('Sync isn\'t implemented yet - coming soon.');
 
         return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
     }
