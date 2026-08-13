@@ -1,0 +1,177 @@
+body {
+    margin: 0;
+
+    color: #2f2d2b;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: #f3f0ec;
+}
+
+.users.profile.content {
+    width: min(760px, calc(100% - 40px));
+
+    margin: 70px auto;
+    padding: 32px;
+
+    background: #ffffff;
+    border: 1px solid #e5dfd9;
+    border-radius: 22px;
+
+    box-shadow:
+        0 12px 36px rgba(72, 64, 58, 0.08);
+}
+
+.users.profile.content h3 {
+    margin: 0 0 28px;
+
+    color: #2f2d2b;
+    font-size: 28px;
+    font-weight: 750;
+    letter-spacing: -0.7px;
+}
+
+/* Profile table */
+
+.users.profile table {
+    width: 100%;
+
+    margin-bottom: 28px;
+
+    border-collapse: collapse;
+}
+
+.users.profile th,
+.users.profile td {
+    padding: 17px 14px;
+
+    text-align: left;
+
+    border-bottom: 1px solid #e5dfd9;
+}
+
+.users.profile th {
+    width: 180px;
+
+    color: #77716c;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.users.profile td {
+    color: #2f2d2b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.users.profile tr:last-child th,
+.users.profile tr:last-child td {
+    border-bottom: none;
+}
+
+/* Actions */
+
+.users.profile .actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.users.profile .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+    padding: 0 16px;
+
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+
+    background: #8b7e74;
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.users.profile .button:hover {
+    color: #ffffff;
+
+    background: #71665e;
+
+    transform: translateY(-1px);
+}
+
+/* Logout slightly different */
+
+.users.profile .actions form {
+    margin: 0;
+}
+
+.users.profile .actions form .button {
+    background: #c96c6c;
+}
+
+.users.profile .actions form .button:hover {
+    background: #b45c5c;
+}
+
+/* Mobile */
+
+@media (max-width: 640px) {
+    .users.profile.content {
+        width: calc(100% - 24px);
+
+        margin: 24px auto;
+        padding: 22px;
+
+        border-radius: 18px;
+    }
+
+    .users.profile.content h3 {
+        font-size: 24px;
+    }
+
+    .users.profile th,
+    .users.profile td {
+        display: block;
+
+        width: 100%;
+        padding: 8px 4px;
+    }
+
+    .users.profile th {
+        padding-top: 15px;
+
+        border-bottom: none;
+    }
+
+    .users.profile td {
+        padding-bottom: 15px;
+    }
+
+    .users.profile .actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .users.profile .button {
+        width: 100%;
+    }
+}

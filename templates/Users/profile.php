@@ -1,3 +1,7 @@
+<?php
+$this->Html->css('profile', ['block' => true]);
+?>
+
 <div class="users profile content">
     <h3>Your Profile</h3>
 
