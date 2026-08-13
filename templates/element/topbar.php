@@ -85,8 +85,16 @@ $today = \Cake\I18n\FrozenDate::today()
             Export customers
         </button>
 
-        <div class="profile">W</div>
-
+        <?= $this->Html->link(
+            'W',
+            [
+                'controller' => 'Users',
+                'action' => 'profile'
+            ],
+            [
+                'class' => 'profile'
+            ]
+        ) ?>
     </div>
 </div>
 
