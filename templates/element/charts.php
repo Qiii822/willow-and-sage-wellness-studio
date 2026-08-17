@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var int $totalCustomers
+ */
+?>
+
+
 <div class="charts">
 
     <div class="card chart-card">
