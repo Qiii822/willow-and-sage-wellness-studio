@@ -64,13 +64,7 @@ src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.j
 <!-- Page-specific scripts -->
 <?= $this->fetch('script') ?>
 
-<!-- Initialise Lucide icons -->
-<script>
-if (window.lucide) {
-        lucide.createIcons();
-    }
-</script>
-
+<?= $this->Html->script('dashboard') ?>
 <?= $this->Html->script('topbar') ?>
 <?= $this->Html->script('charts') ?>
 <?= $this->Html->script('recent-customers') ?>
