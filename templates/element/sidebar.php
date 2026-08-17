@@ -1,3 +1,10 @@
+<?php
+$controller = $this->request->getParam('controller');
+$action = $this->request->getParam('action');
+
+$isDashboard = $controller === 'Dashboard' && $action === 'index';
+$isSettings = $controller === 'Users' && $action === 'settings';
+?>
 <aside class="sidebar">
     <div class="logo">
         <div class="logo-icon">W</div>
@@ -8,14 +15,23 @@
         </div>
     </div>
     <ul class="sidebar-nav">
-        <li class="active">
-            <i data-lucide="layout-dashboard"></i>
-            Dashboard
+        <li class="<?= $isDashboard ? 'active' : '' ?>">
+            <?= $this->Html->link(
+                '<i data-lucide="layout-dashboard"></i><span>Dashboard</span>',
+                [
+                    'controller' => 'Dashboard',
+                    'action' => 'index'
+                ],
+                [
+                    'escape' => false,
+                    'class' => 'sidebar-link'
+                ]
+            ) ?>
         </li>
 
 
 
-        <li>
+        <li class="<?= $isSettings ? 'active' : '' ?>">
             <?= $this->Html->link(
                 '<i data-lucide="settings"></i><span>Settings</span>',
                 [

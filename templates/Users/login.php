@@ -1,5 +1,6 @@
 <?php
 $this->assign('title', 'Login');
+$this->Html->css('login', ['block' => true]);
 ?>
 
 <div class="login-page">
