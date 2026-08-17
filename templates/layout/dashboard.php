@@ -71,5 +71,9 @@ if (window.lucide) {
     }
 </script>
 
+<?= $this->Html->script('topbar') ?>
+<?= $this->Html->script('charts') ?>
+<?= $this->Html->script('recent-customers') ?>
+
 </body>
 </html>
