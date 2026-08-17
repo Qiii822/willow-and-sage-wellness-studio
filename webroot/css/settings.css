@@ -1,7 +1,7 @@
 body {
     margin: 0;
 
-    color: #2f2d2b;
+    color: var(--text-primary);
 
     font-family:
         -apple-system,
@@ -12,7 +12,7 @@ body {
         Arial,
         sans-serif;
 
-    background: #f3f0ec;
+    background: var(--background);
 }
 
 .settings-page {
@@ -36,16 +36,16 @@ body {
 .settings-header p {
     margin: 0;
 
-    color: #77716c;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
 .settings-card {
     padding: 28px;
 
-    background: #ffffff;
+    background: var(--surface);
 
-    border: 1px solid #e5dfd9;
+    border: 1px solid var(--border);
     border-radius: 22px;
 
     box-shadow:
@@ -71,7 +71,7 @@ body {
 .settings-card-header p {
     margin: 0;
 
-    color: #77716c;
+    color: var(--text-secondary);
     font-size: 13px;
 }
 
@@ -82,11 +82,11 @@ body {
 
     padding: 7px 11px;
 
-    color: #64806c;
+    color: var(--green);
     font-size: 12px;
     font-weight: 700;
 
-    background: #edf3ee;
+    background: var(--green-light);
 
     border: 1px solid #d8e5dc;
     border-radius: 999px;
@@ -96,7 +96,7 @@ body {
     width: 8px;
     height: 8px;
 
-    background: #64806c;
+    background: var(--green);
     border-radius: 50%;
 }
 
@@ -112,7 +112,7 @@ body {
 .connection-details p {
     margin: 0 0 8px;
 
-    color: #77716c;
+    color: var(--text-secondary);
     font-size: 13px;
 }
 
@@ -121,7 +121,7 @@ body {
 }
 
 .connection-details strong {
-    color: #2f2d2b;
+    color: var(--text-primary);
 }
 
 .settings-actions {
@@ -140,12 +140,12 @@ body {
     min-height: 42px;
     padding: 0 16px;
 
-    color: #ffffff;
+    color: var(--on-primary);
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
 
-    background: #8b7e74;
+    background: var(--primary);
 
     border: none;
     border-radius: 12px;
@@ -158,9 +158,9 @@ body {
 }
 
 .settings-button:hover {
-    color: #ffffff;
+    color: var(--on-primary);
 
-    background: #71665e;
+    background: var(--primary-dark);
 
     transform: translateY(-1px);
 }
@@ -182,7 +182,7 @@ body {
 
     margin-top: 18px;
 
-    color: #71665e;
+    color: var(--primary-dark);
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
@@ -218,9 +218,9 @@ body {
 }
 
 .settings-button.secondary {
-    color: #71665e;
+    color: var(--primary-dark);
 
-    background: #f1ece6;
+    background: var(--primary-light);
     border: 1px solid #ddd3ca;
 }
 

@@ -38,11 +38,11 @@
 
     flex-shrink: 0;
 
-    color: #ffffff;
+    color: var(--on-primary);
     font-size: 22px;
     font-weight: 700;
 
-    background: #8b7e74;
+    background: var(--primary);
 
     border-radius: 16px;
 
@@ -97,18 +97,18 @@
 }
 
 .sidebar-nav li:hover {
-    color: #5f554e;
+    color: var(--nav-text-active);
     background: #f0ebe5;
     transform: translateX(2px);
 }
 
 .sidebar-nav li.active {
-    color: #5f554e;
+    color: var(--nav-text-active);
     background: #ebe4dc;
 }
 
 .sidebar-nav li.active .sidebar-link {
-    color: #5f554e;
+    color: var(--nav-text-active);
 }
 
 .sidebar-nav svg {
@@ -182,12 +182,12 @@
 }
 
 .sidebar-nav li .sidebar-link:hover {
-    color: #5f554e;
+    color: var(--nav-text-active);
     text-decoration: none;
 }
 
 .sidebar-nav li .sidebar-link:focus,
 .sidebar-nav li .sidebar-link:active {
-    color: #5f554e;
+    color: var(--nav-text-active);
     text-decoration: none;
 }

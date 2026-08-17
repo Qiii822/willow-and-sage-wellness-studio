@@ -34,7 +34,7 @@
 .table-action {
     padding: 9px 14px;
 
-    color: #ffffff;
+    color: var(--on-primary);
     font-size: 13px;
     font-weight: 700;
 
