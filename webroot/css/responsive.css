@@ -179,18 +179,6 @@
         grid-template-columns: 1fr;
     }
 
-    .notification,
-    .profile,
-    .export-btn,
-    .top-actions input {
-        width: 100%;
-    }
-
-    .notification,
-    .profile {
-        border-radius: 14px;
-    }
-
     .top-bar h1 {
         font-size: 22px;
     }

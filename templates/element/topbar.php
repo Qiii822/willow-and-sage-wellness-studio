@@ -19,50 +19,6 @@ $today = \Cake\I18n\FrozenDate::today()
 
     <div class="top-actions">
 
-        <div class="notification-wrapper">
-            <button
-                    class="notification"
-                    type="button"
-                    id="notification-button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    aria-label="Notifications"
-            >
-                <i data-lucide="bell"></i>
-            </button>
-
-            <div class="notification-modal" id="notification-modal">
-                <div class="notification-header">
-                    <div>
-                        <h4>Notifications</h4>
-                        <span>Dashboard activity</span>
-                    </div>
-
-                    <button
-                            type="button"
-                            class="notification-close"
-                            id="notification-close"
-                    >
-                        <i data-lucide="x"></i>
-                    </button>
-                </div>
-
-                <div class="notification-item">
-                    <div class="notification-item-icon">
-                        <i data-lucide="user-plus"></i>
-                    </div>
-
-                    <div>
-                        <strong>
-                            <?= number_format($customersSelectedDate) ?>
-                            new customer<?= $customersSelectedDate === 1 ? '' : 's' ?>
-                        </strong>
-                        <p>Added on the selected date</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <form
                 class="date-filter-form"
                 method="get"
@@ -156,45 +112,6 @@ $today = \Cake\I18n\FrozenDate::today()
             link.remove();
 
             URL.revokeObjectURL(url);
-        });
-
-
-        // =========================================
-        // Notification dropdown
-        // =========================================
-
-        const notificationWrapper = document.querySelector('.notification-wrapper');
-        const notificationButton  = document.getElementById('notification-button');
-        const notificationModal   = document.getElementById('notification-modal');
-        const notificationClose   = document.getElementById('notification-close');
-
-        function openNotifications() {
-            notificationModal?.classList.add('is-open');
-            notificationButton?.setAttribute('aria-expanded', 'true');
-        }
-
-        function closeNotifications() {
-            notificationModal?.classList.remove('is-open');
-            notificationButton?.setAttribute('aria-expanded', 'false');
-        }
-
-        notificationButton?.addEventListener('click', function (event) {
-            event.stopPropagation();
-            notificationModal?.classList.contains('is-open')
-                ? closeNotifications()
-                : openNotifications();
-        });
-
-        notificationClose?.addEventListener('click', closeNotifications);
-
-        document.addEventListener('click', function (event) {
-            if (notificationWrapper && !notificationWrapper.contains(event.target)) {
-                closeNotifications();
-            }
-        });
-
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') closeNotifications();
         });
 
     });
