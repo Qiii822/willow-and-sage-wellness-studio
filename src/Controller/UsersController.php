@@ -74,6 +74,8 @@ class UsersController extends AppController
      */
     public function changePassword(?string $id = null)
     {
+        $this->viewBuilder()->setLayout('account');
+
         $identity = $this->request->getAttribute('identity');
         if (!$identity) {
             throw new \Cake\Http\Exception\UnauthorizedException('Please login to change your password.');
