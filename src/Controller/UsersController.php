@@ -17,8 +17,10 @@ class UsersController extends AppController
         parent::beforeFilter($event);
         // Configure the login action to not require authentication, preventing
         // the infinite redirect loop issue
-        $this->Authentication->allowUnauthenticated(['login']);
-    }
+        $this->Authentication->allowUnauthenticated([
+            'login',
+            'forgotPassword',
+        ]);    }
 
     /**
      * Login method
@@ -46,6 +48,40 @@ class UsersController extends AppController
         // display error if user submitted their credentials but authentication failed
         if ($this->request->is('post') && !$result->isValid()) {
             $this->Flash->error('Email address and/or Password is incorrect. Please try again. ');
+        }
+    }
+
+    /**
+     * Forgot Password method
+     *
+     * @return \Cake\Http\Response|null|void
+     */
+    public function forgotPassword()
+    {
+        $this->viewBuilder()->setLayout('account');
+
+        $this->request->allowMethod(['get', 'post']);
+
+        if ($this->request->is('post')) {
+            $email = trim((string)$this->request->getData('email'));
+
+            $user = $this->Users->find()
+                ->where(['email' => $email])
+                ->first();
+
+
+            // TODO: Add password reset token and email functionality.
+
+
+            if ($user) {
+                $this->Flash->success(
+                    'If an account exists for this email address, password reset instructions will be sent.'
+                );
+            } else {
+                $this->Flash->success(
+                    'If an account exists for this email address, password reset instructions will be sent.'
+                );
+            }
         }
     }
 

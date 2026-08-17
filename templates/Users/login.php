@@ -85,6 +85,16 @@ $this->Html->script(
                     </div>
                 </div>
 
+                <div class="forgot-password-link">
+                    <?= $this->Html->link(
+                        'Forgot password?',
+                        [
+                            'controller' => 'Users',
+                            'action' => 'forgotPassword'
+                        ]
+                    ) ?>
+                </div>
+
                 <?= $this->Form->button('Login', [
                     'class' => 'login-button',
                     'type' => 'submit',
