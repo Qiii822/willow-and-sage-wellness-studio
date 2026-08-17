@@ -2,7 +2,7 @@
 $this->assign('title', 'Change Password');
 
 $this->Html->css(
-    'change_password',
+    'auth',
     ['block' => true]
 );
 
@@ -12,13 +12,13 @@ $this->Html->script(
 );
 ?>
 
-<div class="change-password-page">
+<div class="auth-page">
 
-    <div class="change-password-card">
+    <div class="auth-card">
 
         <?= $this->Flash->render() ?>
 
-        <div class="change-password-header">
+        <div class="auth-header">
             <h1>Change Password</h1>
             <p>
                 Enter and confirm your new password below.
@@ -28,7 +28,7 @@ $this->Html->script(
         <?= $this->Form->create(
             $user,
             [
-                'class' => 'change-password-form'
+                'class' => 'auth-form'
             ]
         ) ?>
 
@@ -38,60 +38,60 @@ $this->Html->script(
                 <?= __('Please enter a new password') ?>
             </legend>
 
-            <div class="change-password-field">
+            <div class="input password required">
                 <label for="password">New Password</label>
 
-                <div class="password-wrapper">
+                <div class="auth-password-wrapper">
+
                     <?= $this->Form->password('password', [
                         'required' => true,
                         'id' => 'password',
-                        'class' => 'change-password-input',
-                        'placeholder' => 'Enter your new password',
-                        'autocomplete' => 'new-password',
+                        'placeholder' => 'Enter your new password'
                     ]) ?>
 
                     <button
                         type="button"
-                        class="password-toggle"
-                        data-password-target="password"
+                        class="auth-password-toggle"
+                        data-password-toggle="password"
                         aria-label="Show password"
                     >
                         <i data-lucide="eye"></i>
                     </button>
+
                 </div>
             </div>
 
-            <div class="change-password-field">
+            <div class="input password required">
                 <label for="password-confirm">Confirm Password</label>
 
-                <div class="password-wrapper">
+                <div class="auth-password-wrapper">
+
                     <?= $this->Form->password('password_confirm', [
                         'required' => true,
                         'id' => 'password-confirm',
-                        'class' => 'change-password-input',
-                        'placeholder' => 'Confirm your new password',
-                        'autocomplete' => 'new-password',
+                        'placeholder' => 'Confirm your new password'
                     ]) ?>
 
                     <button
                         type="button"
-                        class="password-toggle"
-                        data-password-target="password-confirm"
+                        class="auth-password-toggle"
+                        data-password-toggle="password-confirm"
                         aria-label="Show password"
                     >
                         <i data-lucide="eye"></i>
                     </button>
+
                 </div>
             </div>
 
         </fieldset>
 
-        <div class="change-password-actions">
+        <div class="auth-actions">
 
             <?= $this->Form->button(
                 __('Save Password'),
                 [
-                    'class' => 'change-password-button'
+                    'class' => 'auth-button'
                 ]
             ) ?>
 
@@ -102,8 +102,7 @@ $this->Html->script(
                     'action' => 'profile'
                 ],
                 [
-                    'class' =>
-                        'change-password-button secondary'
+                    'class' => 'auth-button secondary'
                 ]
             ) ?>
 

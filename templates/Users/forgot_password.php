@@ -2,18 +2,18 @@
 $this->assign('title', 'Forgot Password');
 
 $this->Html->css(
-    'forgot_password',
+    'auth',
     ['block' => true]
 );
 ?>
 
-<div class="forgot-password-page">
+<div class="auth-page">
 
-    <div class="forgot-password-card">
+    <div class="auth-card">
 
         <?= $this->Flash->render() ?>
 
-        <div class="forgot-password-header">
+        <div class="auth-header">
             <h1>Forgot Password</h1>
 
             <p>
@@ -22,7 +22,7 @@ $this->Html->css(
         </div>
 
         <?= $this->Form->create(null, [
-            'class' => 'forgot-password-form'
+            'class' => 'auth-form'
         ]) ?>
 
         <?= $this->Form->control('email', [
@@ -32,12 +32,12 @@ $this->Html->css(
             'placeholder' => 'wendy@example.com',
         ]) ?>
 
-        <div class="forgot-password-actions">
+        <div class="auth-actions">
 
             <?= $this->Form->button(
                 'Reset Password',
                 [
-                    'class' => 'forgot-password-button'
+                    'class' => 'auth-button'
                 ]
             ) ?>
 
@@ -48,7 +48,7 @@ $this->Html->css(
                     'action' => 'login',
                 ],
                 [
-                    'class' => 'forgot-password-button secondary'
+                    'class' => 'auth-button secondary'
                 ]
             ) ?>
 
