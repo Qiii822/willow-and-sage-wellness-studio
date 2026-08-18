@@ -20,7 +20,8 @@ class UsersController extends AppController
         $this->Authentication->allowUnauthenticated([
             'login',
             'forgotPassword',
-        ]);    }
+        ]);
+    }
 
     /**
      * Login method
@@ -99,6 +100,28 @@ class UsersController extends AppController
         }
 
         $this->set('identity', $identity);
+    }
+    /**
+     * User Index method
+     *
+     * Lists all local users.
+     * Admin and superadmin only.
+     *
+     * @return void
+     */
+    public function index(): void
+    {
+        $this->requireAdmin();
+
+        $users = $this->Users
+            ->find()
+            ->orderBy([
+                'Users.first_name' => 'ASC',
+                'Users.surname' => 'ASC',
+            ])
+            ->all();
+
+        $this->set(compact('users'));
     }
 
     /**

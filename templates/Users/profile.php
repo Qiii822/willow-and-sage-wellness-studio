@@ -2,78 +2,108 @@
 $this->Html->css('profile', ['block' => true]);
 ?>
 
-<div class="users profile content">
-    <h3>Your Profile</h3>
+<div class="profile-page">
 
-    <?php
-        $displayName = $identity->name ?? trim(($identity->first_name ?? '') . ' ' . ($identity->surname ?? ''));
-    ?>
+    <div class="users profile content">
 
-    <table>
-        <tr>
-            <th><?= __('Name') ?></th>
-            <td><?= h($displayName) ?></td>
-        </tr>
-        <tr>
-            <th><?= __('Email') ?></th>
-            <td><?= h($identity->email ?? '') ?></td>
-        </tr>
-        <tr>
-            <th><?= __('Role') ?></th>
-            <td><?= h($identity->roles ?? $identity->role ?? '') ?></td>
-        </tr>
-    </table>
+        <h3>Your Profile</h3>
 
-    <div class="actions">
+        <?php
+        $displayName =
+            $identity->name
+            ?? trim(
+            ($identity->first_name ?? '') . ' ' .
+            ($identity->surname ?? '')
+        );
+        ?>
 
-        <?= $this->Html->link(
-            __('Back to Dashboard'),
-            [
-                'controller' => 'Dashboard',
-                'action' => 'index'
-            ],
-            [
-                'class' => 'button'
-            ]
-        ) ?>
+        <table>
+            <tr>
+                <th><?= __('Name') ?></th>
+                <td><?= h($displayName) ?></td>
+            </tr>
 
-        <?php $role = ($identity->roles ?? $identity->role ?? null); ?>
+            <tr>
+                <th><?= __('Email') ?></th>
+                <td><?= h($identity->email ?? '') ?></td>
+            </tr>
 
-        <?php if (in_array($role, ['admin', 'superadmin'], true)): ?>
+            <tr>
+                <th><?= __('Role') ?></th>
+                <td>
+                    <?= h(
+                        $identity->roles
+                        ?? $identity->role
+                        ?? ''
+                    ) ?>
+                </td>
+            </tr>
+        </table>
+
+        <div class="actions">
+
+            <?php
+            $role =
+                $identity->roles
+                ?? $identity->role
+                ?? null;
+            ?>
+
+            <?php if (in_array(
+                $role,
+                ['admin', 'superadmin'],
+                true
+            )): ?>
+
+                <?= $this->Html->link(
+                    __('Settings'),
+                    [
+                        'controller' => 'Users',
+                        'action' => 'settings'
+                    ],
+                    [
+                        'class' => 'button'
+                    ]
+                ) ?>
+
+            <?php endif; ?>
+
             <?= $this->Html->link(
-                __('Settings'),
+                __('Change Password'),
                 [
                     'controller' => 'Users',
-                    'action' => 'settings'
+                    'action' => 'changePassword'
                 ],
                 [
                     'class' => 'button'
                 ]
             ) ?>
-        <?php endif; ?>
 
-        <?= $this->Html->link(
-            __('Change Password'),
-            [
-                'controller' => 'Users',
-                'action' => 'changePassword'
-            ],
-            [
-                'class' => 'button'
-            ]
-        ) ?>
+            <?= $this->Form->postLink(
+                __('Logout'),
+                [
+                    'controller' => 'Users',
+                    'action' => 'logout'
+                ],
+                [
+                    'confirm' => __('Are you sure you want to logout?'),
+                    'class' => 'button logout-button'
+                ]
+            ) ?>
 
-        <?= $this->Form->postLink(
-            __('Logout'),
-            [
-                'controller' => 'Users',
-                'action' => 'logout'
-            ],
-            [
-                'confirm' => __('Are you sure you want to logout?'),
-                'class' => 'button'
-            ]
-        ) ?>
+        </div>
 
     </div>
+
+    <?= $this->Html->link(
+        '← Back to Dashboard',
+        [
+            'controller' => 'Dashboard',
+            'action' => 'index'
+        ],
+        [
+            'class' => 'profile-back'
+        ]
+    ) ?>
+
 </div>

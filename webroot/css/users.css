@@ -1,0 +1,173 @@
+body {
+    margin: 0;
+
+    color: var(--text-primary);
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: var(--background);
+}
+
+.users-page {
+    width: min(980px, calc(100% - 40px));
+
+    margin: 60px auto;
+}
+
+.users-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.users-header h1 {
+    margin: 0 0 8px;
+
+    color: var(--text-primary);
+    font-size: 30px;
+    font-weight: 750;
+    letter-spacing: -0.8px;
+}
+
+.users-header p {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.users-card {
+    padding: 28px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 22px;
+
+    box-shadow:
+        0 12px 36px rgba(72, 64, 58, 0.08);
+}
+
+.users-table {
+    width: 100%;
+
+    margin: 0;
+
+    border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+    padding: 16px 14px;
+
+    text-align: left;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.users-table th {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.users-table td {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.users-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-role {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 5px 9px;
+
+    color: var(--primary-dark);
+    font-size: 12px;
+    font-weight: 700;
+
+    background: var(--primary-light);
+    border-radius: 999px;
+}
+
+.user-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 5px 9px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    border-radius: 999px;
+}
+
+.user-status.active {
+    color: var(--green);
+
+    background: var(--green-light);
+}
+
+.user-status.inactive {
+    color: var(--danger);
+
+    background: #fff5f5;
+}
+
+.user-status-dot {
+    width: 7px;
+    height: 7px;
+
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.users-back {
+    display: inline-flex;
+
+    margin-top: 18px;
+
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.users-back:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+    .users-page {
+        width: calc(100% - 24px);
+
+        margin: 24px auto;
+    }
+
+    .users-card {
+        padding: 18px;
+        overflow-x: auto;
+    }
+
+    .users-table {
+        min-width: 700px;
+    }
+}

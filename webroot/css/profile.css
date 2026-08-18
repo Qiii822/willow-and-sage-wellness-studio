@@ -15,13 +15,20 @@ body {
     background: var(--background);
 }
 
-.users.profile.content {
-    width: min(760px, calc(100% - 40px));
+.profile-page {
+    width: min(820px, calc(100% - 40px));
 
-    margin: 70px auto;
-    padding: 32px;
+    margin: 60px auto;
+}
+
+.users.profile.content {
+    width: 100%;
+
+    margin: 0;
+    padding: 28px;
 
     background: var(--surface);
+
     border: 1px solid var(--border);
     border-radius: 22px;
 
@@ -33,12 +40,15 @@ body {
     margin: 0 0 28px;
 
     color: var(--text-primary);
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 750;
-    letter-spacing: -0.7px;
+    letter-spacing: -0.8px;
 }
 
-/* Profile table */
+
+/* =========================================================
+   Profile table
+   ========================================================= */
 
 .users.profile table {
     width: 100%;
@@ -76,7 +86,10 @@ body {
     border-bottom: none;
 }
 
-/* Actions */
+
+/* =========================================================
+   Actions
+   ========================================================= */
 
 .users.profile .actions {
     display: flex;
@@ -100,14 +113,15 @@ body {
     text-decoration: none;
 
     background: var(--primary);
+
     border: none;
     border-radius: 12px;
 
     cursor: pointer;
 
     transition:
-        transform 0.2s ease,
-        background 0.2s ease;
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
 .users.profile .button:hover {
@@ -118,30 +132,58 @@ body {
     transform: translateY(-1px);
 }
 
-/* Logout slightly different */
 
-.users.profile .actions form {
-    margin: 0;
+/* Logout */
+
+.users.profile .logout-button {
+    color: #b45c5c;
+
+    background: #fff5f5;
+    border: 1px solid #efd0d0;
 }
 
-.users.profile .actions form .button {
-    background: var(--danger);
+.users.profile .logout-button:hover {
+    color: #b45c5c;
+
+    background: #fdeaea;
+    border-color: #e6bcbc;
 }
 
-.users.profile .actions form .button:hover {
-    background: #b45c5c;
+
+/* =========================================================
+   Back link
+   ========================================================= */
+
+.profile-back {
+    display: inline-flex;
+
+    margin-top: 18px;
+
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
 }
 
-/* Mobile */
+.profile-back:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
 
 @media (max-width: 640px) {
-    .users.profile.content {
+    .profile-page {
         width: calc(100% - 24px);
 
         margin: 24px auto;
-        padding: 22px;
+    }
 
-        border-radius: 18px;
+    .users.profile.content {
+        padding: 20px;
     }
 
     .users.profile.content h3 {

@@ -212,10 +212,10 @@ $isSuperAdmin = $role === 'superadmin';
 
 
     <?= $this->Html->link(
-        '← Back to Profile',
+        '← Back to Dashboard',
         [
-            'controller' => 'Users',
-            'action' => 'profile'
+            'controller' => 'Dashboard',
+            'action' => 'index'
         ],
         [
             'class' => 'settings-back'

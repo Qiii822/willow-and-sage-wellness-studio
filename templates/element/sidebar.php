@@ -2,19 +2,44 @@
 $controller = $this->request->getParam('controller');
 $action = $this->request->getParam('action');
 
-$isDashboard = $controller === 'Dashboard' && $action === 'index';
-$isSettings = $controller === 'Users' && $action === 'settings';
-?>
-<aside class="sidebar">
-    <div class="logo">
-        <div class="logo-icon">W</div>
+$identity = $this->request->getAttribute('identity');
+$role = $identity->roles ?? $identity->role ?? null;
 
-        <div>
+$isDashboard =
+    $controller === 'Dashboard' &&
+    $action === 'index';
+
+$isUsers =
+    $controller === 'Users' &&
+    $action === 'index';
+
+$isSettings =
+    $controller === 'Users' &&
+    $action === 'settings';
+?>
+
+<aside class="sidebar">
+
+    <div class="logo">
+        <?= $this->Html->link(
+            '<div class="logo-icon">W</div>
+        <div class="logo-text">
             <h2>Wendy</h2>
             <span>Admin Dashboard</span>
-        </div>
+        </div>',
+            [
+                'controller' => 'Users',
+                'action' => 'profile'
+            ],
+            [
+                'escape' => false,
+                'class' => 'logo-link'
+            ]
+        ) ?>
     </div>
+
     <ul class="sidebar-nav">
+
         <li class="<?= $isDashboard ? 'active' : '' ?>">
             <?= $this->Html->link(
                 '<i data-lucide="layout-dashboard"></i><span>Dashboard</span>',
@@ -29,7 +54,27 @@ $isSettings = $controller === 'Users' && $action === 'settings';
             ) ?>
         </li>
 
+        <?php if (in_array(
+            $role,
+            ['admin', 'superadmin'],
+            true
+        )): ?>
 
+            <li class="<?= $isUsers ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="users"></i><span>Users</span>',
+                    [
+                        'controller' => 'Users',
+                        'action' => 'index'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
+
+        <?php endif; ?>
 
         <li class="<?= $isSettings ? 'active' : '' ?>">
             <?= $this->Html->link(
@@ -44,11 +89,20 @@ $isSettings = $controller === 'Users' && $action === 'settings';
                 ]
             ) ?>
         </li>
+
     </ul>
 
     <div class="logout-section">
-        <?= $this->Form->create(null, ['url' => ['controller' => 'Users', 'action' => 'logout']]) ?>
+        <?= $this->Form->create(null, [
+            'url' => [
+                'controller' => 'Users',
+                'action' => 'logout'
+            ]
+        ]) ?>
+
         <?= $this->Form->button('Logout') ?>
+
         <?= $this->Form->end() ?>
     </div>
+
 </aside>
