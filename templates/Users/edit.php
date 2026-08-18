@@ -1,0 +1,146 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\User $user
+ */
+
+$this->assign('title', 'Edit User');
+
+$this->Html->css(
+    'users',
+    ['block' => true]
+);
+
+$identity = $this->request->getAttribute('identity');
+$currentRole = $identity->roles ?? $identity->role ?? null;
+$isSuperAdmin = $currentRole === 'superadmin';
+?>
+
+<div class="users-page">
+
+    <div class="users-header">
+        <div>
+            <h1>Edit User</h1>
+            <p>Update local user account details.</p>
+        </div>
+    </div>
+
+    <div class="users-card">
+
+        <?= $this->Form->create($user) ?>
+
+        <?= $this->Form->control('first_name', [
+            'label' => 'First Name',
+            'required' => true,
+        ]) ?>
+
+        <?= $this->Form->control('surname', [
+            'label' => 'Surname',
+            'required' => true,
+        ]) ?>
+
+        <?= $this->Form->control('email', [
+            'type' => 'email',
+            'label' => 'Email',
+            'required' => true,
+        ]) ?>
+
+        <?php if ($isSuperAdmin): ?>
+
+            <?= $this->Form->control('roles', [
+                'type' => 'select',
+                'label' => 'Role',
+                'options' => [
+                    'user' => 'User',
+                    'admin' => 'Admin',
+                    'superadmin' => 'Superadmin',
+                ],
+            ]) ?>
+
+        <?php else: ?>
+
+            <div class="user-readonly-field">
+                <label>Role</label>
+
+                <div class="user-readonly-value">
+                    <?= h(ucfirst($user->roles ?? '')) ?>
+                </div>
+            </div>
+
+        <?php endif; ?>
+
+        <div class="user-active-field">
+
+            <?= $this->Form->control('active', [
+                'type' => 'checkbox',
+                'label' => 'Active',
+            ]) ?>
+
+        </div>
+
+        <div class="user-actions-row">
+
+            <div class="user-form-actions">
+
+                <?= $this->Form->button(
+                    'Save Changes',
+                    [
+                        'class' => 'user-form-button'
+                    ]
+                ) ?>
+
+                <?= $this->Html->link(
+                    'Cancel',
+                    [
+                        'controller' => 'Users',
+                        'action' => 'view',
+                        $user->id
+                    ],
+                    [
+                        'class' => 'user-form-button secondary'
+                    ]
+                ) ?>
+
+            </div>
+
+        </div>
+
+        <?= $this->Form->end() ?>
+
+        <?php if ($isSuperAdmin): ?>
+
+            <div class="user-delete-actions">
+
+                <?= $this->Form->postLink(
+                    'Delete User',
+                    [
+                        'controller' => 'Users',
+                        'action' => 'delete',
+                        $user->id
+                    ],
+                    [
+                        'confirm' => __(
+                            'Are you sure you want to delete this user?'
+                        ),
+                        'class' => 'user-form-button danger'
+                    ]
+                ) ?>
+
+            </div>
+
+        <?php endif; ?>
+
+    </div>
+
+    <?= $this->Html->link(
+        '← Back to Users',
+        [
+            'controller' => 'Users',
+            'action' => 'index'
+        ],
+        [
+            'class' => 'users-back'
+        ]
+    ) ?>
+
+</div>

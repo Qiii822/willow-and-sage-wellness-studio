@@ -208,3 +208,330 @@ body {
 
     transform: translateY(-1px);
 }
+
+.users-card form {
+    margin: 0;
+}
+
+.users-card .input {
+    margin-bottom: 18px;
+}
+
+.users-card label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.users-card input,
+.users-card select {
+    width: 100%;
+    min-height: 46px;
+
+    margin: 0;
+    padding: 10px 12px;
+
+    color: var(--text-primary);
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    box-sizing: border-box;
+}
+
+.users-card input:focus,
+.users-card select:focus {
+    border-color: var(--primary);
+
+    outline: none;
+
+    box-shadow:
+        0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+.user-form-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.user-form-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+    padding: 0 16px;
+    margin: 0;
+
+    color: var(--on-primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+
+    background: var(--primary);
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+}
+
+.user-form-button:hover {
+    color: var(--on-primary);
+
+    background: var(--primary-dark);
+}
+
+.user-form-button.secondary {
+    color: var(--primary-dark);
+
+    background: var(--primary-light);
+    border: 1px solid var(--border);
+}
+
+.user-form-button.secondary:hover {
+    color: var(--primary-dark);
+
+    background: #e8dfd6;
+}
+
+/* =========================================================
+   Read-only field
+   ========================================================= */
+
+.user-readonly-field {
+    margin-bottom: 18px;
+}
+
+.user-readonly-field label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.user-readonly-value {
+    display: flex;
+    align-items: center;
+
+    min-height: 46px;
+    padding: 10px 12px;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+
+    background: var(--primary-light);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+
+/* =========================================================
+   Active checkbox
+   ========================================================= */
+
+.user-active-field {
+    margin-top: 20px;
+    margin-bottom: 18px;
+}
+
+.user-active-field .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-active-field input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-height: 0;
+
+    margin: 0;
+
+    accent-color: var(--primary);
+}
+
+.user-active-field label {
+    margin: 0;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-create-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+    padding: 0 16px;
+
+    color: var(--on-primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+
+    background: var(--primary);
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.user-create-button:hover,
+.user-create-button:focus,
+.user-create-button:active,
+.user-create-button:visited {
+    color: var(--on-primary);
+    text-decoration: none;
+}
+
+.user-create-button:hover {
+    background: var(--primary-dark);
+
+    transform: translateY(-1px);
+}
+
+.user-password-field {
+    margin-bottom: 18px;
+}
+
+.user-password-field > label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.user-password-wrapper {
+    position: relative;
+}
+
+.user-password-input {
+    width: 100%;
+    min-height: 46px;
+
+    margin: 0;
+    padding: 10px 48px 10px 12px;
+
+    color: var(--text-primary);
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    box-sizing: border-box;
+}
+
+.user-password-input:focus {
+    border-color: var(--primary);
+
+    outline: none;
+
+    box-shadow:
+        0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+.user-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    margin: 0;
+    padding: 0;
+
+    color: var(--text-secondary);
+
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    transform: translateY(-50%);
+}
+
+.user-password-toggle:hover {
+    color: var(--primary-dark);
+    background: var(--primary-light);
+}
+
+.user-password-toggle svg {
+    width: 18px;
+    height: 18px;
+
+    stroke-width: 1.8;
+}
+
+.user-form-button.danger {
+    color: #b45c5c;
+
+    background: #fff5f5;
+    border: 1px solid #efd0d0;
+}
+
+.user-form-button.danger:hover {
+    color: #b45c5c;
+
+    background: #fdeaea;
+    border-color: #e6bcbc;
+}
+
+.user-delete-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: -42px;
+}
+
+.user-delete-actions form {
+    margin: 0;
+}
+
+.user-form-button.danger {
+    color: #b45c5c;
+
+    background: #fff5f5;
+    border: 1px solid #efd0d0;
+}
+
+.user-form-button.danger:hover {
+    color: #b45c5c;
+
+    background: #fdeaea;
+    border-color: #e6bcbc;
+}

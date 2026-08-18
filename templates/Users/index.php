@@ -10,6 +10,12 @@ $this->Html->css(
     'users',
     ['block' => true]
 );
+
+$identity = $this->request->getAttribute('identity');
+
+$currentUserId = $identity->id ?? null;
+
+$currentRole = $identity->roles ?? $identity->role ?? null;
 ?>
 
 <div class="users-page">
@@ -23,6 +29,17 @@ $this->Html->css(
                 Manage local users and administrator accounts.
             </p>
         </div>
+
+        <?= $this->Html->link(
+            'Create User',
+            [
+                'controller' => 'Users',
+                'action' => 'add'
+            ],
+            [
+                'class' => 'user-create-button'
+            ]
+        ) ?>
 
     </div>
 
@@ -102,17 +119,57 @@ $this->Html->css(
                         </td>
 
                         <td>
-                            <?= $this->Html->link(
-                                'View',
-                                [
-                                    'controller' => 'Users',
-                                    'action' => 'view',
-                                    $user->id
-                                ],
-                                [
-                                    'class' => 'user-action-link'
-                                ]
-                            ) ?>
+                            <div class="user-actions">
+
+                                <?= $this->Html->link(
+                                    'View',
+                                    [
+                                        'controller' => 'Users',
+                                        'action' => 'view',
+                                        $user->id
+                                    ],
+                                    [
+                                        'class' => 'user-action-link'
+                                    ]
+                                ) ?>
+
+                                <?php
+                                $targetRole =
+                                    $user->roles
+                                    ?? $user->role
+                                    ?? null;
+
+                                $canEdit =
+                                    $currentRole === 'superadmin'
+                                    ||
+                                    (
+                                        $currentRole === 'admin'
+                                        &&
+                                        (
+                                            $targetRole === 'user'
+                                            ||
+                                            (string)$currentUserId === (string)$user->id
+                                        )
+                                    );
+                                ?>
+
+                                <?php if ($canEdit): ?>
+
+                                    <?= $this->Html->link(
+                                        'Edit',
+                                        [
+                                            'controller' => 'Users',
+                                            'action' => 'edit',
+                                            $user->id
+                                        ],
+                                        [
+                                            'class' => 'user-action-link'
+                                        ]
+                                    ) ?>
+
+                                <?php endif; ?>
+
+                            </div>
                         </td>
 
                     </tr>

@@ -144,6 +144,182 @@ class UsersController extends AppController
         $this->set(compact('user'));
     }
 
+    /**
+     * Edit User method
+     *
+     * Admins can edit normal users and themselves.
+     * Superadmins can edit all users.
+     *
+     * @param string|null $id User id.
+     * @return \Cake\Http\Response|null|void
+     */
+    public function edit(?string $id = null)
+    {
+        $this->requireAdmin();
+
+        $identity = $this->request->getAttribute('identity');
+
+        $currentUserId = $identity->id ?? null;
+        $currentRole = $identity->roles ?? $identity->role ?? null;
+
+        $user = $this->Users->get($id);
+
+        $targetRole = $user->roles ?? $user->role ?? null;
+
+        // Admins can only edit normal users or themselves.
+        if ($currentRole === 'admin') {
+            $isEditingSelf =
+                (string)$currentUserId === (string)$user->id;
+
+            $isEditingNormalUser =
+                $targetRole === 'user';
+
+            if (!$isEditingSelf && !$isEditingNormalUser) {
+                throw new \Cake\Http\Exception\ForbiddenException(
+                    'You do not have permission to edit this user.'
+                );
+            }
+        }
+
+        $isSuperAdmin = $currentRole === 'superadmin';
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $data = $this->request->getData();
+
+            // Only superadmins can change roles.
+            if (!$isSuperAdmin) {
+                unset($data['roles']);
+            }
+
+            $user = $this->Users->patchEntity(
+                $user,
+                $data
+            );
+
+            if ($this->Users->save($user)) {
+                $this->Flash->success(
+                    'The user has been updated.'
+                );
+
+                return $this->redirect([
+                    'controller' => 'Users',
+                    'action' => 'view',
+                    $user->id
+                ]);
+            }
+
+            $this->Flash->error(
+                'The user could not be updated. Please try again.'
+            );
+        }
+
+        $this->set(compact('user'));
+    }
+
+    /**
+     * Add User method
+     *
+     * Admins can create normal users.
+     * Superadmins can create users, admins and superadmins.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
+    public function add()
+    {
+        $this->requireAdmin();
+
+        $identity = $this->request->getAttribute('identity');
+        $currentRole = $identity->roles ?? $identity->role ?? null;
+
+        $isSuperAdmin = $currentRole === 'superadmin';
+
+        $user = $this->Users->newEmptyEntity();
+
+        if ($this->request->is('post')) {
+
+            $data = $this->request->getData();
+
+            /*
+             * Admins may only create normal users.
+             * Superadmins may choose any role.
+             */
+            if (!$isSuperAdmin) {
+                $data['roles'] = 'user';
+            }
+
+            $user = $this->Users->patchEntity(
+                $user,
+                $data
+            );
+
+            if ($this->Users->save($user)) {
+                $this->Flash->success(
+                    'The user has been created.'
+                );
+
+                return $this->redirect([
+                    'controller' => 'Users',
+                    'action' => 'index'
+                ]);
+            }
+
+            $errors = $user->getErrors();
+            $this->set(compact('errors'));
+
+            $this->Flash->error(
+                'The user could not be created. Please correct the errors below.'
+            );
+        }
+
+        $this->set(compact(
+            'user',
+            'isSuperAdmin'
+        ));
+    }
+
+    /**
+     * Delete User method
+     *
+     * Only superadmins can delete users.
+     *
+     * @param string|null $id User id.
+     * @return \Cake\Http\Response|null
+     */
+    public function delete(?string $id = null)
+    {
+        $this->requireAdmin();
+
+        $identity = $this->request->getAttribute('identity');
+        $currentRole = $identity->roles ?? $identity->role ?? null;
+
+        // Only superadmins can delete users.
+        if ($currentRole !== 'superadmin') {
+            throw new \Cake\Http\Exception\ForbiddenException(
+                'Only superadmins can delete users.'
+            );
+        }
+
+        $this->request->allowMethod(['post', 'delete']);
+
+        $user = $this->Users->get($id);
+
+        if ($this->Users->delete($user)) {
+            $this->Flash->success(
+                'The user has been deleted.'
+            );
+        } else {
+            $this->Flash->error(
+                'The user could not be deleted. Please try again.'
+            );
+        }
+
+        return $this->redirect([
+            'controller' => 'Users',
+            'action' => 'index'
+        ]);
+    }
+
 
     /**
      * Change Password method
