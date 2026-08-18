@@ -124,6 +124,27 @@ class UsersController extends AppController
         $this->set(compact('users'));
     }
 
+
+    /**
+     * View User method
+     *
+     * Displays a single local user.
+     * Admin and superadmin only.
+     *
+     * @param string|null $id User id.
+     * @return void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException
+     */
+    public function view(?string $id = null): void
+    {
+        $this->requireAdmin();
+
+        $user = $this->Users->get($id);
+
+        $this->set(compact('user'));
+    }
+
+
     /**
      * Change Password method
      *

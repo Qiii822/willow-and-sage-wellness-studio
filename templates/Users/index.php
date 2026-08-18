@@ -39,6 +39,7 @@ $this->Html->css(
                     <th>Role</th>
                     <th>Status</th>
                     <th>Created</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
 
@@ -98,6 +99,20 @@ $this->Html->css(
                                 —
 
                             <?php endif; ?>
+                        </td>
+
+                        <td>
+                            <?= $this->Html->link(
+                                'View',
+                                [
+                                    'controller' => 'Users',
+                                    'action' => 'view',
+                                    $user->id
+                                ],
+                                [
+                                    'class' => 'user-action-link'
+                                ]
+                            ) ?>
                         </td>
 
                     </tr>

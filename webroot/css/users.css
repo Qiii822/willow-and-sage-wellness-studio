@@ -171,3 +171,40 @@ body {
         min-width: 700px;
     }
 }
+
+.user-action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 58px;
+    min-height: 34px;
+
+    padding: 0 12px;
+
+    color: var(--primary-dark);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+
+    background: var(--primary-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.user-action-link:hover {
+    color: var(--primary-dark);
+
+    background: #e8dfd6;
+    border-color: #d7ccc2;
+
+    transform: translateY(-1px);
+}
