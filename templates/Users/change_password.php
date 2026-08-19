@@ -50,6 +50,8 @@ $this->Html->script(
                     <?= $this->Form->password('password', [
                         'required' => true,
                         'id' => 'password',
+                        'value' => '',
+                        'autocomplete' => 'new-password',
                         'placeholder' => 'Enter your new password'
                     ]) ?>
 
@@ -75,6 +77,8 @@ $this->Html->script(
                     <?= $this->Form->password('password_confirm', [
                         'required' => true,
                         'id' => 'password-confirm',
+                        'value' => '',
+                        'autocomplete' => 'new-password',
                         'placeholder' => 'Confirm your new password'
                     ]) ?>
 

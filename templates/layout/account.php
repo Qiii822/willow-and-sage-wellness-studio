@@ -31,7 +31,10 @@
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@1.32.0/dist/umd/lucide.min.js"
+        integrity="sha384-tiWC3xExiSLdtFfMgETUmXUaC8RevUW8QlVQIH7p2XzwWAeYgnGiqSKD3KOLS7qk"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
 </head>
 
 <body>

@@ -51,6 +51,8 @@ $this->Html->css(
                 <?= $this->Form->password('password', [
                     'id' => 'password',
                     'required' => true,
+                    'value' => '',
+                    'autocomplete' => 'new-password',
                     'class' => 'user-password-input',
                 ]) ?>
 
@@ -78,6 +80,8 @@ $this->Html->css(
                 <?= $this->Form->password('password_confirm', [
                     'id' => 'password-confirm',
                     'required' => true,
+                    'value' => '',
+                    'autocomplete' => 'new-password',
                     'class' => 'user-password-input',
                 ]) ?>
 
