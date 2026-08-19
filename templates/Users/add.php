@@ -65,6 +65,8 @@ $this->Html->css(
 
             </div>
 
+            <?= $this->Form->error('password') ?>
+
         </div>
 
         <div class="user-password-field">
@@ -89,6 +91,8 @@ $this->Html->css(
                 </button>
 
             </div>
+
+            <?= $this->Form->error('password_confirm') ?>
 
         </div>
 

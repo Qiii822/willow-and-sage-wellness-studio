@@ -614,3 +614,13 @@ body {
         transform: translateY(0) scale(1);
     }
 }
+
+/* =========================================================
+   Password field validation error
+   ========================================================= */
+
+.user-password-field .error-message {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+}

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\User $user
+ */
 $this->assign('title', 'Change Password');
 
 $this->Html->css(
@@ -59,6 +63,8 @@ $this->Html->script(
                     </button>
 
                 </div>
+
+                <?= $this->Form->error('password') ?>
             </div>
 
             <div class="input password required">
@@ -82,6 +88,8 @@ $this->Html->script(
                     </button>
 
                 </div>
+
+                <?= $this->Form->error('password_confirm') ?>
             </div>
 
         </fieldset>

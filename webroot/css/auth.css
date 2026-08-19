@@ -280,3 +280,13 @@
         width: 100%;
     }
 }
+
+/* =========================================================
+   Password field validation error
+   ========================================================= */
+
+.input.password .error-message {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+}
