@@ -1,6 +1,7 @@
 <?php
 /**
  * @var \App\View\AppView $this
+ * @var \App\Model\Entity\User|null $identity
  * @var string $selectedDate
  */
 
@@ -10,9 +11,9 @@ $today = \Cake\I18n\FrozenDate::today()
 
 <div class="top-bar">
     <div>
-        <h1>Welcome back, Wendy</h1>
+        <h1>Welcome back, <?= h($identity->first_name ?? '') ?></h1>
         <p class="subtitle">
-            Here's what's happening with your business today.
+            Here's what's happening with the business today.
         </p>
     </div>
 

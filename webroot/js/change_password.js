@@ -6,14 +6,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const toggleButtons =
-        document.querySelectorAll('.password-toggle');
+        document.querySelectorAll('.auth-password-toggle');
 
     toggleButtons.forEach(function (button) {
 
         button.addEventListener('click', function () {
 
             const targetId =
-                button.dataset.passwordTarget;
+                button.dataset.passwordToggle;
 
             const passwordInput =
                 document.getElementById(targetId);
