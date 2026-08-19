@@ -149,19 +149,7 @@ class AuthController extends AppController
             $tokenPayload = $accessToken->jsonSerialize();
             $merchantId = $tokenPayload['merchant_id'] ?? null;
 
-            // Verify the merchant is authorized.
-            // We do this because we only want access to our client's Square account.
-            if ($merchantId !== env('SQUARE_AUTHORIZED_MERCHANT_ID')) {
-                // Wrong merchant, reject.
-                $session->delete('oauth2state');
-                $session->delete('oauth2pkceCode');
-                throw new ForbiddenException(
-                    'This Square account is not authorized to access this application.'
-                );
-            }
-
-            // Correct merchant - persist the tokens (encrypted) as the app's
-            // single active Square connection.
+            // Encrypt and persist the tokens to the database
             $identityId = $this->squareAuth->saveSquareTokens($tokenPayload);
             \Cake\Log\Log::debug('Identity saved: ' . $identityId);
 
