@@ -75,20 +75,29 @@ $isSettings =
 
         <?php endif; ?>
 
-        <li class="<?= $isSettings ? 'active' : '' ?>">
-            <?= $this->Html->link(
-                '<i data-lucide="settings"></i><span>Settings</span>',
-                [
-                    'controller' => 'Users',
-                    'action' => 'settings'
-                ],
-                [
-                    'escape' => false,
-                    'class' => 'sidebar-link'
-                ]
-            ) ?>
-        </li>
 
+        <?php if (in_array(
+            $role,
+            ['admin', 'superadmin'],
+            true
+        )): ?>
+
+            <li class="<?= $isSettings ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="settings"></i><span>Settings</span>',
+                    [
+                        'controller' => 'Users',
+                        'action' => 'settings'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
+
+        <?php endif; ?>
+        
     </ul>
 
     <div class="logout-section">
