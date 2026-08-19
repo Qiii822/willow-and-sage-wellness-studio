@@ -24,8 +24,7 @@ $isSettings =
         <?= $this->Html->link(
             '<div class="logo-icon">W</div>
         <div class="logo-text">
-            <h2>Wendy</h2>
-            <span>Admin Dashboard</span>
+            <h2>' . h($identity->first_name ?? '') . '</h2>
         </div>',
             [
                 'controller' => 'Users',

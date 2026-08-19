@@ -10,6 +10,7 @@ class DashboardController extends AppController
 {
     public function index(): Response
     {
+        $identity = $this->request->getAttribute('identity');
         $customersTable = $this->fetchTable('Customers');
 
         // Selected dashboard date.
@@ -52,6 +53,7 @@ class DashboardController extends AppController
 
         // Send data to dashboard
         $this->set(compact(
+            'identity',
             'selectedDate',
             'totalCustomers',
             'customersSelectedDate',
