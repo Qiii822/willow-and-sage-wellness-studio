@@ -166,13 +166,11 @@ class UsersController extends AppController
 
         $targetRole = $user->roles ?? $user->role ?? null;
 
+        $isEditingSelf = (string)$currentUserId === (string)$user->id;
+
         // Admins can only edit normal users or themselves.
         if ($currentRole === 'admin') {
-            $isEditingSelf =
-                (string)$currentUserId === (string)$user->id;
-
-            $isEditingNormalUser =
-                $targetRole === 'user';
+            $isEditingNormalUser = $targetRole === 'user';
 
             if (!$isEditingSelf && !$isEditingNormalUser) {
                 throw new \Cake\Http\Exception\ForbiddenException(
@@ -187,8 +185,9 @@ class UsersController extends AppController
 
             $data = $this->request->getData();
 
-            // Only superadmins can change roles.
-            if (!$isSuperAdmin) {
+            // Only superadmins can change roles, and never their own,
+            // nobody should be able to change their own role
+            if (!$isSuperAdmin || $isEditingSelf) {
                 unset($data['roles']);
             }
 
@@ -214,7 +213,7 @@ class UsersController extends AppController
             );
         }
 
-        $this->set(compact('user'));
+        $this->set(compact('user', 'isSuperAdmin', 'isEditingSelf'));
     }
 
     /**
