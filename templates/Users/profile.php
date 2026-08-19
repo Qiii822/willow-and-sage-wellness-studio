@@ -1,3 +1,7 @@
+<?php
+$this->Html->css('profile', ['block' => true]);
+?>
+
 <div class="users profile content">
     <h3>Your Profile</h3>
 
@@ -21,11 +25,55 @@
     </table>
 
     <div class="actions">
+
+        <?= $this->Html->link(
+            __('Back to Dashboard'),
+            [
+                'controller' => 'Dashboard',
+                'action' => 'index'
+            ],
+            [
+                'class' => 'button'
+            ]
+        ) ?>
+
         <?php $role = ($identity->roles ?? $identity->role ?? null); ?>
+
         <?php if (in_array($role, ['admin', 'superadmin'], true)): ?>
-            <?= $this->Html->link(__('Settings'), ['controller' => 'Users', 'action' => 'settings'], ['class' => 'button']) ?>
+            <?= $this->Html->link(
+                __('Settings'),
+                [
+                    'controller' => 'Users',
+                    'action' => 'settings'
+                ],
+                [
+                    'class' => 'button'
+                ]
+            ) ?>
         <?php endif; ?>
-        <?= $this->Html->link(__('Reset Password'), ['controller' => 'Users', 'action' => 'changePassword'], ['class' => 'button']) ?>
-        <?= $this->Form->postLink(__('Logout'), ['controller' => 'Users', 'action' => 'logout'], ['confirm' => __('Are you sure you want to logout?'), 'class' => 'button']) ?>
+
+        <?= $this->Html->link(
+            __('Change Password'),
+            [
+                'controller' => 'Users',
+                'action' => 'changePassword'
+            ],
+            [
+                'class' => 'button'
+            ]
+        ) ?>
+
+        <?= $this->Form->postLink(
+            __('Logout'),
+            [
+                'controller' => 'Users',
+                'action' => 'logout'
+            ],
+            [
+                'confirm' => __('Are you sure you want to logout?'),
+                'class' => 'button'
+            ]
+        ) ?>
+
     </div>
 </div>

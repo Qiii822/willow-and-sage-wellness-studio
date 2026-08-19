@@ -1,0 +1,135 @@
+.card {
+    position: relative;
+
+    height: 100%;
+    padding: 23px;
+
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: var(--card-radius);
+
+    box-shadow: var(--shadow);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 14px 34px rgba(72, 64, 58, 0.10);
+}
+
+.card h3 {
+    margin: 0 0 14px;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.card h2 {
+    margin: 0 0 12px;
+
+    font-size: 34px;
+    font-weight: 760;
+    letter-spacing: -0.9px;
+
+    white-space: nowrap;
+}
+
+.card p {
+    margin: 0;
+}
+
+/* Stats layout */
+
+.stats {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.stats > [class*="col-"] {
+    display: flex;
+}
+
+.stats .card {
+    width: 100%;
+}
+
+/* Card header */
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.stat-header h3 {
+    margin: 0;
+}
+
+/* Icons */
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+
+    flex-shrink: 0;
+
+    border-radius: 14px;
+}
+
+.stat-icon svg {
+    width: 22px;
+    height: 22px;
+
+    stroke-width: 1.9;
+}
+
+.icon-blue {
+    color: var(--blue);
+    background: var(--blue-light);
+}
+
+.icon-green {
+    color: var(--green);
+    background: var(--green-light);
+}
+
+.icon-amber {
+    color: var(--amber);
+    background: var(--amber-light);
+}
+
+/* Growth badge */
+
+.positive {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    width: fit-content;
+
+    padding: 5px 9px;
+
+    color: #64806c;
+    font-size: 13px;
+    font-weight: 700;
+
+    background: #edf3ee;
+    border: 1px solid #d8e5dc;
+    border-radius: 999px;
+}

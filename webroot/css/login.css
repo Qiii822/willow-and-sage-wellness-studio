@@ -1,0 +1,453 @@
+/* Remove CakePHP default layout width/padding on login page */
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    background: var(--background);
+}
+
+main.main {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+
+    margin: 0;
+    padding: 0;
+}
+
+main.main > .container {
+    width: 100%;
+    max-width: none;
+
+    margin: 0;
+    padding: 0;
+}
+
+/* =========================================================
+   Page
+   ========================================================= */
+
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 40px 24px;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(210, 198, 186, 0.25),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 85% 80%,
+            rgba(226, 218, 209, 0.28),
+            transparent 26%
+        ),
+        var(--background);
+}
+
+/* =========================================================
+   Outer panel
+   ========================================================= */
+
+.login-shell {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+
+    width: min(1040px, 100%);
+    min-height: 620px;
+
+    overflow: hidden;
+
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 30px;
+
+    box-shadow:
+        0 24px 70px rgba(72, 64, 58, 0.10);
+}
+
+/* =========================================================
+   Left side
+   ========================================================= */
+
+.login-visual {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 54px;
+
+    color: var(--text-primary);
+
+    background:
+        linear-gradient(
+            145deg,
+            #f1ece6 0%,
+            #e8dfd6 100%
+        );
+}
+
+.login-visual::after {
+    content: "";
+
+    position: absolute;
+    right: -80px;
+    bottom: -80px;
+
+    width: 260px;
+    height: 260px;
+
+    background: rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
+}
+
+.login-brand {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.login-brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 48px;
+
+    color: var(--on-primary);
+    font-size: 18px;
+    font-weight: 700;
+
+    background: var(--primary);
+    border-radius: 15px;
+
+    box-shadow:
+        0 8px 20px rgba(139, 126, 116, 0.18);
+}
+
+.login-brand strong {
+    font-size: 19px;
+    letter-spacing: -0.3px;
+}
+
+.login-copy {
+    position: relative;
+    z-index: 1;
+
+    max-width: 410px;
+}
+
+.login-copy h2 {
+    margin: 0 0 16px;
+
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -1.4px;
+}
+
+.login-copy p {
+    margin: 0;
+
+    color: #665f59;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.login-meta {
+    position: relative;
+    z-index: 1;
+
+    color: #796f68;
+    font-size: 13px;
+}
+
+/* =========================================================
+   Right side
+   ========================================================= */
+
+.login-form-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 56px 48px;
+
+    background: var(--panel);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.login-header {
+    margin-bottom: 34px;
+}
+
+.login-header h1 {
+    margin: 0 0 8px;
+
+    color: var(--text-primary);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+}
+
+.login-header p {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   Form
+   ========================================================= */
+
+.login-form {
+    margin: 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.login-form .form-control {
+    width: 100%;
+    min-height: 50px;
+
+    padding: 12px 14px;
+
+    color: var(--text-primary);
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.login-form .form-control::placeholder {
+    color: #aaa39d;
+}
+
+.login-form .form-control:focus {
+    background: var(--surface);
+    border-color: #b6a89d;
+
+    box-shadow:
+        0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+/* =========================================================
+   Password
+   ========================================================= */
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper .form-control {
+    width: 100%;
+    min-height: 50px;
+
+    padding: 12px 52px 12px 14px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 38%;
+    right: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+
+    margin: 0;
+    padding: 0;
+
+    color: var(--text-secondary);
+
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    transform: translateY(-50%);
+    line-height: 1;
+}
+
+.password-toggle:hover {
+    color: var(--primary-dark);
+    background: var(--primary-light);
+}
+
+.password-toggle svg {
+    display: block;
+
+    width: 18px;
+    height: 18px;
+
+    margin: 0;
+    padding: 0;
+
+    stroke-width: 1.8;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   Button
+   ========================================================= */
+
+.login-button {
+    width: 100%;
+    min-height: 50px;
+
+    margin-top: 6px;
+
+    color: var(--on-primary);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+
+    background: var(--primary);
+
+    border: 0;
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 18px rgba(139, 126, 116, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.login-button:hover {
+    background: var(--primary-dark);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 12px 24px rgba(139, 126, 116, 0.22);
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .login-shell {
+        grid-template-columns: 1fr;
+        max-width: 620px;
+    }
+
+    .login-visual {
+        min-height: 280px;
+        padding: 38px;
+    }
+
+    .login-copy h2 {
+        font-size: 34px;
+    }
+
+    .login-form-panel {
+        padding: 42px 34px;
+    }
+}
+
+@media (max-width: 576px) {
+    .login-page {
+        align-items: flex-start;
+
+        padding: 18px 12px;
+    }
+
+    .login-shell {
+        border-radius: 22px;
+    }
+
+    .login-visual {
+        min-height: 230px;
+        padding: 28px 24px;
+    }
+
+    .login-copy h2 {
+        font-size: 29px;
+    }
+
+    .login-copy p {
+        font-size: 14px;
+    }
+
+    .login-form-panel {
+        padding: 32px 22px;
+    }
+
+    .login-header h1 {
+        font-size: 27px;
+    }
+}
+
+.forgot-password-link {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: -6px;
+    margin-bottom: 18px;
+}
+
+.forgot-password-link a {
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.forgot-password-link a:hover {
+    text-decoration: underline;
+}

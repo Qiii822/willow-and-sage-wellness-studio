@@ -1,0 +1,185 @@
+/* =========================================================
+   Tablet
+   ========================================================= */
+
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-width: 210px;
+    }
+
+    .main-content {
+        padding: 30px 24px 50px;
+    }
+
+    .charts {
+        grid-template-columns: 1fr;
+    }
+
+    .top-bar {
+        flex-direction: column;
+    }
+
+    .top-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+}
+
+/* =========================================================
+   Small tablet
+   ========================================================= */
+
+@media (max-width: 820px) {
+    :root {
+        --sidebar-width: 190px;
+    }
+
+    .sidebar {
+        padding: 24px 14px;
+    }
+
+    .logo {
+        gap: 10px;
+    }
+
+    .logo-icon {
+        width: 42px;
+        height: 42px;
+    }
+
+    .logo h2 {
+        font-size: 18px;
+    }
+
+    .sidebar-nav li {
+        padding: 11px 10px;
+        font-size: 14px;
+    }
+}
+
+/* =========================================================
+   Phone
+   ========================================================= */
+
+@media (max-width: 640px) {
+    .dashboard-container {
+        display: block;
+    }
+
+    .sidebar {
+        position: static;
+
+        width: 100%;
+        min-height: auto;
+
+        padding: 18px;
+
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+        margin-bottom: 18px;
+    }
+
+    .sidebar-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .sidebar-nav li {
+        justify-content: flex-start;
+
+        min-height: 46px;
+        padding: 10px;
+    }
+
+    .logout-section {
+        margin-top: 16px;
+    }
+
+    .logout-section button {
+        text-align: center;
+    }
+
+    .main-content {
+        width: 100%;
+
+        margin-left: 0;
+        padding: 22px 14px 40px;
+    }
+
+    .top-bar {
+        gap: 18px;
+    }
+
+    .top-bar h1 {
+        font-size: 25px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .top-actions {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) 46px;
+
+        width: 100%;
+    }
+
+    .top-actions input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .export-btn {
+        grid-column: 1 / -1;
+
+        width: 100%;
+    }
+
+    .profile {
+        border-radius: 14px;
+    }
+
+    .card {
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .charts {
+        gap: 14px;
+    }
+
+    .chart-card {
+        min-height: 280px;
+    }
+
+    .chart-canvas-wrapper {
+        height: 220px;
+    }
+
+    .table-card {
+        overflow-x: auto;
+    }
+}
+
+/* =========================================================
+   Very small phone
+   ========================================================= */
+
+@media (max-width: 420px) {
+    .sidebar-nav {
+        grid-template-columns: 1fr;
+    }
+
+    .top-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .top-bar h1 {
+        font-size: 22px;
+    }
+}

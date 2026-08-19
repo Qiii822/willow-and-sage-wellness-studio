@@ -1,0 +1,41 @@
+:root {
+    --primary: #8b7e74;
+    --primary-dark: #71665e;
+    --primary-light: #f1ece6;
+
+    /* Text/icon color for content sitting on a --primary or --danger background */
+    --on-primary: #ffffff;
+
+    --background: #f3f0ec;
+    --surface: #ffffff;
+    --panel: #fbfaf8;
+
+    --text-primary: #2f2d2b;
+    --text-secondary: #77716c;
+
+    --border: #e5dfd9;
+
+    --success: #6d8b74;
+    --danger: #c96c6c;
+
+    --blue: #58728a;
+    --blue-light: #edf2f6;
+
+    --green: #64806c;
+    --green-light: #edf3ee;
+
+    --amber: #9a7b52;
+    --amber-light: #f6f0e7;
+
+    /* Sidebar nav hover/active text (5x in sidebar.css) */
+    --nav-text-active: #5f554e;
+
+    /* Topbar accent-button gradient start (2x in topbar.css, paired with --primary) */
+    --accent-gradient-start: #9c8d82;
+
+    --sidebar-width: 250px;
+    --card-radius: 22px;
+
+    --shadow:
+        0 8px 28px rgba(72, 64, 58, 0.07);
+}

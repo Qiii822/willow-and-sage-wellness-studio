@@ -1,0 +1,150 @@
+body {
+    margin: 0;
+
+    color: var(--text-primary);
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: var(--background);
+}
+
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.error-card {
+    width: min(520px, 100%);
+
+    padding: 40px 34px;
+
+    text-align: center;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+
+    box-shadow:
+        0 16px 44px rgba(72, 64, 58, 0.08);
+}
+
+.error-code {
+    margin-bottom: 10px;
+
+    color: var(--primary);
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -3px;
+}
+
+.error-card h1 {
+    margin: 0 0 12px;
+
+    color: var(--text-primary);
+    font-size: 28px;
+    font-weight: 750;
+    letter-spacing: -0.7px;
+}
+
+.error-card p {
+    max-width: 390px;
+
+    margin: 0 auto;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.error-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 46px;
+    min-height: 46px;
+
+    padding: 0 18px;
+    margin: 0;
+
+    color: var(--on-primary);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+
+    background: var(--primary);
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.error-button:hover {
+    color: var(--on-primary);
+
+    background: var(--primary-dark);
+
+    transform: translateY(-1px);
+}
+
+.error-button.secondary {
+    color: var(--primary-dark);
+
+    background: var(--primary-light);
+    border: 1px solid var(--border);
+}
+
+.error-button.secondary:hover {
+    background: #e8dfd6;
+}
+
+@media (max-width: 640px) {
+    .error-card {
+        padding: 30px 22px;
+    }
+
+    .error-code {
+        font-size: 54px;
+    }
+
+    .error-card h1 {
+        font-size: 24px;
+    }
+
+    .error-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .error-button {
+        width: 100%;
+    }
+}

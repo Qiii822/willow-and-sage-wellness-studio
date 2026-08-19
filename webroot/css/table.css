@@ -1,0 +1,137 @@
+.card.table-card {
+    margin-top: 22px;
+
+    height: fit-content !important;
+    min-height: 0 !important;
+
+    align-self: flex-start;
+}
+
+.table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.table-header h3 {
+    margin: 0 0 5px;
+
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.table-header p {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.table-action {
+    padding: 9px 14px;
+
+    color: var(--on-primary);
+    font-size: 13px;
+    font-weight: 700;
+
+
+    background: var(--primary);
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.table-action:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.table-responsive {
+    width: 100%;
+    height: auto;
+    overflow-x: auto;
+}
+
+.dashboard-table {
+    width: 100%;
+    min-width: 720px;
+    margin-bottom: 0;
+
+    border-collapse: collapse;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+    padding: 15px 12px;
+
+    text-align: left;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.dashboard-table th {
+    color: #5f5a56;
+    font-size: 12px;
+    font-weight: 750;
+
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-table td {
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.dashboard-table td:nth-child(3),
+.dashboard-table td:nth-child(4) {
+    font-weight: 650;
+}
+
+.dashboard-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.dashboard-table tbody tr:hover {
+    background: rgba(139, 126, 116, 0.04);
+}
+/* Status badges */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 64px;
+    height: 30px;
+
+    padding: 0 12px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    border-radius: 999px;
+}
+
+/* Active */
+.status-badge.active {
+    color: #285438;
+    background: #dcecdf;
+    border: 1px solid #bdd8c2;
+}
+
+/* New */
+.status-badge.new {
+    color: #34566d;
+    background: #deebf3;
+    border: 1px solid #bfd4e1;
+}

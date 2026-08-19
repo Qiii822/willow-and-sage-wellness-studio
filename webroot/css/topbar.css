@@ -1,0 +1,124 @@
+.top-bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-bottom: 30px;
+}
+
+.top-bar h1 {
+    margin: 0;
+
+    font-size: 31px;
+    font-weight: 750;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    margin: 8px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+.top-actions form {
+    margin: 0;
+}
+
+/* Date picker */
+
+.top-actions input {
+    min-height: 46px;
+    padding: 10px 14px;
+
+    color: var(--text-primary);
+
+    background: var(--surface);
+    box-shadow: 0 2px 8px rgba(72, 64, 58, 0.04);
+}
+
+/* Export button */
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 46px;
+    padding: 0 20px;
+
+    color: var(--on-primary);
+    font-weight: 700;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    var(--accent-gradient-start),
+                    var(--primary)
+            );
+
+    border: 1px solid transparent;
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    box-shadow:
+            0 8px 20px rgba(139, 126, 116, 0.20);
+
+    transition:
+            transform 0.2s ease,
+            background 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.export-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.export-btn svg {
+    width: 18px;
+    height: 18px;
+
+    stroke-width: 2;
+}
+
+/* Profile */
+
+.profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+
+    flex-shrink: 0;
+
+    color: var(--on-primary);
+    font-size: 18px;
+    font-weight: 700;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    var(--accent-gradient-start),
+                    var(--primary)
+            );
+
+    border-radius: 50%;
+
+    box-shadow:
+            0 8px 20px rgba(139, 126, 116, 0.18);
+}

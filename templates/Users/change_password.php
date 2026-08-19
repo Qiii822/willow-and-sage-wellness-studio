@@ -1,24 +1,115 @@
-<div class="users form content">
-    <?= $this->Flash->render() ?>
-    <h3>Change Password</h3>
-    <?= $this->Form->create($user) ?>
-    <fieldset>
-        <legend><?= __('Please enter a new password') ?></legend>
-        <?= $this->Form->control('password', [
-            'type' => 'password',
-            'required' => true,
-            'label' => __('New Password'),
-        ]) ?>
-        <?= $this->Form->control('password_confirm', [
-            'type' => 'password',
-            'required' => true,
-            'label' => __('Confirm Password'),
-        ]) ?>
-    </fieldset>
-    <?= $this->Form->button(__('Save Password')) ?>
-    <?= $this->Form->end() ?>
+<?php
+$this->assign('title', 'Change Password');
 
-    <div class="actions">
-        <?= $this->Html->link(__('Back to Profile'), ['controller' => 'Users', 'action' => 'profile'], ['class' => 'button']) ?>
+$this->Html->css(
+    'auth',
+    ['block' => true]
+);
+
+$this->Html->script(
+    'change_password',
+    ['block' => true]
+);
+?>
+
+<div class="auth-page">
+
+    <div class="auth-card">
+
+        <?= $this->Flash->render() ?>
+
+        <div class="auth-header">
+            <h1>Change Password</h1>
+            <p>
+                Enter and confirm your new password below.
+            </p>
+        </div>
+
+        <?= $this->Form->create(
+            $user,
+            [
+                'class' => 'auth-form'
+            ]
+        ) ?>
+
+        <fieldset>
+
+            <legend>
+                <?= __('Please enter a new password') ?>
+            </legend>
+
+            <div class="input password required">
+                <label for="password">New Password</label>
+
+                <div class="auth-password-wrapper">
+
+                    <?= $this->Form->password('password', [
+                        'required' => true,
+                        'id' => 'password',
+                        'placeholder' => 'Enter your new password'
+                    ]) ?>
+
+                    <button
+                        type="button"
+                        class="auth-password-toggle"
+                        data-password-toggle="password"
+                        aria-label="Show password"
+                    >
+                        <i data-lucide="eye"></i>
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="input password required">
+                <label for="password-confirm">Confirm Password</label>
+
+                <div class="auth-password-wrapper">
+
+                    <?= $this->Form->password('password_confirm', [
+                        'required' => true,
+                        'id' => 'password-confirm',
+                        'placeholder' => 'Confirm your new password'
+                    ]) ?>
+
+                    <button
+                        type="button"
+                        class="auth-password-toggle"
+                        data-password-toggle="password-confirm"
+                        aria-label="Show password"
+                    >
+                        <i data-lucide="eye"></i>
+                    </button>
+
+                </div>
+            </div>
+
+        </fieldset>
+
+        <div class="auth-actions">
+
+            <?= $this->Form->button(
+                __('Save Password'),
+                [
+                    'class' => 'auth-button'
+                ]
+            ) ?>
+
+            <?= $this->Html->link(
+                __('Back to Profile'),
+                [
+                    'controller' => 'Users',
+                    'action' => 'profile'
+                ],
+                [
+                    'class' => 'auth-button secondary'
+                ]
+            ) ?>
+
+        </div>
+
+        <?= $this->Form->end() ?>
+
     </div>
+
 </div>
