@@ -27,7 +27,9 @@ $isSuperAdmin = $currentRole === 'superadmin';
 
     <div class="users-card">
 
-        <?= $this->Form->create($user) ?>
+        <?= $this->Form->create($user, [
+            'id' => 'user-edit-form'
+        ]) ?>
 
         <?= $this->Form->control('first_name', [
             'label' => 'First Name',
@@ -141,6 +143,22 @@ $isSuperAdmin = $currentRole === 'superadmin';
         [
             'class' => 'users-back'
         ]
+    ) ?>
+
+    <div class="confirm-modal-overlay" id="save-confirm-overlay" hidden>
+        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="save-confirm-title">
+            <h2 id="save-confirm-title">Save changes?</h2>
+            <p>Are you sure you want to save these changes?</p>
+            <div class="confirm-modal-actions">
+                <button type="button" class="user-form-button secondary" id="save-confirm-cancel">Cancel</button>
+                <button type="button" class="user-form-button" id="save-confirm-ok">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <?= $this->Html->script(
+        'user_confirm',
+        ['block' => true]
     ) ?>
 
 </div>

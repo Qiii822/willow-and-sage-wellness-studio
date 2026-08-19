@@ -27,7 +27,7 @@ class UsersSeed extends BaseSeed
                 'first_name' => 'Wendy',
                 'surname' => 'S',
                 'password' => '$2y$12$aPC1zgtQ72XhWRc3eXoWJuer0PmrmIfTgD9Ut3cVOkUGQPY6SSoBO',
-                'role' => 'superadmin',
+                'roles' => 'superadmin',
                 'active' => true,
                 'created_at' => date('Y-m-d H:i:s'),
                 'modified' => date('Y-m-d H:i:s'),
