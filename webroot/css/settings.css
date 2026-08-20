@@ -179,17 +179,42 @@ body {
 
 .settings-back {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 
+    min-height: 42px;
+    padding: 0 18px;
     margin-top: 18px;
 
-    color: var(--primary-dark);
+    color: var(--on-primary);
     font-size: 13px;
     font-weight: 700;
+    text-decoration: none;
+
+    background: var(--primary);
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+            background 0.2s ease,
+            transform 0.2s ease;
+}
+
+.settings-back:hover,
+.settings-back:focus,
+.settings-back:active,
+.settings-back:visited {
+    color: var(--on-primary);
     text-decoration: none;
 }
 
 .settings-back:hover {
-    text-decoration: underline;
+    background: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {

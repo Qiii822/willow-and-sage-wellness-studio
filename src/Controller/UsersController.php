@@ -23,6 +23,25 @@ class UsersController extends AppController
             'forgotPassword',
             'resetPassword',
         ]);
+
+        // Admin screens share the dashboard shell so the sidebar navigation
+        // stays visible when moving between them.
+        $adminLayoutActions = [
+            'index',
+            'view',
+            'edit',
+            'add',
+            'settings',
+            'profile',
+        ];
+
+        if (in_array(
+            $this->request->getParam('action'),
+            $adminLayoutActions,
+            true
+        )) {
+            $this->viewBuilder()->setLayout('admin');
+        }
     }
 
     /**

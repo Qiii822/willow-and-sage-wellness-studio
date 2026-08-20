@@ -26,15 +26,23 @@ $this->Html->css(
 
         <?= $this->Form->create($user) ?>
 
-        <?= $this->Form->control('first_name', [
-            'label' => 'First Name',
-            'required' => true,
-        ]) ?>
+        <div class="user-form-field">
+            <?= $this->Form->control('first_name', [
+                'label' => 'First Name',
+                'required' => true,
+                'maxlength' => 50,
+            ]) ?>
+            <p class="user-form-hint">Maximum 50 characters</p>
+        </div>
 
-        <?= $this->Form->control('surname', [
-            'label' => 'Surname',
-            'required' => true,
-        ]) ?>
+        <div class="user-form-field">
+            <?= $this->Form->control('surname', [
+                'label' => 'Surname',
+                'required' => true,
+                'maxlength' => 50,
+            ]) ?>
+            <p class="user-form-hint">Maximum 50 characters</p>
+        </div>
 
         <?= $this->Form->control('email', [
             'type' => 'email',
@@ -66,6 +74,8 @@ $this->Html->css(
                 </button>
 
             </div>
+
+            <p class="user-form-hint">At least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
 
             <?= $this->Form->error('password') ?>
 

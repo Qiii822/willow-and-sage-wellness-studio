@@ -58,8 +58,20 @@ body {
         0 12px 36px rgba(72, 64, 58, 0.08);
 }
 
+/* The table lives inside the sidebar-constrained main content area, so it can
+   run out of room well above the mobile breakpoint. Let the wrapper scroll at
+   any width instead of letting the columns get crushed. */
+
+.table-responsive {
+    width: 100%;
+
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .users-table {
     width: 100%;
+    min-width: 720px;
 
     margin: 0;
 
@@ -142,17 +154,42 @@ body {
 
 .users-back {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 
+    min-height: 42px;
+    padding: 0 18px;
     margin-top: 18px;
 
-    color: var(--primary-dark);
+    color: var(--on-primary);
     font-size: 13px;
     font-weight: 700;
+    text-decoration: none;
+
+    background: var(--primary);
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+            background 0.2s ease,
+            transform 0.2s ease;
+}
+
+.users-back:hover,
+.users-back:focus,
+.users-back:active,
+.users-back:visited {
+    color: var(--on-primary);
     text-decoration: none;
 }
 
 .users-back:hover {
-    text-decoration: underline;
+    background: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 760px) {
@@ -164,11 +201,6 @@ body {
 
     .users-card {
         padding: 18px;
-        overflow-x: auto;
-    }
-
-    .users-table {
-        min-width: 700px;
     }
 }
 
@@ -623,4 +655,40 @@ body {
     margin: 6px 0 0;
     font-size: 12px;
     font-weight: 500;
+}
+
+
+/* =========================================================
+   Field hint text
+   ========================================================= */
+
+.users-card .user-form-field .input {
+    margin-bottom: 6px;
+}
+
+.user-form-hint {
+    margin: 0 0 18px;
+
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* =========================================================
+   Stop very long names from stretching the table
+   ========================================================= */
+
+.users-table th:first-child,
+.users-table td:first-child {
+    min-width: 150px;
+    max-width: 260px;
+
+    /* break-word only splits a word that is too long on its own, unlike
+       `anywhere`, which also shrinks the column's min-content width and
+       was wrapping ordinary names like "Wendy S" mid-word. */
+    overflow-wrap: break-word;
+}
+
+.user-password-field .user-form-hint {
+    margin: 6px 0 0;
 }
