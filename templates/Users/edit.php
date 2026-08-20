@@ -14,6 +14,7 @@ $this->Html->css(
 $identity = $this->request->getAttribute('identity');
 $currentRole = $identity->roles ?? $identity->role ?? null;
 $isSuperAdmin = $currentRole === 'superadmin';
+$isEditingSelf = $identity->id === $user->id;
 ?>
 
 <div class="users-page">
@@ -47,7 +48,7 @@ $isSuperAdmin = $currentRole === 'superadmin';
             'required' => true,
         ]) ?>
 
-        <?php if ($isSuperAdmin): ?>
+        <?php if ($isSuperAdmin && !$isEditingSelf): ?>
 
             <?= $this->Form->control('roles', [
                 'type' => 'select',

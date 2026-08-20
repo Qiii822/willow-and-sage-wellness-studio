@@ -76,20 +76,25 @@ class SquareAuthService
             'refresh_token' => $tokenPayload['refresh_token'] ?? null,
         ]);
 
-        // Find existing record for this merchant, or create a new one.
-        // In practice there should only ever be one merchant record, since
-        // callback() already rejects any merchant_id other than the
-        // authorized one - this find-or-create just makes reconnecting
-        // (e.g. after a manual revoke) update the same row instead of
-        // piling up duplicates.
-        $record = $this->identitiesTable->findByMerchantId($merchantId)->first()
-            ?? $this->identitiesTable->newEmptyEntity();
+        // Find any active merchants and revoke them.
+        // This is unlikely to happen, but just in-case to ensure a single
+        // active connection.
+        $active = $this->identitiesTable->getActiveConnection();
+        if ($active) {
+            $active->revoked = true;
+            $active->revoked_at = DateTime::now();
+            if (!$this->identitiesTable->save($active)) {
+                \Cake\Log\Log::error('Failed to revoke previous identity: ' . json_encode($active->getErrors()));
+                throw new \RuntimeException('Failed to revoke previous identity record');
+            }
+        }
 
-        // Patch and save
+        // Add this new row to the identities table
+        $record = $this->identitiesTable->newEmptyEntity();
         $record = $this->identitiesTable->patchEntity($record, [
             'merchant_id' => $merchantId,
             'tokens' => $encrypted,
-            'created_at' => $record->isNew() ? DateTime::now() : $record->created_at,
+            'created_at' => DateTime::now(),
             'expires_at' => DateTime::parse($tokenPayload['expires_at']),
             'refreshed_at' => null,
             'revoked' => false,
@@ -97,8 +102,8 @@ class SquareAuthService
         ]);
 
         if (!$this->identitiesTable->save($record)) {
-            \Cake\Log\Log::error('Failed to save identity: ' . json_encode($record->getErrors()));
-            throw new \RuntimeException('Failed to save identity record');
+        \Cake\Log\Log::error('Failed to save identity: ' . json_encode($record->getErrors()));
+        throw new \RuntimeException('Failed to save identity record');
         }
 
         return (string)$record->id;

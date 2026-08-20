@@ -24,17 +24,4 @@
         </div>
     </div>
 
-    <div class="card chart-card">
-        <div class="chart-card-header">
-            <div>
-                <h3>Booking Trend</h3>
-                <p>Bookings over the last 7 days</p>
-            </div>
-        </div>
-
-        <div class="chart-canvas-wrapper">
-            <canvas id="bookingChart"></canvas>
-        </div>
-    </div>
-
 </div>
