@@ -13,13 +13,16 @@
             <p>Latest customers added from Square</p>
         </div>
 
-        <button
-                type="button"
-                class="table-action"
-                id="view-all-customers"
-        >
-            View all
-        </button>
+        <?= $this->Html->link(
+            'View all',
+            [
+                'controller' => 'Customers',
+                'action' => 'index',
+            ],
+            [
+                'class' => 'table-action',
+            ]
+        ) ?>
     </div>
 
     <div class="table-responsive">
