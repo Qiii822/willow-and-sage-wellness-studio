@@ -36,7 +36,6 @@ rel="stylesheet"
 <?= $this->Html->css('sidebar') ?>
 <?= $this->Html->css('topbar') ?>
 <?= $this->Html->css('cards') ?>
-<?= $this->Html->css('charts') ?>
 <?= $this->Html->css('table') ?>
 <?= $this->Html->css('responsive') ?>
 
@@ -48,9 +47,6 @@ rel="stylesheet"
         integrity="sha384-tiWC3xExiSLdtFfMgETUmXUaC8RevUW8QlVQIH7p2XzwWAeYgnGiqSKD3KOLS7qk"
         crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -69,7 +65,6 @@ src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.j
 
 <?= $this->Html->script('dashboard') ?>
 <?= $this->Html->script('topbar') ?>
-<?= $this->Html->script('charts') ?>
 <?= $this->Html->script('recent-customers') ?>
 
 </body>

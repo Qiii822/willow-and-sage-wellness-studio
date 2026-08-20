@@ -16,8 +16,6 @@ $this->setLayout('dashboard');
 
             <?= $this->element('stats') ?>
 
-            <?= $this->element('charts') ?>
-
             <?= $this->element('recent_customers') ?>
 
         </main>
