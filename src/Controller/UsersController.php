@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Mailer\Mailer;
 use App\Service\SquareAuthService;
 
 /**
@@ -20,6 +21,7 @@ class UsersController extends AppController
         $this->Authentication->allowUnauthenticated([
             'login',
             'forgotPassword',
+            'resetPassword',
         ]);
     }
 
@@ -70,21 +72,155 @@ class UsersController extends AppController
                 ->where(['email' => $email])
                 ->first();
 
-
-            // TODO: Add password reset token and email functionality.
-
-
             if ($user) {
-                $this->Flash->success(
-                    'If an account exists for this email address, password reset instructions will be sent.'
-                );
-            } else {
-                $this->Flash->success(
-                    'If an account exists for this email address, password reset instructions will be sent.'
-                );
+                $user->reset_token = bin2hex(random_bytes(32));
+                $user->reset_token_expires = new \DateTimeImmutable('+1 hour');
+
+                if (!$this->Users->save($user)) {
+                    $this->Flash->error('We could not process your request. Please try again.');
+
+                    return null;
+                }
+
+                $mailer = new Mailer('default');
+                $mailer
+                    ->setEmailFormat('both')
+                    ->setTo($user->email)
+                    ->setSubject('Reset your account password')
+                    ->setViewVars([
+                        'first_name' => $user->first_name,
+                        'last_name' => $user->surname,
+                        'email' => $user->email,
+                        'nonce' => $user->reset_token,
+                    ])
+                    ->viewBuilder()
+                    ->setTemplate('reset_password');
+
+                if (!$mailer->deliver()) {
+                    $this->Flash->error('We could not send the reset email. Please try again.');
+
+                    return null;
+                }
             }
+
+            $this->Flash->success(
+                'If an account exists for this email address, password reset instructions will be sent.'
+            );
+
+            return $this->redirect(['action' => 'login']);
         }
     }
+
+    /**
+     * Reset Password method
+     *
+     * @param string|null $token Password reset token.
+     * @return \Cake\Http\Response|null|void
+     */
+    public function resetPassword(?string $token = null)
+    {
+        $this->viewBuilder()->setLayout('account');
+
+        $user = $token === null ? null : $this->Users->find()
+            ->where([
+                'reset_token' => $token,
+                'reset_token_expires >' => new \DateTimeImmutable(),
+            ])
+            ->first();
+
+        if (!$user) {
+            $this->Flash->error('This password reset link is invalid or has expired.');
+
+            return $this->redirect(['action' => 'forgotPassword']);
+        }
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $user = $this->Users->patchEntity(
+                $user,
+                $this->request->getData(),
+                ['validate' => 'changePassword']
+            );
+            $user->reset_token = null;
+            $user->reset_token_expires = null;
+
+            if ($this->Users->save($user)) {
+                $this->Flash->success('Your password has been updated.');
+
+                return $this->redirect(['action' => 'login']);
+            }
+
+            $this->set('errors', $user->getErrors());
+            $this->Flash->error('The password could not be updated. Please correct the errors below.');
+        }
+
+        $this->set(compact('user', 'token'));
+    }
+
+
+    // public function forgetPassword()
+    // {
+    //     if ($this->request->is('post')) {
+    //         // Retrieve the user entity by provided email address
+    //         // Note findBy* is a magic/dynamic finder
+    //         $user = $this->Users->findByEmail($this->request->getData('email'))->first();
+    //         if ($user) {
+    //             // Set nonce and expiry date
+    //             $user->nonce = Security::randomString(128);
+    //             $user->nonce_expiry = new DateTime('7 days');
+    //             if ($this->Users->save($user)) {
+    //                 // Now let's send the password reset email
+    //                 $mailer = new Mailer('default');
+
+    //                 // email basic config
+    //                 $mailer
+    //                     ->setEmailFormat('both')
+    //                     ->setTo($user->email)
+    //                     ->setSubject('Reset your account password');
+
+    //                 // select email template
+    //                 $mailer
+    //                     ->viewBuilder()
+    //                     ->setTemplate('reset_password');
+
+    //                 // transfer required view variables to email template
+    //                 $mailer
+    //                     ->setViewVars([
+    //                         'first_name' => $user->first_name,
+    //                         'last_name' => $user->last_name,
+    //                         'nonce' => $user->nonce,
+    //                         'email' => $user->email,
+    //                     ]);
+
+    //                 //Send email
+    //                 if (!$mailer->deliver()) {
+    //                     // Just in case something goes wrong when sending emails
+    //                     $this->Flash->error('We have encountered an issue when sending you emails. Please try again. ');
+
+    //                     return $this->render(); // Skip the rest of the controller and render the view
+    //                 }
+    //             } else {
+    //                 // Just in case something goes wrong when saving nonce and expiry
+    //                 $this->Flash->error('We are having issue to reset your password. Please try again. ');
+
+    //                 return $this->render(); // Skip the rest of the controller and render the view
+    //             }
+    //         }
+
+    //         /*
+    //          * **This is a bit of a special design**
+    //          * We don't tell the user if their account exists, or if the email has been sent,
+    //          * because it may be used by someone with malicious intent. We only need to tell
+    //          * the user that they'll get an email.
+    //          */
+    //         $this->Flash->success(
+    //             'Please check your inbox (or spam folder) for ' .
+    //             'an email regarding how to reset your account password. ',
+    //         );
+
+    //         return $this->redirect(['action' => 'login']);
+    //     }
+    // }
+
 
     public function logout()
     {
