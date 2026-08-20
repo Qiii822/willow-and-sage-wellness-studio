@@ -10,6 +10,7 @@ $this->Html->css(
     'users',
     ['block' => true]
 );
+$this->Html->css('confirm_modal', ['block' => true]);
 
 $identity = $this->request->getAttribute('identity');
 $currentRole = $identity->roles ?? $identity->role ?? null;
@@ -143,7 +144,7 @@ $isEditingSelf = $identity->id === $user->id;
         ]
     ) ?>
 
-    <div class="confirm-modal-overlay" id="save-confirm-overlay" hidden>
+    <div class="confirm-modal-overlay" id="save-confirm-overlay" data-form-id="user-edit-form" hidden>
         <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="save-confirm-title">
             <h2 id="save-confirm-title">Save changes?</h2>
             <p>Are you sure you want to save these changes?</p>
@@ -154,7 +155,7 @@ $isEditingSelf = $identity->id === $user->id;
         </div>
     </div>
 
-    <div class="confirm-modal-overlay" id="delete-confirm-overlay" hidden>
+    <div class="confirm-modal-overlay" id="delete-confirm-overlay" data-form-selector=".user-delete-actions form" hidden>
         <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete-confirm-title">
             <h2 id="delete-confirm-title">Delete user?</h2>
             <p>This action cannot be undone. Are you sure you want to delete this user?</p>
@@ -166,7 +167,7 @@ $isEditingSelf = $identity->id === $user->id;
     </div>
 
     <?= $this->Html->script(
-        'user_confirm',
+        'confirm_modal',
         ['block' => true]
     ) ?>
 

@@ -7,6 +7,7 @@
  */
 
 $this->Html->css('settings', ['block' => true]);
+$this->Html->css('confirm_modal', ['block' => true]);
 
 $identity = $this->request->getAttribute('identity');
 $role = $identity->roles ?? $identity->role ?? null;
@@ -89,6 +90,7 @@ $isSuperAdmin = $role === 'superadmin';
 
 
                     <?= $this->Form->create(null, [
+                        'id' => 'disconnect-square-form',
                         'url' => [
                             'controller' => 'Auth',
                             'action' => 'disconnect'
@@ -105,9 +107,7 @@ $isSuperAdmin = $role === 'superadmin';
                     <?= $this->Form->button(
                         'Disconnect Square',
                         [
-                            'class' => 'settings-button danger',
-                            'onclick' =>
-                                "return confirm('Disconnect Square? This will revoke the app\\'s access.');"
+                            'class' => 'settings-button danger'
                         ]
                     ) ?>
 
@@ -210,6 +210,17 @@ $isSuperAdmin = $role === 'superadmin';
 
     </div>
 
+    <div class="confirm-modal-overlay" id="disconnect-confirm-overlay" data-form-id="disconnect-square-form" hidden>
+        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="disconnect-confirm-title">
+            <h2 id="disconnect-confirm-title">Disconnect Square?</h2>
+            <p>This will revoke Wendy Admin's access to the connected Square account.</p>
+            <div class="confirm-modal-actions">
+                <button type="button" class="settings-button secondary" id="disconnect-confirm-cancel">Cancel</button>
+                <button type="button" class="settings-button danger" id="disconnect-confirm-ok">Disconnect Square</button>
+            </div>
+        </div>
+    </div>
+
 
     <?= $this->Html->link(
         '← Back to Dashboard',
@@ -223,3 +234,5 @@ $isSuperAdmin = $role === 'superadmin';
     ) ?>
 
 </div>
+
+<?= $this->Html->script('confirm_modal', ['block' => true]) ?>
