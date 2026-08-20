@@ -35,6 +35,7 @@
     <!-- Shell: sidebar + main content -->
     <?= $this->Html->css('dashboard') ?>
     <?= $this->Html->css('sidebar') ?>
+    <?= $this->Html->css('responsive') ?>
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
