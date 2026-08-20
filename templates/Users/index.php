@@ -2,6 +2,12 @@
 /**
  * @var \App\View\AppView $this
  * @var iterable $users
+ * @var string $search
+ * @var string $role
+ * @var string $status
+ * @var string $createdFrom
+ * @var string $createdTo
+ * @var bool $hasFilters
  */
 
 $this->assign('title', 'Users');
@@ -43,6 +49,119 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
 
     </div>
 
+    <form
+        class="users-search"
+        method="get"
+        action="<?= $this->Url->build([
+            'controller' => 'Users',
+            'action' => 'index'
+        ]) ?>"
+    >
+
+        <div class="users-search-field">
+
+            <i data-lucide="search"></i>
+
+            <input
+                type="search"
+                name="q"
+                value="<?= h($search ?? '') ?>"
+                placeholder="Search by name or email"
+                aria-label="Search users by name or email"
+            >
+
+        </div>
+
+        <select
+            name="role"
+            class="users-filter-select"
+            aria-label="Filter by role"
+        >
+            <option value="">All roles</option>
+
+            <?php foreach ([
+                'user' => 'User',
+                'admin' => 'Admin',
+                'superadmin' => 'Superadmin',
+            ] as $value => $label): ?>
+
+                <option
+                    value="<?= h($value) ?>"
+                    <?= ($role ?? '') === $value ? 'selected' : '' ?>
+                >
+                    <?= h($label) ?>
+                </option>
+
+            <?php endforeach; ?>
+
+        </select>
+
+        <select
+            name="status"
+            class="users-filter-select"
+            aria-label="Filter by status"
+        >
+            <option value="">All statuses</option>
+
+            <option
+                value="active"
+                <?= ($status ?? '') === 'active' ? 'selected' : '' ?>
+            >
+                Active
+            </option>
+
+            <option
+                value="inactive"
+                <?= ($status ?? '') === 'inactive' ? 'selected' : '' ?>
+            >
+                Inactive
+            </option>
+
+        </select>
+
+        <div class="users-date-range">
+
+            <span class="users-date-label">Created</span>
+
+            <input
+                type="date"
+                name="created_from"
+                value="<?= h($createdFrom ?? '') ?>"
+                aria-label="Created on or after"
+            >
+
+            <span class="users-date-sep">&ndash;</span>
+
+            <input
+                type="date"
+                name="created_to"
+                value="<?= h($createdTo ?? '') ?>"
+                aria-label="Created on or before"
+            >
+
+        </div>
+
+        <button type="submit" class="users-search-button">
+            Apply
+        </button>
+
+        <?php if (!empty($hasFilters)): ?>
+
+            <?= $this->Html->link(
+                'Clear',
+                [
+                    'controller' => 'Users',
+                    'action' => 'index'
+                ],
+                [
+                    'class' => 'users-search-clear'
+                ]
+            ) ?>
+
+        <?php endif; ?>
+
+    </form>
+
     <div class="users-card">
 
         <div class="table-responsive">
@@ -62,7 +181,11 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
 
                 <tbody>
 
+                <?php $rowCount = 0; ?>
+
                 <?php foreach ($users as $user): ?>
+
+                    <?php $rowCount++; ?>
 
                     <tr>
 
@@ -175,6 +298,20 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
                     </tr>
 
                 <?php endforeach; ?>
+
+                <?php if ($rowCount === 0): ?>
+
+                    <tr>
+                        <td colspan="6" class="users-empty">
+                            <?php if (!empty($hasFilters)): ?>
+                                No users match the current search and filters.
+                            <?php else: ?>
+                                No users yet.
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+
+                <?php endif; ?>
 
                 </tbody>
 
