@@ -30,7 +30,11 @@
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tbody>
                                             <tr>
-                                                <td align="center" bgcolor= #8b7e74" style="border-radius: 6px;">><a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'resetPassword', $nonce], ['fullBase' => true]) ?>" target="_blank"  style="display: inline-block; padding: 14px 32px; font-weight: bold; color: #ffffff; border-radius: 6px;">Reset account password</a></td>
+                                                <td align="center" bgcolor="#8b7e74" style="border-radius: 6px;">
+                                                <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'resetPassword', $nonce], ['fullBase' => true]) ?>" target="_blank"  
+                                                style="display: inline-block; padding: 14px 32px; font-weight: bold; color: #ffffff; text-decoration: none; border-radius: 6px;">
+                                                Reset account password</a>
+                                            </td>
                                             </tr>
                                             </tbody>
                                         </table>
