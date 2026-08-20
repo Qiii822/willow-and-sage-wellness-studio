@@ -102,7 +102,7 @@ class ImportsTable extends Table
     {
         return $this->find()
             ->where(['status' => 'completed'])
-            ->orderDesc('finished_at')
+            ->orderByDesc('finished_at')
             ->first();
     }
 }

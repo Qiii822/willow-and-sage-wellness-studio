@@ -127,7 +127,7 @@ class IdentitiesTable extends Table
     {
         return $this->find()
             ->where(['revoked' => false])
-            ->orderDesc('created_at')
+            ->orderByDesc('created_at')
             ->first();
     }
 }
