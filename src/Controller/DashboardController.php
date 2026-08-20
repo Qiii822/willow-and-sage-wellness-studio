@@ -49,6 +49,7 @@ class DashboardController extends AppController
             ->orderBy([
                 'square_created_at' => 'DESC',
             ])
+            ->limit(10)
             ->all();
 
         // Send data to dashboard
