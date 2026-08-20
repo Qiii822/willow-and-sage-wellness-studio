@@ -122,9 +122,6 @@ $isEditingSelf = $identity->id === $user->id;
                         $user->id
                     ],
                     [
-                        'confirm' => __(
-                            'Are you sure you want to delete this user?'
-                        ),
                         'class' => 'user-form-button danger'
                     ]
                 ) ?>
@@ -153,6 +150,17 @@ $isEditingSelf = $identity->id === $user->id;
             <div class="confirm-modal-actions">
                 <button type="button" class="user-form-button secondary" id="save-confirm-cancel">Cancel</button>
                 <button type="button" class="user-form-button" id="save-confirm-ok">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="confirm-modal-overlay" id="delete-confirm-overlay" hidden>
+        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete-confirm-title">
+            <h2 id="delete-confirm-title">Delete user?</h2>
+            <p>This action cannot be undone. Are you sure you want to delete this user?</p>
+            <div class="confirm-modal-actions">
+                <button type="button" class="user-form-button secondary" id="delete-confirm-cancel">Cancel</button>
+                <button type="button" class="user-form-button danger" id="delete-confirm-ok">Delete User</button>
             </div>
         </div>
     </div>
