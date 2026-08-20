@@ -66,6 +66,8 @@ $this->Html->script(
 
                 </div>
 
+                <p class="auth-form-hint">At least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
+
                 <?= $this->Form->error('password') ?>
             </div>
 

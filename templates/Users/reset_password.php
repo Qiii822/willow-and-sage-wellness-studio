@@ -24,6 +24,9 @@ $this->Html->css('auth', ['block' => true]);
             'value' => '',
             'autocomplete' => 'new-password',
         ]) ?>
+
+        <p class="auth-form-hint">At least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
+
         <?= $this->Form->control('password_confirm', [
             'type' => 'password',
             'label' => 'Confirm password',
