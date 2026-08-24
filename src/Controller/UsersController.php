@@ -4,8 +4,13 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Mailer\Mailer;
+use App\Model\Table\VerificationCodesTable;
+use App\Service\ContactChangeRevertService;
+use App\Service\MailerFactory;
+use App\Service\ContactVerificationService;
 use App\Service\SquareAuthService;
 use App\Service\Sync\CustomerLinkService;
+use App\Utility\PhoneNumber;
 
 /**
  * Users Controller
@@ -22,6 +27,15 @@ class UsersController extends AppController
      */
     protected const STAFF_ROLES = ['admin', 'superadmin'];
 
+    /**
+     * Where the Authentication plugin's session authenticator keeps the
+     * signed-in identity. Matches SessionAuthenticator's `sessionKey`
+     * default, which this app does not override.
+     *
+     * @var string
+     */
+    protected const IDENTITY_SESSION_KEY = 'Auth';
+
     public function beforeFilter(\Cake\Event\EventInterface $event): void
     {
         parent::beforeFilter($event);
@@ -32,6 +46,9 @@ class UsersController extends AppController
             'register',
             'forgotPassword',
             'resetPassword',
+            // Reached from a warning email by someone who may have lost
+            // access to the account; the token in the link is the authority.
+            'revertContactChange',
         ]);
 
         // Admin screens share the dashboard shell so the sidebar navigation
@@ -67,6 +84,8 @@ class UsersController extends AppController
             'add',
             'delete',
             'settings',
+            'saveMailSettings',
+            'disconnectMailSettings',
         ];
 
         if (in_array(
@@ -186,35 +205,10 @@ class UsersController extends AppController
                 ->where(['email' => $email])
                 ->first();
 
-            if ($user) {
-                $user->reset_token = bin2hex(random_bytes(32));
-                $user->reset_token_expires = new \DateTimeImmutable('+1 hour');
+            if ($user && !$this->sendPasswordResetEmail($user)) {
+                $this->Flash->error('We could not send the reset email. Please try again.');
 
-                if (!$this->Users->save($user)) {
-                    $this->Flash->error('We could not process your request. Please try again.');
-
-                    return null;
-                }
-
-                $mailer = new Mailer('default');
-                $mailer
-                    ->setEmailFormat('both')
-                    ->setTo($user->email)
-                    ->setSubject('Reset your account password')
-                    ->setViewVars([
-                        'first_name' => $user->first_name,
-                        'last_name' => $user->surname,
-                        'email' => $user->email,
-                        'nonce' => $user->reset_token,
-                    ])
-                    ->viewBuilder()
-                    ->setTemplate('reset_password');
-
-                if (!$mailer->deliver()) {
-                    $this->Flash->error('We could not send the reset email. Please try again.');
-
-                    return null;
-                }
+                return null;
             }
 
             $this->Flash->success(
@@ -222,6 +216,62 @@ class UsersController extends AppController
             );
 
             return $this->redirect(['action' => 'login']);
+        }
+    }
+
+    /**
+     * Issues a fresh reset token for an account and emails the link.
+     *
+     * Shared by the public "forgot password" form and the signed-in account
+     * settings page, so both routes hand out tokens with the same lifetime
+     * and send the same message.
+     *
+     * @param \App\Model\Entity\User $user The account to send to.
+     * @return bool False if the token could not be stored or the mail could
+     *   not be handed to the transport.
+     */
+    protected function sendPasswordResetEmail(\App\Model\Entity\User $user): bool
+    {
+        $user->reset_token = bin2hex(random_bytes(32));
+        $user->reset_token_expires = new \DateTimeImmutable('+1 hour');
+
+        if (!$this->Users->save($user)) {
+            return false;
+        }
+
+        /*
+         * Straight after an email change the reset goes to the address that
+         * was replaced, not the new one. Someone who had just redirected the
+         * account to themselves would otherwise be able to reset the
+         * password immediately, before the warning email had been read. The
+         * real owner still receives the link; whoever made the change does
+         * not.
+         */
+        $destination = $this->fetchTable('ContactChangeReverts')
+            ->addressDuringCooldown($user->id)
+            ?? $user->email;
+
+        $mailer = MailerFactory::create();
+        $mailer
+            ->setEmailFormat('both')
+            ->setTo($destination)
+            ->setSubject('Reset your account password')
+            ->setViewVars([
+                'first_name' => $user->first_name,
+                'last_name' => $user->surname,
+                'email' => $user->email,
+                'nonce' => $user->reset_token,
+            ])
+            ->viewBuilder()
+            ->setTemplate('reset_password');
+
+        try {
+            return (bool)$mailer->deliver();
+        } catch (\Throwable $e) {
+            // A misconfigured transport throws rather than returning false.
+            \Cake\Log\Log::error('Password reset email failed: ' . $e->getMessage());
+
+            return false;
         }
     }
 
@@ -340,6 +390,412 @@ class UsersController extends AppController
     {
         $this->Authentication->logout();
         return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+    }
+
+    /**
+     * Account Settings method
+     *
+     * The customer-facing counterpart to the admin `settings` action: it
+     * manages the signed-in person's own contact details and password, and
+     * is reachable by every signed-in user rather than staff only.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
+    public function accountSettings()
+    {
+        $identity = $this->request->getAttribute('identity');
+
+        if (!$identity) {
+            throw new \Cake\Http\Exception\UnauthorizedException(
+                'Please login to manage your account.'
+            );
+        }
+
+        // Shares the public site's shell, so the header and account menu
+        // stay put when a customer arrives here from the home page.
+        $this->viewBuilder()->setLayout('site');
+
+        $user = $this->Users->get($identity->id);
+
+        /*
+         * Set before the handlers run: a handler that rejects its input
+         * returns null so the page renders again with its errors, and the
+         * template still needs to know about any outstanding codes.
+         */
+        $codesTable = $this->fetchTable('VerificationCodes');
+
+        $this->set('pendingEmail', $codesTable->findPending(
+            $user->id,
+            VerificationCodesTable::CHANNEL_EMAIL
+        ));
+        $this->set('pendingSms', $codesTable->findPending(
+            $user->id,
+            VerificationCodesTable::CHANNEL_SMS
+        ));
+        $this->set('smsIsSimulated', (new ContactVerificationService())->smsIsSimulated());
+        $this->set(compact('user', 'identity'));
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            switch ($this->request->getData('form')) {
+                case 'password':
+                    return $this->updateOwnPassword($user);
+
+                case 'password_email':
+                    return $this->emailOwnPasswordReset($user);
+
+                case 'verify_code':
+                    return $this->confirmContactChange($user);
+
+                case 'cancel_verification':
+                    return $this->cancelContactChange($user);
+
+                default:
+                    return $this->updateOwnContactDetails($user);
+            }
+        }
+    }
+
+    /**
+     * Saves the email and mobile from the account settings page.
+     *
+     * Only those two fields are read from the request. Everything else the
+     * form could carry - role, active, square_customer_id - is ignored, so
+     * this page cannot be used to change anything but contact details.
+     *
+     * @param \App\Model\Entity\User $user
+     * @return \Cake\Http\Response|null
+     */
+    protected function updateOwnContactDetails(\App\Model\Entity\User $user)
+    {
+        $newEmail = trim((string)$this->request->getData('email'));
+        $newPhone = PhoneNumber::normalise((string)$this->request->getData('phone'))
+            ?? trim((string)$this->request->getData('phone'));
+
+        $emailChanged = $newEmail !== '' && $newEmail !== $user->email;
+        $phoneChanged = $newPhone !== '' && $newPhone !== $user->phone;
+
+        if (!$emailChanged && !$phoneChanged) {
+            $this->Flash->success('Your details are already up to date.');
+
+            return $this->redirect(['action' => 'accountSettings']);
+        }
+
+        /*
+         * Authorisation, as distinct from the verification below. The code
+         * sent to the new address only proves that address is reachable; it
+         * says nothing about whether the account's owner wanted the change.
+         * Asking for the current password is what stops someone who finds an
+         * unlocked session from redirecting the account to themselves.
+         */
+        $hasher = new \Authentication\PasswordHasher\DefaultPasswordHasher();
+
+        if (!$hasher->check((string)$this->request->getData('current_password'), $user->password)) {
+            $this->Flash->error('Enter your current password to change your contact details.');
+
+            $this->set('user', $user);
+            $this->set('identity', $this->request->getAttribute('identity'));
+            $this->set('contactErrors', [
+                'current_password' => ['That password does not match the one on your account.'],
+            ]);
+
+            return null;
+        }
+
+        /*
+         * Check the new values against the same rules a save would apply -
+         * format, and the unique indexes - before mailing a code to them.
+         * The entity is a throwaway copy so the account itself is untouched
+         * whatever the outcome.
+         */
+        $candidate = $this->Users->patchEntity(
+            $this->Users->get($user->id),
+            array_filter([
+                'email' => $emailChanged ? $newEmail : null,
+                'phone' => $phoneChanged ? $newPhone : null,
+            ], fn ($value) => $value !== null)
+        );
+
+        $errors = $candidate->getErrors();
+
+        if (!$errors) {
+            // Uniqueness lives in the rules layer, not validation.
+            $this->Users->checkRules($candidate, \Cake\Datasource\RulesChecker::UPDATE);
+            $errors = $candidate->getErrors();
+        }
+
+        if ($errors) {
+            $this->Flash->error('Your details could not be saved. Please correct the errors below.');
+
+            $this->set('user', $candidate);
+            $this->set('identity', $this->request->getAttribute('identity'));
+
+            return null;
+        }
+
+        $verification = new ContactVerificationService();
+        $sent = [];
+        $failed = [];
+
+        foreach ([
+            [VerificationCodesTable::CHANNEL_EMAIL, $emailChanged, $newEmail, 'email address'],
+            [VerificationCodesTable::CHANNEL_SMS, $phoneChanged, $newPhone, 'mobile number'],
+        ] as [$channel, $changed, $destination, $label]) {
+            if (!$changed) {
+                continue;
+            }
+
+            if ($verification->startVerification($user, $channel, $destination)) {
+                $sent[] = $label;
+            } else {
+                $failed[] = $label;
+            }
+        }
+
+        if ($sent) {
+            $this->Flash->success(
+                'We have sent a verification code to your new ' . implode(' and ', $sent)
+                . '. Enter it below to confirm the change.'
+            );
+        }
+
+        if ($failed) {
+            $this->Flash->error(
+                'We could not send a code to your new ' . implode(' and ', $failed)
+                . '. Please check it and try again.'
+            );
+        }
+
+        return $this->redirect(['action' => 'accountSettings']);
+    }
+
+    /**
+     * Checks a verification code and applies the pending contact change.
+     *
+     * @param \App\Model\Entity\User $user
+     * @return \Cake\Http\Response|null
+     */
+    protected function confirmContactChange(\App\Model\Entity\User $user)
+    {
+        $channel = (string)$this->request->getData('channel');
+
+        if (!in_array($channel, [
+            VerificationCodesTable::CHANNEL_EMAIL,
+            VerificationCodesTable::CHANNEL_SMS,
+        ], true)) {
+            $this->Flash->error('Unknown verification request.');
+
+            return $this->redirect(['action' => 'accountSettings']);
+        }
+
+        $field = $channel === VerificationCodesTable::CHANNEL_SMS ? 'phone' : 'email';
+
+        // Captured before the change lands, since it is what gets restored.
+        $previousValue = (string)$user->{$field};
+        $previousEmail = (string)$user->email;
+
+        $result = (new ContactVerificationService())->confirm(
+            $user,
+            $channel,
+            (string)$this->request->getData('code')
+        );
+
+        if (!$result['ok']) {
+            $this->Flash->error($result['message']);
+
+            return $this->redirect(['action' => 'accountSettings']);
+        }
+
+        /*
+         * Warn the address that was just replaced, and give it a way back.
+         * A phone change is announced by email too - there is no SMS
+         * provider, and the old number may be one the owner has lost.
+         */
+        (new ContactChangeRevertService())->recordAndNotify(
+            $user,
+            $field,
+            $previousValue,
+            (string)$user->{$field},
+            $previousEmail
+        );
+
+        /*
+         * A confirmed number or address may now match a Square customer this
+         * account could not be tied to before.
+         */
+        try {
+            (new CustomerLinkService())->linkUser($user);
+        } catch (\Throwable $e) {
+            \Cake\Log\Log::error(
+                'Could not link account after a contact change: ' . $e->getMessage()
+            );
+        }
+
+        /*
+         * The identity is a snapshot taken at login, so the stored copy has
+         * to be refreshed or the header keeps showing the old address until
+         * the next sign in.
+         *
+         * Written straight to the session authenticator's key rather than
+         * through Authentication::setIdentity(), because that clears the
+         * identity first and clearing renews the session id. Editing your own
+         * email is not a privilege change, and rotating the session on every
+         * save logs out any request already in flight.
+         */
+        $this->request->getSession()->write(self::IDENTITY_SESSION_KEY, $user);
+
+        $this->Flash->success($result['message']);
+
+        return $this->redirect(['action' => 'accountSettings']);
+    }
+
+    /**
+     * Throws away a pending contact change.
+     *
+     * @param \App\Model\Entity\User $user
+     * @return \Cake\Http\Response|null
+     */
+    protected function cancelContactChange(\App\Model\Entity\User $user)
+    {
+        $channel = (string)$this->request->getData('channel');
+
+        (new ContactVerificationService())->cancel($user, $channel);
+
+        $this->Flash->success('That change has been discarded.');
+
+        return $this->redirect(['action' => 'accountSettings']);
+    }
+
+    /**
+     * Saves a new password from the account settings page.
+     *
+     * @param \App\Model\Entity\User $user
+     * @return \Cake\Http\Response|null
+     */
+    protected function updateOwnPassword(\App\Model\Entity\User $user)
+    {
+        /*
+         * Proving the current password stops someone who finds an unlocked
+         * device from taking the account over: without it they could set a
+         * new password and lock the owner out.
+         */
+        $currentPassword = (string)$this->request->getData('current_password');
+        $hasher = new \Authentication\PasswordHasher\DefaultPasswordHasher();
+
+        if (!$hasher->check($currentPassword, $user->password)) {
+            $this->Flash->error('Your current password is not correct.');
+
+            $this->set('user', $user);
+            $this->set('identity', $this->request->getAttribute('identity'));
+            $this->set('passwordErrors', [
+                'current_password' => ['That password does not match the one on your account.'],
+            ]);
+
+            return null;
+        }
+
+        $user = $this->Users->patchEntity(
+            $user,
+            [
+                'password' => $this->request->getData('password'),
+                'password_confirm' => $this->request->getData('password_confirm'),
+            ],
+            ['validate' => 'changePassword']
+        );
+
+        if ($this->Users->save($user)) {
+            $this->Flash->success('Your password has been updated.');
+
+            return $this->redirect(['action' => 'accountSettings']);
+        }
+
+        $this->Flash->error('Your password could not be updated. Please correct the errors below.');
+
+        $this->set('user', $user);
+        $this->set('identity', $this->request->getAttribute('identity'));
+        $this->set('passwordErrors', $user->getErrors());
+
+        return null;
+    }
+
+    /**
+     * Emails the signed-in user a reset link for their own account.
+     *
+     * The alternative to the inline form for anyone who would rather change
+     * their password from their inbox than type the current one.
+     *
+     * @param \App\Model\Entity\User $user
+     * @return \Cake\Http\Response|null
+     */
+    protected function emailOwnPasswordReset(\App\Model\Entity\User $user)
+    {
+        if ($this->sendPasswordResetEmail($user)) {
+            $this->Flash->success(
+                'We have sent a password reset link to ' . $user->email
+                . '. It expires in one hour.'
+            );
+        } else {
+            $this->Flash->error('We could not send the reset email. Please try again.');
+        }
+
+        return $this->redirect(['action' => 'accountSettings']);
+    }
+
+    /**
+     * Undoes a contact change from the link in the warning email.
+     *
+     * Public: whoever needs this may well be locked out of the account, so
+     * requiring a login would defeat the purpose. The token in the link is
+     * the authorisation.
+     *
+     * GET only describes what will happen; the change is made on POST, so a
+     * mail client or link scanner following the URL cannot trigger it.
+     *
+     * @param string|null $token
+     * @return \Cake\Http\Response|null|void
+     */
+    public function revertContactChange(?string $token = null)
+    {
+        $this->viewBuilder()->setLayout('account');
+
+        $revertsTable = $this->fetchTable('ContactChangeReverts');
+        $revert = $revertsTable->findByToken((string)$token);
+
+        if (!$revert) {
+            $this->Flash->error('This link is invalid, has expired, or has already been used.');
+
+            return $this->redirect(['action' => 'login']);
+        }
+
+        if ($this->request->is(['post', 'put', 'patch'])) {
+            $service = new ContactChangeRevertService();
+            $result = $service->revert($revert);
+
+            if (!$result['ok']) {
+                $this->Flash->error($result['message']);
+
+                return $this->redirect(['action' => 'login']);
+            }
+
+            /*
+             * Whoever made the change knew the account password, so putting
+             * the address back is not enough on its own - they could simply
+             * repeat it. A reset link to the restored address lets the owner
+             * shut that door.
+             */
+            $user = $this->Users->get($revert->user_id);
+            $passwordEmailSent = $this->sendPasswordResetEmail($user);
+
+            $this->Flash->success(
+                $result['message']
+                . ($passwordEmailSent
+                    ? ' We have also emailed you a link to set a new password.'
+                    : ' Please use "Forgot password?" to set a new password.')
+            );
+
+            return $this->redirect(['action' => 'login']);
+        }
+
+        $this->set(compact('revert', 'token'));
     }
 
     public function profile(): void
@@ -743,9 +1199,206 @@ class UsersController extends AppController
         $lastImport = $importsTable->getLastCompleted();
         $lastSyncedAt = $lastImport?->finished_at;
 
+        $mailSettingsTable = $this->fetchTable('MailSettings');
+
         $this->set('squareIdentity', $squareIdentity);
         $this->set('lastSyncedAt', $lastSyncedAt);
         $this->set('justConnected', (bool)$this->request->getQuery('connected'));
+        $this->set('mailSettings', $mailSettingsTable->getActive());
+        $this->set('mailProviders', \App\Model\Table\MailSettingsTable::PROVIDERS);
+        // Without a key the password could only be stored in the clear, so
+        // the form says so rather than quietly doing it.
+        $this->set('mailKeyMissing', \App\Model\Table\MailSettingsTable::encryptionKey() === null);
+    }
+
+    /**
+     * Connects the account outgoing mail is sent from.
+     *
+     * The credentials are proved before they are kept: a test message is
+     * sent with them, and nothing is written unless it goes through. That
+     * avoids saving a broken configuration that would then silently swallow
+     * password resets and verification codes.
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function saveMailSettings()
+    {
+        $this->requireSuperAdmin();
+        $this->request->allowMethod(['post']);
+
+        $table = $this->fetchTable('MailSettings');
+        $providers = \App\Model\Table\MailSettingsTable::PROVIDERS;
+
+        $provider = (string)$this->request->getData('provider');
+
+        /*
+         * The mode only appears on the form for providers offering more than
+         * one; elsewhere preset() falls back to their single mode.
+         */
+        $preset = \App\Model\Table\MailSettingsTable::preset(
+            $provider,
+            (string)$this->request->getData('auth_mode') ?: null
+        );
+
+        if ($preset === null) {
+            $this->Flash->error('Choose an email provider first.');
+
+            return $this->redirect(['action' => 'settings']);
+        }
+
+        if (\App\Model\Table\MailSettingsTable::encryptionKey() === null) {
+            $this->Flash->error(
+                'Set a real SECURITY_SALT (32+ characters) in config/app_local.php before '
+                . 'connecting an email account - the password cannot be stored safely without one.'
+            );
+
+            return $this->redirect(['action' => 'settings']);
+        }
+
+        $existing = $table->getActive();
+        $password = (string)$this->request->getData('password');
+
+        // A blank password on an existing connection means "leave it alone".
+        if ($password === '' && $existing) {
+            $password = (string)$table->decryptPassword($existing);
+        }
+
+        $host = trim((string)$this->request->getData('host'));
+        $authMode = $preset['auth_mode'];
+
+        $data = [
+            'provider' => $provider,
+            'auth_mode' => $authMode,
+            'host' => $host !== '' ? $host : $preset['host'],
+            'port' => (int)($this->request->getData('port') ?: $preset['port']),
+            'username' => trim((string)$this->request->getData('username')) ?: null,
+            'tls' => (bool)$this->request->getData('tls'),
+            'from_email' => trim((string)$this->request->getData('from_email')),
+            'from_name' => trim((string)$this->request->getData('from_name')) ?: null,
+        ];
+
+        $entity = $existing ?? $table->newEmptyEntity();
+        $entity = $table->patchEntity($entity, $data);
+
+        if ($entity->getErrors()) {
+            $this->Flash->error('Please correct the highlighted fields.');
+            $this->set('mailErrors', $entity->getErrors());
+
+            return $this->redirect(['action' => 'settings']);
+        }
+
+        if ($password === '') {
+            $this->Flash->error(
+                $authMode === \App\Model\Table\MailSettingsTable::MODE_API
+                    ? 'An API token is required.'
+                    : 'A password or app key is required.'
+            );
+
+            return $this->redirect(['action' => 'settings']);
+        }
+
+        $identity = $this->request->getAttribute('identity');
+
+        // Chosen on the form; the signed-in admin's own address is only the
+        // default, since the inbox they want to check may be a different one.
+        $testRecipient = trim((string)$this->request->getData('test_to'))
+            ?: (string)($identity->email ?? $data['from_email']);
+
+        $failure = $this->probeMailCredentials($entity, $password, $testRecipient);
+
+        if ($failure !== null) {
+            $this->Flash->error('Could not connect: ' . $failure);
+
+            return $this->redirect(['action' => 'settings']);
+        }
+
+        $entity->password_encrypted = $table->encryptPassword($password);
+        $entity->verified_at = new \DateTimeImmutable();
+
+        if (!$table->save($entity)) {
+            $this->Flash->error('The connection worked but the settings could not be saved.');
+
+            return $this->redirect(['action' => 'settings']);
+        }
+
+        $this->Flash->success(
+            'Email connected. A test message was sent to ' . $testRecipient . '.'
+        );
+
+        return $this->redirect(['action' => 'settings']);
+    }
+
+    /**
+     * Disconnects the outgoing mail account.
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function disconnectMailSettings()
+    {
+        $this->requireSuperAdmin();
+        $this->request->allowMethod(['post']);
+
+        $table = $this->fetchTable('MailSettings');
+        $existing = $table->getActive();
+
+        if ($existing) {
+            $table->delete($existing);
+        }
+
+        $this->Flash->success('Email account disconnected. Messages will use the server default again.');
+
+        return $this->redirect(['action' => 'settings']);
+    }
+
+    /**
+     * Tries the supplied credentials by sending a message with them.
+     *
+     * @param array<string, mixed> $data
+     * @param string $password
+     * @return string|null The provider's error, or null when it worked.
+     */
+    protected function probeMailCredentials($settings, string $password, string $testRecipient): ?string
+    {
+        try {
+            /*
+             * Built from the same definition MailerFactory will use later,
+             * so a successful test cannot differ from what actually sends.
+             */
+            $config = \App\Service\MailerFactory::transportConfig($settings, $password);
+            $className = $config['className'];
+            unset($config['className']);
+
+            $transport = $className === 'Smtp'
+                ? new \Cake\Mailer\Transport\SmtpTransport($config)
+                : new $className($config);
+
+            $mailer = new Mailer();
+            $mailer->setTransport($transport);
+            $mailer
+                ->setFrom(
+                    $settings->from_name
+                        ? [$settings->from_email => $settings->from_name]
+                        : $settings->from_email
+                )
+                /*
+                 * Sent to the admin setting this up, not to the sending
+                 * address. With a provider's shared demo domain the sender
+                 * is not a mailbox anyone can read, so testing against it
+                 * would report success with nothing to look at.
+                 */
+                ->setTo($testRecipient)
+                ->setSubject('Willow and Sage - email connection test')
+                ->setEmailFormat('text')
+                ->deliver(
+                    "This is a test message confirming the studio's email settings work.\n\n"
+                    . "If you received it, password resets and verification codes will send correctly."
+                );
+
+            return null;
+        } catch (\Throwable $e) {
+            return $e->getMessage();
+        }
     }
 
 }
+

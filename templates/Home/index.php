@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Customer facing home page
  *
@@ -33,92 +33,15 @@ foreach ([
     }
 }
 
-$initial = strtoupper(mb_substr($identity->first_name ?? 'U', 0, 1));
-
-/*
- * Booking is handled by Square, not here. These links leave the site, so
- * they are real anchors - the remaining nav entries are still inert
- * buttons until the pages behind them exist.
- */
+// Booking lives on Square; the hero button leaves the site for it.
 $bookingUrl = env(
     'SQUARE_BOOKING_URL',
     'https://book.squareup.com/appointments/r2a8ubnahl2pug/location/LPSB9KGV9MYAJ/services'
     . '?buttonTextColor=ffffff&color=4d4d4d&locale=en-AU&referrer=so'
 );
-
-$navItems = [
-    'Gift card',
-];
 ?>
 
-<header class="site-header">
-
-    <div class="site-header-inner">
-
-        <span class="site-brand">Willow and Sage Wellness Studio</span>
-
-        <nav class="site-nav" aria-label="Main">
-
-            <a
-                class="site-nav-link"
-                href="<?= h($bookingUrl) ?>"
-                target="_blank"
-                rel="noopener"
-            >
-                Book
-            </a>
-
-            <?php foreach ($navItems as $item) : ?>
-                <button type="button" class="site-nav-link">
-                    <?= h($item) ?>
-                </button>
-            <?php endforeach; ?>
-
-            <button type="button" class="site-nav-link is-accent">
-                My bookings
-            </button>
-
-        </nav>
-
-        <div class="site-header-actions">
-
-            <button
-                type="button"
-                class="site-icon-button"
-                aria-label="Notifications"
-            >
-                <i data-lucide="bell"></i>
-            </button>
-
-            <?php if ($identity) : ?>
-
-                <span class="site-avatar" aria-hidden="true">
-                    <?= h($initial) ?>
-                </span>
-
-                <?= $this->Html->link(
-                    'Log out',
-                    ['controller' => 'Users', 'action' => 'logout'],
-                    ['class' => 'site-session-link']
-                ) ?>
-
-            <?php else : ?>
-
-                <span class="site-avatar" aria-hidden="true">U</span>
-
-                <?= $this->Html->link(
-                    'Log in',
-                    ['controller' => 'Users', 'action' => 'login'],
-                    ['class' => 'site-session-link']
-                ) ?>
-
-            <?php endif; ?>
-
-        </div>
-
-    </div>
-
-</header>
+<?= $this->element('site_header') ?>
 
 <main class="site-main">
 
@@ -155,24 +78,6 @@ $navItems = [
                 Book a treatment
             </a>
 
-            <?php if ($identity) : ?>
-                <?php
-                /*
-                 * Square's booking page has no prefill parameter, so the
-                 * customer types their own details over there. The mobile is
-                 * what ties the booking back to this account - Square keys a
-                 * buyer's own account on it too - so name that number when we
-                 * have one, and fall back to the email when we do not.
-                 */
-                $bookWith = $identity->phone
-                    ? \App\Utility\PhoneNumber::format($identity->phone)
-                    : $identity->email;
-                ?>
-                <p class="hero-note">
-                    Book with <strong><?= h($bookWith) ?></strong>
-                    so your appointments show up here.
-                </p>
-            <?php endif; ?>
 
         </div>
 
@@ -238,23 +143,4 @@ $navItems = [
 
 </main>
 
-<footer class="site-footer">
-
-    <div class="site-footer-inner">
-
-        <div class="site-footer-brand">
-            <strong>Willow and Sage Wellness Studio</strong>
-            <span>Ingle Farm, Adelaide</span>
-        </div>
-
-        <div class="site-footer-contact">
-            <span>Open until 7:00 pm</span>
-            <a href="tel:+61458033899">+61 458 033 899</a>
-            <a href="mailto:Willowandsagewellness26@gmail.com">
-                Willowandsagewellness26@gmail.com
-            </a>
-        </div>
-
-    </div>
-
-</footer>
+<?= $this->element('site_footer') ?>

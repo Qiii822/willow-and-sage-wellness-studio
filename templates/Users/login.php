@@ -102,6 +102,16 @@ $this->Html->script(
 
                 <?= $this->Form->end() ?>
 
+                <?php /*
+                 * A way back out for someone who landed here from a staff-only
+                 * URL, or who just wants to look around before signing in.
+                 */ ?>
+                <?= $this->Html->link(
+                    'View homepage',
+                    ['controller' => 'Home', 'action' => 'index'],
+                    ['class' => 'login-button is-secondary']
+                ) ?>
+
                 <p class="auth-switch">
                     New here?
                     <?= $this->Html->link(

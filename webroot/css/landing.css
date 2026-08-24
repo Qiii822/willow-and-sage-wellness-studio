@@ -65,6 +65,7 @@ button {
     padding: 0 40px;
 }
 
+/* An anchor back to the home page, but it should not read as body copy. */
 .site-brand {
     max-width: 260px;
 
@@ -73,6 +74,12 @@ button {
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.4px;
+    text-decoration: none;
+}
+
+.site-brand:hover {
+    color: var(--gold-dark);
+    text-decoration: none;
 }
 
 /* =========================================================
@@ -169,6 +176,7 @@ button {
     stroke-width: 1.8;
 }
 
+/* Rendered as a <span> when signed out, a <button> when signed in. */
 .site-avatar {
     display: flex;
     align-items: center;
@@ -177,28 +185,172 @@ button {
     width: 42px;
     height: 42px;
 
+    padding: 0;
+
     color: var(--on-primary);
+    font-family: inherit;
     font-size: 15px;
     font-weight: 600;
 
     background: #cbb59a;
+    border: 0;
     border-radius: 50%;
 
     flex-shrink: 0;
 }
 
-.site-session-link {
+button.site-avatar {
+    cursor: pointer;
+
+    transition: box-shadow 0.2s ease;
+}
+
+button.site-avatar:hover,
+button.site-avatar[aria-expanded="true"] {
+    box-shadow: 0 0 0 3px rgba(203, 181, 154, 0.35);
+}
+
+/* =========================================================
+   Account dropdown
+   ========================================================= */
+
+.account-menu {
+    position: relative;
+}
+
+.account-menu-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 40;
+
+    min-width: 210px;
+
+    padding: 6px;
+
+    background: #fff;
+    border: 1px solid rgba(24, 20, 17, 0.08);
+    border-radius: 14px;
+
+    box-shadow:
+        0 14px 34px rgba(24, 20, 17, 0.16);
+}
+
+.account-menu-panel[hidden] {
+    display: none;
+}
+
+.account-menu-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    padding: 10px 12px 12px;
+
+    border-bottom: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.account-menu-identity strong {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.account-menu-identity span {
     color: var(--text-secondary);
+    font-size: 13px;
+
+    /* Long addresses must not stretch the panel. */
+    overflow-wrap: anywhere;
+}
+
+/* One rule for the link and the logout button alike. */
+.account-menu-item {
+    display: block;
+
+    width: 100%;
+
+    margin-top: 4px;
+    padding: 9px 12px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+
+    background: transparent;
+    border: 0;
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.account-menu-item:hover {
+    background: rgba(139, 126, 116, 0.12);
+}
+
+.account-menu-item.is-danger {
+    color: #c0392b;
+}
+
+.account-menu-item.is-danger:hover {
+    background: rgba(192, 57, 43, 0.1);
+}
+
+.account-menu-form {
+    margin: 0;
+}
+
+/* Announced to screen readers, invisible on screen. */
+.visually-hidden {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    margin: -1px;
+    padding: 0;
+
+    overflow: hidden;
+
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/*
+ * Signed out, this is the only account control in the header, so it is a
+ * solid button rather than a quiet text link.
+ */
+.site-session-link {
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 40px;
+
+    padding: 0 20px;
+
+    color: var(--on-primary);
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
 
+    background: var(--gold);
+    border-radius: 999px;
+
     white-space: nowrap;
+
+    transition: background 0.2s ease;
 }
 
 .site-session-link:hover {
-    color: var(--gold-dark);
-    text-decoration: underline;
+    color: var(--on-primary);
+    text-decoration: none;
+
+    background: var(--gold-dark);
 }
 
 /* =========================================================
@@ -340,20 +492,6 @@ button {
 
     box-shadow:
         0 16px 34px rgba(24, 20, 17, 0.34);
-}
-
-.hero-note {
-    max-width: 460px;
-
-    margin: 18px 0 0;
-
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.hero-note strong {
-    font-weight: 600;
 }
 
 /* =========================================================

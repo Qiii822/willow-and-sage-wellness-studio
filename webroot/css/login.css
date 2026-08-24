@@ -376,6 +376,35 @@ main.main > .container {
         0 12px 24px rgba(139, 126, 116, 0.22);
 }
 
+/*
+ * Also used on an <a>, which needs the box behaviour a <button> gets for
+ * free, and must not carry the browser's link underline.
+ */
+.login-button.is-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 12px;
+
+    color: var(--primary-dark);
+    text-decoration: none;
+
+    background: transparent;
+    border: 1px solid rgba(139, 126, 116, 0.4);
+
+    box-shadow: none;
+}
+
+.login-button.is-secondary:hover {
+    color: var(--primary-dark);
+    text-decoration: none;
+
+    background: rgba(139, 126, 116, 0.1);
+
+    box-shadow: none;
+}
+
 /* =========================================================
    Responsive
    ========================================================= */
@@ -498,57 +527,6 @@ main.main > .container {
     color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
-}
-
-/* =========================================================
-   Password show/hide
-   ========================================================= */
-
-.password-wrapper {
-    position: relative;
-}
-
-/* Keep typed characters clear of the button. */
-.password-wrapper .form-control {
-    padding-right: 48px;
-}
-
-.password-toggle {
-    position: absolute;
-    top: 50%;
-    right: 7px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 34px;
-    height: 34px;
-
-    padding: 0;
-
-    color: var(--text-secondary);
-
-    background: transparent;
-    border: 0;
-    border-radius: 10px;
-
-    transform: translateY(-50%);
-    cursor: pointer;
-
-    transition:
-        color 0.2s ease,
-        background 0.2s ease;
-}
-
-.password-toggle:hover {
-    color: var(--text-primary);
-    background: rgba(139, 126, 116, 0.12);
-}
-
-.password-toggle svg {
-    width: 18px;
-    height: 18px;
 }
 
 .field-counter {

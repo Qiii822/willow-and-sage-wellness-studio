@@ -61,6 +61,7 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/home', ['controller' => 'Home', 'action' => 'index']);
 
         $builder->connect('/account', ['controller' => 'Users', 'action' => 'profile']);
+        $builder->connect('/account/settings', ['controller' => 'Users', 'action' => 'accountSettings']);
         $builder->connect('/account/change-password', ['controller' => 'Users', 'action' => 'changePassword']);
 
         $builder->connect('/settings', ['controller' => 'Users', 'action' => 'settings']);

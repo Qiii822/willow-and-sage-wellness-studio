@@ -17,6 +17,11 @@ $this->Html->css(
     ['block' => true]
 );
 
+$this->Html->css(
+    'password_toggle',
+    ['block' => true]
+);
+
 $this->Html->script(
     'field_counter',
     ['block' => true]
@@ -24,6 +29,11 @@ $this->Html->script(
 
 $this->Html->script(
     'password_toggle',
+    ['block' => true]
+);
+
+$this->Html->script(
+    'submit_guard',
     ['block' => true]
 );
 ?>
@@ -64,7 +74,10 @@ $this->Html->script(
 
                 <?= $this->Flash->render() ?>
 
-                <?= $this->Form->create($user, ['class' => 'login-form']) ?>
+                <?= $this->Form->create($user, [
+                    'class' => 'login-form',
+                    'data-guard' => '1',
+                ]) ?>
 
                 <div class="form-row">
 
@@ -168,6 +181,7 @@ $this->Html->script(
                 <?= $this->Form->button('Create account', [
                     'class' => 'login-button',
                     'type' => 'submit',
+                    'data-busy-label' => 'Creating account…',
                 ]) ?>
 
                 <?= $this->Form->end() ?>
