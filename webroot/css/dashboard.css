@@ -572,3 +572,87 @@ select {
 .dashboard-widget.widget-wide {
     grid-column: 1 / -1;
 }
+/* =========================================================
+   Dashboard date + range filter
+   ========================================================= */
+
+.date-filter-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-filter-form input[type="date"],
+.dashboard-range-select {
+    min-height: 46px;
+    padding: 0 14px;
+
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.date-filter-form input[type="date"]:hover,
+.dashboard-range-select:hover {
+    border-color: #d2c8bf;
+}
+
+.date-filter-form input[type="date"]:focus,
+.dashboard-range-select:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+.dashboard-range-select {
+    min-width: 120px;
+
+    cursor: pointer;
+}
+
+@media (max-width: 800px) {
+    .top-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .date-filter-form {
+        width: 100%;
+    }
+
+    .date-filter-form input[type="date"],
+    .dashboard-range-select {
+        flex: 1;
+    }
+}
+
+.stat-comparison {
+    margin-top: 10px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.stat-comparison-up {
+    color: var(--green);
+}
+
+.stat-comparison-down {
+    color: var(--danger);
+}
+
+.stat-comparison-neutral {
+    color: var(--text-secondary);
+}

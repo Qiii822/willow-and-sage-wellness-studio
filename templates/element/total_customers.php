@@ -1,3 +1,12 @@
+<?php
+$rangeLabel = match ($range ?? 'day') {
+    'week' => 'week',
+    'month' => 'month',
+    'year' => 'year',
+    default => 'day',
+};
+?>
+
 <div class="stat-card">
     <div class="stat-header">
         <div>
@@ -8,7 +17,7 @@
             </h2>
 
             <span class="stat-badge">
-                as of selected date
+                as of selected <?= h($rangeLabel) ?>
             </span>
         </div>
 
