@@ -14,6 +14,8 @@ use Cake\Validation\Validator;
  * relationship to the Square API - it's populated exclusively via sync,
  * and is fully wiped and reloaded on every run rather than diffed.
  *
+ * @property \App\Model\Table\CustomersTable&\Cake\ORM\Association\BelongsTo $Customers
+ *
  * @method \App\Model\Entity\Booking newEmptyEntity()
  * @method \App\Model\Entity\Booking newEntity(array $data, array $options = [])
  * @method array<\App\Model\Entity\Booking> newEntities(array $data, array $options = [])
@@ -31,6 +33,15 @@ class BookingsTable extends Table
 
         $this->setTable('bookings');
         $this->setPrimaryKey('id');
+
+        // Joined for display purposes only (e.g. showing a customer's name
+        // on the bookings list) - not a real DB foreign key, since the
+        // customers table is fully wiped and reloaded on every sync and
+        // couldn't sustain one.
+        $this->belongsTo('Customers', [
+            'foreignKey' => 'square_customer_id',
+            'bindingKey' => 'square_customer_id',
+        ]);
 
         // Auto-populates created_at on insert and updated_at on every
         // save - neither is set explicitly by BookingSyncService.

@@ -135,3 +135,20 @@
     background: #deebf3;
     border: 1px solid #bfd4e1;
 }
+
+/* Pending (booking awaiting confirmation) */
+.status-badge.pending {
+    color: #8a6415;
+    background: #faf0d7;
+    border: 1px solid #eddca3;
+}
+
+/* Cancelled / declined / no-show (booking did not go ahead) */
+.status-badge.cancelled-by-customer,
+.status-badge.cancelled-by-seller,
+.status-badge.declined,
+.status-badge.no-show {
+    color: #7a2e2e;
+    background: #f5dede;
+    border: 1px solid #e6bcbc;
+}

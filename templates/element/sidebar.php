@@ -13,6 +13,10 @@ $isUsers =
     $controller === 'Users' &&
     $action === 'index';
 
+$isBookings =
+    $controller === 'Bookings' &&
+    $action === 'index';
+
 $isSettings =
     $controller === 'Users' &&
     $action === 'settings';
@@ -44,6 +48,20 @@ $isSettings =
                 '<i data-lucide="layout-dashboard"></i><span>Dashboard</span>',
                 [
                     'controller' => 'Dashboard',
+                    'action' => 'index'
+                ],
+                [
+                    'escape' => false,
+                    'class' => 'sidebar-link'
+                ]
+            ) ?>
+        </li>
+
+        <li class="<?= $isBookings ? 'active' : '' ?>">
+            <?= $this->Html->link(
+                '<i data-lucide="calendar-check"></i><span>Bookings</span>',
+                [
+                    'controller' => 'Bookings',
                     'action' => 'index'
                 ],
                 [
