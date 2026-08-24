@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\I18n\DateTime;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
@@ -129,5 +130,22 @@ class BookingsTable extends Table
         return $this->find()
             ->where(['square_customer_id' => $squareCustomerId])
             ->orderByDesc('start_at');
+    }
+
+    /**
+     * Finds a given Square customer's upcoming bookings (start_at in the
+     * future), soonest first.
+     *
+     * @param string $squareCustomerId
+     * @return \Cake\ORM\Query\SelectQuery
+     */
+    public function findUpcomingBySquareCustomerId(string $squareCustomerId)
+    {
+        return $this->find()
+            ->where([
+                'square_customer_id' => $squareCustomerId,
+                'start_at >=' => DateTime::now(),
+            ])
+            ->orderByAsc('start_at');
     }
 }
