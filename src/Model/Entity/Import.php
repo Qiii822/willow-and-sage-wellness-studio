@@ -20,7 +20,6 @@ use Cake\ORM\Entity;
  * @property string|null $error_message
  *
  * @property \App\Model\Entity\Identity $identity
- * @property \App\Model\Entity\CustomerChange[] $customer_changes
  */
 class Import extends Entity
 {
@@ -32,6 +31,5 @@ class Import extends Entity
         'finished_at' => true,
         'error_message' => true,
         'identity' => true,
-        'customer_changes' => true,
     ];
 }

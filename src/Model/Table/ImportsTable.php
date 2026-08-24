@@ -11,7 +11,6 @@ use Cake\Validation\Validator;
  * Imports Model
  *
  * @property \App\Model\Table\IdentitiesTable&\Cake\ORM\Association\BelongsTo $Identities
- * @property \App\Model\Table\CustomerChangesTable&\Cake\ORM\Association\HasMany $CustomerChanges
  *
  * @method \App\Model\Entity\Import newEmptyEntity()
  * @method \App\Model\Entity\Import newEntity(array $data, array $options = [])
@@ -38,10 +37,6 @@ class ImportsTable extends Table
 
         $this->belongsTo('Identities', [
             'foreignKey' => 'identity_id',
-        ]);
-
-        $this->hasMany('CustomerChanges', [
-            'foreignKey' => 'import_id',
         ]);
     }
 
