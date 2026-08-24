@@ -4,6 +4,8 @@
  * @var \App\Model\Entity\User $user
  */
 
+use App\Model\Table\UsersTable;
+
 $this->assign('title', 'Edit User');
 
 $this->Html->css(
@@ -37,25 +39,29 @@ $isEditingSelf = $identity->id === $user->id;
             <?= $this->Form->control('first_name', [
                 'label' => 'First Name',
                 'required' => true,
-                'maxlength' => 50,
+                'maxlength' => UsersTable::NAME_MAX,
             ]) ?>
-            <p class="user-form-hint">Maximum 50 characters</p>
+            <p class="user-form-hint">Maximum <?= UsersTable::NAME_MAX ?> characters</p>
         </div>
 
         <div class="user-form-field">
             <?= $this->Form->control('surname', [
                 'label' => 'Surname',
                 'required' => true,
-                'maxlength' => 50,
+                'maxlength' => UsersTable::NAME_MAX,
             ]) ?>
-            <p class="user-form-hint">Maximum 50 characters</p>
+            <p class="user-form-hint">Maximum <?= UsersTable::NAME_MAX ?> characters</p>
         </div>
 
-        <?= $this->Form->control('email', [
-            'type' => 'email',
-            'label' => 'Email',
-            'required' => true,
-        ]) ?>
+        <div class="user-form-field">
+            <?= $this->Form->control('email', [
+                'type' => 'email',
+                'label' => 'Email',
+                'required' => true,
+                'maxlength' => UsersTable::EMAIL_MAX,
+            ]) ?>
+            <p class="user-form-hint">Maximum <?= UsersTable::EMAIL_MAX ?> characters</p>
+        </div>
 
         <?php if ($isSuperAdmin && !$isEditingSelf): ?>
 

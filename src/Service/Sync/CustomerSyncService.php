@@ -102,6 +102,26 @@ class CustomerSyncService
             throw $e;
         }
 
+        /*
+         * Customers that did not exist locally a moment ago have just
+         * arrived, so accounts waiting on them can now be matched.
+         *
+         * Deliberately outside the try above: linking is bookkeeping on top
+         * of a sync that has already succeeded, and a failure here must not
+         * mark a good import as failed.
+         */
+        try {
+            $linked = (new CustomerLinkService())->linkUnlinkedUsers();
+
+            if ($linked > 0) {
+                \Cake\Log\Log::info(
+                    'Linked ' . $linked . ' account(s) to Square customers after import ' . $import->id
+                );
+            }
+        } catch (\Throwable $e) {
+            \Cake\Log\Log::error('Customer linking failed after sync: ' . $e->getMessage());
+        }
+
         return $import;
     }
 

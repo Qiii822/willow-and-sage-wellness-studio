@@ -1,7 +1,7 @@
 <?php
 /**
  * @var \App\View\AppView $this
- * @var iterable $recentCustomers
+ * @var array<int, array<string, mixed>> $recentCustomers
  */
 ?>
 
@@ -10,7 +10,7 @@
     <div class="table-header">
         <div>
             <h3>Recent Customers</h3>
-            <p>Latest customers added from Square</p>
+            <p>Synced from Square and registered on the site</p>
         </div>
 
         <?= $this->Html->link(
@@ -32,6 +32,7 @@
                 <th>Customer</th>
                 <th>Email</th>
                 <th>Phone</th>
+                <th>Source</th>
                 <th>Account Created</th>
             </tr>
             </thead>
@@ -40,26 +41,28 @@
             <?php foreach ($recentCustomers as $index => $customer): ?>
                 <tr class="<?= $index >= 5 ? 'extra-customer-row' : '' ?>">
                     <td>
-                        <?= h(trim(
-                            ($customer->given_name ?? '') . ' ' .
-                            ($customer->family_name ?? '')
-                        )) ?>
+                        <?= h($customer['name'] !== '' ? $customer['name'] : '—') ?>
                     </td>
 
                     <td>
-                        <?= h($customer->email_address ?? '—') ?>
+                        <?= h($customer['email'] ?? '—') ?>
                     </td>
 
                     <td>
-                        <?= h($customer->phone_number ?? '—') ?>
+                        <?= h($customer['phone'] ?? '—') ?>
                     </td>
 
                     <td>
-                        <?php if ($customer->square_created_at): ?>
-                            <?= h(
-                                $customer->square_created_at
-                                    ->format('d/m/Y H:i:s')
-                            ) ?>
+                        <?php if ($customer['source'] === 'account'): ?>
+                            <span class="source-badge is-account">Registered</span>
+                        <?php else: ?>
+                            <span class="source-badge">Square</span>
+                        <?php endif; ?>
+                    </td>
+
+                    <td>
+                        <?php if ($customer['created']): ?>
+                            <?= h($customer['created']->format('d/m/Y H:i:s')) ?>
                         <?php else: ?>
                             —
                         <?php endif; ?>
@@ -71,5 +74,3 @@
     </div>
 
 </div>
-
-

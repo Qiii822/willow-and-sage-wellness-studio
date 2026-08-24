@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use Cake\Mailer\Mailer;
 use App\Service\SquareAuthService;
+use App\Service\Sync\CustomerLinkService;
 
 /**
  * Users Controller
@@ -13,6 +14,14 @@ use App\Service\SquareAuthService;
  */
 class UsersController extends AppController
 {
+    /**
+     * Roles that count as staff. The admin list shows these and nothing
+     * else; everyone on the `user` role is a customer.
+     *
+     * @var list<string>
+     */
+    protected const STAFF_ROLES = ['admin', 'superadmin'];
+
     public function beforeFilter(\Cake\Event\EventInterface $event): void
     {
         parent::beforeFilter($event);
@@ -20,6 +29,7 @@ class UsersController extends AppController
         // the infinite redirect loop issue
         $this->Authentication->allowUnauthenticated([
             'login',
+            'register',
             'forgotPassword',
             'resetPassword',
         ]);
@@ -42,6 +52,30 @@ class UsersController extends AppController
         )) {
             $this->viewBuilder()->setLayout('admin');
         }
+
+        /*
+         * This controller mixes staff screens with ones every signed-in user
+         * needs (profile, password changes), so the gate is per-action rather
+         * than the controller-wide $adminOnly flag. It sends customers to the
+         * login page the same way the other staff-only controllers do; the
+         * requireAdmin() calls inside the actions remain as a second check.
+         */
+        $staffOnlyActions = [
+            'index',
+            'view',
+            'edit',
+            'add',
+            'delete',
+            'settings',
+        ];
+
+        if (in_array(
+            $this->request->getParam('action'),
+            $staffOnlyActions,
+            true
+        )) {
+            $this->blockNonAdmin($event);
+        }
     }
 
     /**
@@ -60,7 +94,7 @@ class UsersController extends AppController
             $role = $identity->roles ?? $identity->role ?? null;
             $fallbackLocation = $role === 'admin' || $role === 'superadmin'
                 ? '/dashboard'
-                : ['controller' => 'Dashboard', 'action' => 'index'];
+                : ['controller' => 'Home', 'action' => 'index'];
             // Always use role-based redirect, unless user was trying to access a specific page
             $loginRedirect = $this->Authentication->getLoginRedirect();
             $isDefaultRedirect = !$loginRedirect || str_contains((string)$loginRedirect, '/login');
@@ -71,6 +105,67 @@ class UsersController extends AppController
         if ($this->request->is('post') && !$result->isValid()) {
             $this->Flash->error('Email address and/or Password is incorrect. Please try again. ');
         }
+    }
+
+    /**
+     * Register method
+     *
+     * Public self-service signup. This route can only ever produce a normal
+     * customer account: the role and active flag are set here and any values
+     * posted for them are discarded, so a crafted form cannot mint an admin.
+     * Staff accounts are created from the admin screens (see add()).
+     *
+     * @return \Cake\Http\Response|null|void
+     */
+    public function register()
+    {
+        $this->request->allowMethod(['get', 'post']);
+
+        // Nothing to sign up for while already signed in.
+        if ($this->request->getAttribute('identity')) {
+            return $this->redirect(['controller' => 'Home', 'action' => 'index']);
+        }
+
+        $user = $this->Users->newEmptyEntity();
+
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+
+            $data['roles'] = 'user';
+            $data['active'] = true;
+
+            $user = $this->Users->patchEntity($user, $data);
+
+            if ($this->Users->save($user)) {
+                /*
+                 * Someone who has booked with the studio before is already in
+                 * the Square mirror, so their new account can be matched right
+                 * away rather than waiting for the next sync. Never let a
+                 * linking problem block a signup that already succeeded.
+                 */
+                try {
+                    (new CustomerLinkService())->linkUser($user);
+                } catch (\Throwable $e) {
+                    \Cake\Log\Log::error(
+                        'Could not link new account to a Square customer: ' . $e->getMessage()
+                    );
+                }
+
+                $this->Flash->success(
+                    'Your account has been created. Please sign in.'
+                );
+
+                return $this->redirect(['action' => 'login']);
+            }
+
+            $this->set('errors', $user->getErrors());
+
+            $this->Flash->error(
+                'We could not create your account. Please correct the errors below.'
+            );
+        }
+
+        $this->set(compact('user'));
     }
 
     /**
@@ -270,8 +365,14 @@ class UsersController extends AppController
 
         $search = trim((string)$this->request->getQuery('q', ''));
 
+        /*
+         * Staff accounts only. Customers hold the `user` role and are managed
+         * from the dashboard's customer screens instead, alongside the
+         * customer records synced from Square.
+         */
         $query = $this->Users
             ->find()
+            ->where(['Users.roles IN' => self::STAFF_ROLES])
             ->orderBy([
                 'Users.first_name' => 'ASC',
                 'Users.surname' => 'ASC',
@@ -316,7 +417,9 @@ class UsersController extends AppController
         $createdFrom = trim((string)$this->request->getQuery('created_from', ''));
         $createdTo = trim((string)$this->request->getQuery('created_to', ''));
 
-        if (in_array($role, ['user', 'admin', 'superadmin'], true)) {
+        // Only staff roles are selectable here; anything else narrows to
+        // nothing, so treat it as no filter rather than showing an empty page.
+        if (in_array($role, self::STAFF_ROLES, true)) {
             $query->where(['Users.roles' => $role]);
         } else {
             $role = '';
@@ -510,9 +613,21 @@ class UsersController extends AppController
                     'The user has been created.'
                 );
 
+                /*
+                 * Customers are not listed on the admin screen, so send the
+                 * creator to whichever list the new account shows up on.
+                 */
+                if (in_array($user->roles, self::STAFF_ROLES, true)) {
+                    return $this->redirect([
+                        'controller' => 'Users',
+                        'action' => 'index'
+                    ]);
+                }
+
                 return $this->redirect([
-                    'controller' => 'Users',
-                    'action' => 'index'
+                    'controller' => 'Customers',
+                    'action' => 'index',
+                    '?' => ['source' => 'registered'],
                 ]);
             }
 

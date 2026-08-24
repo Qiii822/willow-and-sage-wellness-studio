@@ -20,19 +20,19 @@ $this->Html->script(
 
             <div class="login-brand">
                 <div class="login-brand-mark">W</div>
-                <strong>Wendy Admin</strong>
+                <strong>Willow and Sage</strong>
             </div>
 
             <div class="login-copy">
-                <h2>Customer insights, all in one place.</h2>
+                <h2>Slow down, unwind, feel nurtured.</h2>
                 <p>
-                    View customer activity, bookings and business performance
-                    from one simple dashboard.
+                    Sign in to see your upcoming treatments, review past visits
+                    and book your next appointment.
                 </p>
             </div>
 
             <div class="login-meta">
-                Square Customer Analyser
+                Wellness studio &middot; Ingle Farm, Adelaide
             </div>
 
         </section>
@@ -42,8 +42,8 @@ $this->Html->script(
             <div class="login-card">
 
                 <div class="login-header">
-                    <h1>Welcome back</h1>
-                    <p>Sign in to continue to your dashboard.</p>
+                    <h1>Sign in</h1>
+                    <p>Enter your details to reach your bookings.</p>
                 </div>
 
                 <?= $this->Flash->render() ?>
@@ -54,7 +54,7 @@ $this->Html->script(
                     <?= $this->Form->control('email', [
                         'required' => true,
                         'label' => 'Email address',
-                        'placeholder' => 'wendy@example.com',
+                        'placeholder' => 'you@example.com',
                         'class' => 'form-control',
                         'autocomplete' => 'email',
                     ]) ?>
@@ -101,6 +101,17 @@ $this->Html->script(
                 ]) ?>
 
                 <?= $this->Form->end() ?>
+
+                <p class="auth-switch">
+                    New here?
+                    <?= $this->Html->link(
+                        'Create an account',
+                        [
+                            'controller' => 'Users',
+                            'action' => 'register'
+                        ]
+                    ) ?>
+                </p>
 
             </div>
 
