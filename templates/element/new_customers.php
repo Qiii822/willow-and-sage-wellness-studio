@@ -3,6 +3,7 @@ $rangeLabel = match ($range ?? 'day') {
     'week' => 'week',
     'month' => 'month',
     'year' => 'year',
+    'custom' => 'selected range',
     default => 'day',
 };
 
@@ -10,6 +11,7 @@ $comparisonLabel = match ($range ?? 'day') {
     'week' => 'previous week',
     'month' => 'previous month',
     'year' => 'previous year',
+    'custom' => 'previous period',
     default => 'previous day',
 };
 ?>
@@ -27,7 +29,11 @@ $comparisonLabel = match ($range ?? 'day') {
             </h2>
 
             <span class="stat-badge">
-                new this <?= h($rangeLabel) ?>
+                <?php if (($range ?? 'day') === 'custom'): ?>
+                    new in <?= h($rangeLabel) ?>
+                <?php else: ?>
+                    new this <?= h($rangeLabel) ?>
+                <?php endif; ?>
             </span>
 
             <div class="stat-comparison">

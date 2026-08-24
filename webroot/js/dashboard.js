@@ -624,3 +624,22 @@ document.addEventListener('DOMContentLoaded', function () {
     refreshIcons();
 
 });
+
+function handleRangeChange(select) {
+
+    const customRange =
+        document.getElementById(
+            'custom-date-range'
+        );
+
+    if (select.value === 'custom') {
+
+        customRange?.classList.add('show');
+
+        return;
+    }
+
+    customRange?.classList.remove('show');
+
+    select.form.submit();
+}

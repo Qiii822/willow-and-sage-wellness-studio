@@ -28,7 +28,6 @@ body {
             180deg,
             #faf9f7 0%,
             var(--background) 100%
-
         );
 }
 
@@ -37,6 +36,11 @@ input,
 select {
     font: inherit;
 }
+
+
+/* =========================================================
+   Dashboard layout
+   ========================================================= */
 
 .dashboard-container {
     display: flex;
@@ -51,6 +55,7 @@ select {
     padding: 38px 42px 60px;
 }
 
+
 /* =========================================================
    Dashboard customisation controls
    ========================================================= */
@@ -59,8 +64,8 @@ select {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 10px;
 
+    gap: 10px;
     margin: 22px 0 18px;
 }
 
@@ -68,6 +73,7 @@ select {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     gap: 8px;
 
     min-height: 42px;
@@ -79,6 +85,7 @@ select {
     font-weight: 700;
 
     background: transparent;
+
     border: none;
     border-radius: 10px;
 
@@ -98,9 +105,9 @@ select {
 
 .dashboard-customise-btn:hover {
     color: var(--text-primary);
+
     background: var(--primary-light);
 }
-
 
 
 /* =========================================================
@@ -128,6 +135,7 @@ select {
     inset: 0;
 
     background: rgba(45, 40, 36, 0.35);
+
     backdrop-filter: blur(3px);
 }
 
@@ -140,14 +148,15 @@ select {
 
     padding: 28px;
 
+    overflow-y: auto;
+
     background: var(--surface);
+
     border: 1px solid var(--border);
     border-radius: 22px;
 
     box-shadow:
         0 24px 70px rgba(45, 40, 36, 0.20);
-
-    overflow-y: auto;
 }
 
 .widget-modal-header {
@@ -165,6 +174,7 @@ select {
     color: var(--text-primary);
     font-size: 24px;
     font-weight: 750;
+
     letter-spacing: -0.5px;
 }
 
@@ -188,6 +198,7 @@ select {
     color: var(--text-secondary);
 
     background: transparent;
+
     border: none;
     border-radius: 10px;
 
@@ -196,6 +207,7 @@ select {
 
 .widget-modal-close:hover {
     color: var(--text-primary);
+
     background: var(--primary-light);
 }
 
@@ -217,11 +229,13 @@ select {
     align-items: flex-start;
 
     min-height: 150px;
+
     padding: 20px;
 
     text-align: left;
 
     background: var(--background);
+
     border: 1px solid var(--border);
     border-radius: 16px;
 
@@ -258,6 +272,7 @@ select {
     color: var(--primary-dark);
 
     background: var(--primary-light);
+
     border-radius: 12px;
 }
 
@@ -278,19 +293,33 @@ select {
     margin: 0;
 
     color: var(--text-secondary);
+
     font-size: 13px;
     line-height: 1.5;
 }
 
-@media (max-width: 650px) {
-    .widget-library-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .widget-modal-content {
-        padding: 20px;
-    }
+.widget-library-item.already-added {
+    opacity: 0.55;
 }
+
+.widget-library-item.already-added::after {
+    content: "Added";
+
+    display: inline-flex;
+
+    margin-top: 14px;
+    padding: 4px 9px;
+
+    color: var(--green);
+
+    font-size: 11px;
+    font-weight: 700;
+
+    background: var(--green-light);
+
+    border-radius: 999px;
+}
+
 
 /* =========================================================
    Dashboard Grid
@@ -305,24 +334,6 @@ select {
     gap: 24px;
 }
 
-
-/* Widget sizes */
-
-.dashboard-widget.widget-small {
-    grid-column: span 1;
-}
-
-.dashboard-widget.widget-medium {
-    grid-column: span 2;
-}
-
-.dashboard-widget.widget-wide {
-    grid-column: 1 / -1;
-}
-
-
-/* Widget */
-
 .dashboard-widget {
     position: relative;
 
@@ -335,6 +346,29 @@ select {
 
 .dashboard-widget.widget-hidden {
     display: none;
+}
+
+.dashboard-widget.widget-small {
+    grid-column: span 1;
+
+    min-height: 200px;
+    padding: 24px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 22px;
+
+    box-shadow:
+        0 12px 36px rgba(72, 64, 58, 0.08);
+}
+
+.dashboard-widget.widget-medium {
+    grid-column: span 2;
+}
+
+.dashboard-widget.widget-wide {
+    grid-column: 1 / -1;
 }
 
 
@@ -366,9 +400,6 @@ select {
         12px 12px;
 }
 
-
-/* Widget outline while editing */
-
 .dashboard-widget-grid.editing
 .dashboard-widget:not(.widget-hidden) {
     outline: 2px dashed #d8cec5;
@@ -384,9 +415,41 @@ select {
     cursor: grabbing;
 }
 
+.dashboard-widget-grid.editing
+.dashboard-widget.widget-small {
+    min-height: 180px;
+}
+
 
 /* =========================================================
-   Edit controls
+   Drop slots
+   ========================================================= */
+
+.dashboard-drop-slot {
+    display: none;
+
+    min-height: 180px;
+
+    background: rgba(255, 255, 255, 0.25);
+
+    border: 2px dashed #d8cec5;
+    border-radius: 20px;
+}
+
+.dashboard-widget-grid.editing
+.dashboard-drop-slot {
+    display: block;
+}
+
+.dashboard-drop-slot.drag-over {
+    background: var(--primary-light);
+
+    border-color: var(--primary);
+}
+
+
+/* =========================================================
+   Widget edit controls
    ========================================================= */
 
 .widget-edit-controls {
@@ -408,7 +471,6 @@ select {
     display: flex;
 }
 
-
 .widget-edit-controls button {
     display: flex;
     align-items: center;
@@ -420,10 +482,10 @@ select {
     min-width: 36px;
     min-height: 36px;
 
-    padding: 0;
-    margin: 0;
-
     flex: 0 0 36px;
+
+    margin: 0;
+    padding: 0;
 
     color: var(--text-secondary);
 
@@ -449,9 +511,6 @@ select {
     height: 17px;
 }
 
-
-/* Delete widget */
-
 .widget-remove-btn:hover {
     color: var(--danger) !important;
 
@@ -473,28 +532,196 @@ select {
 
 
 /* =========================================================
-   Widget Library status
+   Customer comparison
    ========================================================= */
 
-.widget-library-item.already-added {
-    opacity: 0.55;
+.stat-comparison {
+    margin-top: 10px;
+
+    font-size: 12px;
+    font-weight: 700;
 }
 
-.widget-library-item.already-added::after {
-    content: "Added";
-
-    display: inline-flex;
-
-    margin-top: 14px;
-    padding: 4px 9px;
-
+.stat-comparison-up {
     color: var(--green);
+}
+
+.stat-comparison-down {
+    color: var(--danger);
+}
+
+.stat-comparison-neutral {
+    color: var(--text-secondary);
+}
+
+
+/* =========================================================
+   Dashboard filters
+   ========================================================= */
+
+.top-actions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+
+    gap: 10px;
+}
+
+.date-filter-form {
+    display: flex;
+    align-items: flex-end;
+
+    gap: 10px;
+}
+
+.dashboard-range-select {
+    min-width: 130px;
+    height: 46px;
+
+    padding: 0 14px;
+
+    color: var(--text-primary);
+
+    font-size: 14px;
+    font-weight: 600;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    outline: none;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dashboard-range-select:hover {
+    border-color: #d2c8bf;
+}
+
+.dashboard-range-select:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+
+/* =========================================================
+   Custom date range
+   ========================================================= */
+
+.custom-date-range {
+    display: none;
+    align-items: flex-end;
+
+    gap: 10px;
+}
+
+.custom-date-range.show {
+    display: flex;
+}
+
+.custom-date-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.custom-date-field label {
+    margin: 0;
+
+    color: var(--text-secondary);
+
     font-size: 11px;
     font-weight: 700;
+    line-height: 1;
+}
 
-    background: var(--green-light);
+.custom-date-field input[type="date"] {
+    width: 150px;
+    height: 46px;
 
-    border-radius: 999px;
+    margin: 0;
+    padding: 0 12px;
+
+    color: var(--text-primary);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.custom-date-field input[type="date"]:hover {
+    border-color: #d2c8bf;
+}
+
+.custom-date-field input[type="date"]:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+
+/* =========================================================
+   Filter buttons
+   ========================================================= */
+
+.custom-date-apply,
+.export-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 46px;
+
+    margin: 0;
+}
+
+.custom-date-apply {
+    padding: 0 16px;
+
+    color: var(--on-primary);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    background: var(--primary);
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.custom-date-apply:hover {
+    background: var(--primary-dark);
+
+    transform: translateY(-1px);
+}
+
+.export-btn {
+    gap: 8px;
 }
 
 
@@ -515,6 +742,37 @@ select {
 }
 
 
+@media (max-width: 900px) {
+
+    .top-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .date-filter-form {
+        width: 100%;
+
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .dashboard-range-select {
+        width: 100%;
+    }
+
+    .custom-date-range {
+        width: 100%;
+
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .custom-date-field input[type="date"] {
+        width: 100%;
+    }
+}
+
+
 @media (max-width: 700px) {
 
     .dashboard-widget-grid {
@@ -528,131 +786,14 @@ select {
     }
 }
 
-.dashboard-drop-slot {
-    display: none;
 
-    min-height: 180px;
+@media (max-width: 650px) {
 
-    border: 2px dashed #d8cec5;
-    border-radius: 20px;
-
-    background: rgba(255, 255, 255, 0.25);
-}
-
-.dashboard-widget-grid.editing
-.dashboard-drop-slot {
-    display: block;
-}
-
-.dashboard-drop-slot.drag-over {
-    background: var(--primary-light);
-
-    border-color: var(--primary);
-}
-
-.dashboard-widget-grid.editing
-.dashboard-widget.widget-small {
-    min-height: 180px;
-}
-
-.dashboard-widget.widget-small {
-    grid-column: span 1;
-
-    min-height: 200px;
-    padding: 24px;
-
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 22px;
-
-    box-shadow:
-        0 12px 36px rgba(72, 64, 58, 0.08);
-}
-
-.dashboard-widget.widget-wide {
-    grid-column: 1 / -1;
-}
-/* =========================================================
-   Dashboard date + range filter
-   ========================================================= */
-
-.date-filter-form {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.date-filter-form input[type="date"],
-.dashboard-range-select {
-    min-height: 46px;
-    padding: 0 14px;
-
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-
-    background: var(--surface);
-
-    border: 1px solid var(--border);
-    border-radius: 12px;
-
-    outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.date-filter-form input[type="date"]:hover,
-.dashboard-range-select:hover {
-    border-color: #d2c8bf;
-}
-
-.date-filter-form input[type="date"]:focus,
-.dashboard-range-select:focus {
-    border-color: var(--primary);
-
-    box-shadow:
-        0 0 0 4px rgba(139, 126, 116, 0.10);
-}
-
-.dashboard-range-select {
-    min-width: 120px;
-
-    cursor: pointer;
-}
-
-@media (max-width: 800px) {
-    .top-actions {
-        align-items: stretch;
-        flex-direction: column;
+    .widget-library-grid {
+        grid-template-columns: 1fr;
     }
 
-    .date-filter-form {
-        width: 100%;
+    .widget-modal-content {
+        padding: 20px;
     }
-
-    .date-filter-form input[type="date"],
-    .dashboard-range-select {
-        flex: 1;
-    }
-}
-
-.stat-comparison {
-    margin-top: 10px;
-
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.stat-comparison-up {
-    color: var(--green);
-}
-
-.stat-comparison-down {
-    color: var(--danger);
-}
-
-.stat-comparison-neutral {
-    color: var(--text-secondary);
 }

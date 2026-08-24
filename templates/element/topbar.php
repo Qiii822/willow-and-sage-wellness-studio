@@ -2,8 +2,9 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\User|null $identity
- * @var string $selectedDate
  * @var string $range
+ * @var string|null $startDate
+ * @var string|null $endDate
  */
 
 $today = \Cake\I18n\FrozenDate::today()
@@ -25,7 +26,6 @@ $today = \Cake\I18n\FrozenDate::today()
 
     <div class="top-actions">
 
-        <!-- Date + range filter -->
         <form
             class="date-filter-form"
             method="get"
@@ -35,19 +35,12 @@ $today = \Cake\I18n\FrozenDate::today()
             ]) ?>"
         >
 
-            <input
-                type="date"
-                name="date"
-                max="<?= h($today) ?>"
-                value="<?= h($selectedDate ?? $today) ?>"
-                onchange="this.form.submit()"
-            >
-
-
+            <!-- Range -->
             <select
                 name="range"
+                id="dashboard-range-select"
                 class="dashboard-range-select"
-                onchange="this.form.submit()"
+                onchange="handleRangeChange(this)"
             >
 
                 <option
@@ -86,19 +79,83 @@ $today = \Cake\I18n\FrozenDate::today()
                     Yearly
                 </option>
 
+                <option
+                    value="custom"
+                    <?= ($range ?? '') === 'custom'
+                        ? 'selected'
+                        : '' ?>
+                >
+                    Custom
+                </option>
+
             </select>
+
+
+            <!-- Custom dates -->
+            <div
+                class="custom-date-range
+                <?= ($range ?? '') === 'custom'
+                    ? 'show'
+                    : '' ?>"
+                id="custom-date-range"
+            >
+
+                <div class="custom-date-field">
+
+                    <label for="start-date">
+                        Start
+                    </label>
+
+                    <input
+                        type="date"
+                        id="start-date"
+                        name="start_date"
+                        max="<?= h($today) ?>"
+                        value="<?= h($startDate ?? '') ?>"
+                    >
+
+                </div>
+
+
+                <div class="custom-date-field">
+
+                    <label for="end-date">
+                        End
+                    </label>
+
+                    <input
+                        type="date"
+                        id="end-date"
+                        name="end_date"
+                        max="<?= h($today) ?>"
+                        value="<?= h($endDate ?? '') ?>"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="custom-date-apply"
+                >
+                    Apply
+                </button>
+
+            </div>
 
         </form>
 
 
-        <!-- Export all customers up to selected date -->
+        <!-- Export -->
         <?= $this->Html->link(
             '<i data-lucide="download"></i> Export customers',
             [
                 'controller' => 'Dashboard',
                 'action' => 'exportCustomers',
                 '?' => [
-                    'date' => $selectedDate ?? $today
+                    'range' => $range ?? 'day',
+                    'start_date' => $startDate ?? null,
+                    'end_date' => $endDate ?? null,
                 ]
             ],
             [
