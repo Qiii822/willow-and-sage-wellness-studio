@@ -13,6 +13,7 @@ use Cake\ORM\Entity;
  *
  * @property string $id
  * @property string $identity_id
+ * @property string $resource
  * @property string $source
  * @property string $status
  * @property \Cake\I18n\DateTime $started_at
@@ -25,6 +26,7 @@ class Import extends Entity
 {
     protected array $_accessible = [
         'identity_id' => true,
+        'resource' => true,
         'source' => true,
         'status' => true,
         'started_at' => true,
