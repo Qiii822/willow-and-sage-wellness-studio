@@ -50,14 +50,15 @@ class CustomerSyncService
             throw new \RuntimeException('Cannot sync - Square is not connected.');
         }
 
-        // Stops two syncs writing to the customers table at once.
-        if ($this->importsTable->hasRunningImport()) {
-            throw new \RuntimeException('A sync is already running - try again shortly.');
+        // Stops two customer syncs writing to the customers table at once.
+        if ($this->importsTable->hasRunningImport('customers')) {
+            throw new \RuntimeException('A customer sync is already running - try again shortly.');
         }
 
         // One Import row per run, marking start/end and outcome of this reimport
         $import = $this->importsTable->newEntity([
             'identity_id' => $identity->id,
+            'resource' => 'customers',
             'source' => $source,
             'status' => 'running',
             'started_at' => DateTime::now(),
