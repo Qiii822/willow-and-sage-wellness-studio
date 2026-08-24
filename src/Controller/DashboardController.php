@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Utility\PhoneNumber;
 use Cake\Http\Response;
 use Cake\I18n\FrozenTime;
 use Cake\ORM\Query\SelectQuery;
@@ -143,7 +144,7 @@ class DashboardController extends AppController
             $rows[] = [
                 'name' => trim($user->first_name . ' ' . $user->surname),
                 'email' => $user->email,
-                'phone' => null,
+                'phone' => PhoneNumber::format($user->phone),
                 'created' => $user->created_at,
                 'source' => 'account',
             ];

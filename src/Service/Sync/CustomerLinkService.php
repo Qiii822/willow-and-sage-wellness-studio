@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Service\Sync;
 
 use App\Model\Entity\User;
+use App\Utility\PhoneNumber;
 use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 
@@ -46,24 +47,22 @@ class CustomerLinkService
     public function linkUser(User $user): bool
     {
         // Already linked, or nothing to match on.
-        if (!empty($user->square_customer_id) || empty($user->email)) {
+        if (!empty($user->square_customer_id)) {
             return false;
         }
 
-        $matches = $this->customersTable->find()
-            ->where([
-                'email_address' => $user->email,
-                'deleted_at IS' => null,
-            ])
-            ->limit(2)
-            ->all()
-            ->toList();
+        /*
+         * Mobile first. Square's booking checkout treats the mobile as the
+         * buyer's account - it is what they sign back in with - so a
+         * returning customer reliably enters the same number, whereas the
+         * email is just another field they may fill differently.
+         */
+        $squareCustomerId = $this->findByPhone($user)
+            ?? $this->findByEmail($user);
 
-        if (count($matches) !== 1) {
+        if ($squareCustomerId === null) {
             return false;
         }
-
-        $squareCustomerId = $matches[0]->square_customer_id;
 
         /*
          * Another account already claims this Square customer. The column is
@@ -89,6 +88,64 @@ class CustomerLinkService
         $user->square_customer_id = $squareCustomerId;
 
         return (bool)$this->usersTable->save($user);
+    }
+
+    /**
+     * The Square customer whose mobile is this account's mobile.
+     *
+     * Square stores numbers punctuated (`+61 415 555 365`) while accounts
+     * hold E.164, so the stored text is stripped down before comparing.
+     * That rules out an index, which is fine at this table's size and is the
+     * price of not adding a derived column to a table the sync owns.
+     *
+     * @param \App\Model\Entity\User $user
+     * @return string|null The Square customer id, or null if not exactly one match.
+     */
+    protected function findByPhone(User $user): ?string
+    {
+        $phone = PhoneNumber::normalise($user->phone ?? null);
+
+        if ($phone === null) {
+            return null;
+        }
+
+        // Compare on digits alone: +61415555365 vs the stored +61 415 555 365.
+        $bare = ltrim($phone, '+');
+
+        $matches = $this->customersTable->find()
+            ->where([
+                'deleted_at IS' => null,
+                "REPLACE(REPLACE(REPLACE(phone_number, ' ', ''), '-', ''), '+', '') =" => $bare,
+            ])
+            ->limit(2)
+            ->all()
+            ->toList();
+
+        return count($matches) === 1 ? $matches[0]->square_customer_id : null;
+    }
+
+    /**
+     * The Square customer whose email is this account's email.
+     *
+     * @param \App\Model\Entity\User $user
+     * @return string|null The Square customer id, or null if not exactly one match.
+     */
+    protected function findByEmail(User $user): ?string
+    {
+        if (empty($user->email)) {
+            return null;
+        }
+
+        $matches = $this->customersTable->find()
+            ->where([
+                'email_address' => $user->email,
+                'deleted_at IS' => null,
+            ])
+            ->limit(2)
+            ->all()
+            ->toList();
+
+        return count($matches) === 1 ? $matches[0]->square_customer_id : null;
     }
 
     /**

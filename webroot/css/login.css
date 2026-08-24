@@ -500,6 +500,57 @@ main.main > .container {
     font-weight: 600;
 }
 
+/* =========================================================
+   Password show/hide
+   ========================================================= */
+
+.password-wrapper {
+    position: relative;
+}
+
+/* Keep typed characters clear of the button. */
+.password-wrapper .form-control {
+    padding-right: 48px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 7px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    color: var(--text-secondary);
+
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+
+    transform: translateY(-50%);
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: var(--text-primary);
+    background: rgba(139, 126, 116, 0.12);
+}
+
+.password-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
 .field-counter {
     color: var(--text-secondary);
     font-size: 12px;

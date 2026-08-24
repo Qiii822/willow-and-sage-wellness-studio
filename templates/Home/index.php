@@ -156,14 +156,20 @@ $navItems = [
             </a>
 
             <?php if ($identity) : ?>
-                <?php /*
+                <?php
+                /*
                  * Square's booking page has no prefill parameter, so the
-                 * customer types their own email over there. That address is
-                 * the only thing tying the booking back to this account, so
-                 * spell out which one to use.
-                 */ ?>
+                 * customer types their own details over there. The mobile is
+                 * what ties the booking back to this account - Square keys a
+                 * buyer's own account on it too - so name that number when we
+                 * have one, and fall back to the email when we do not.
+                 */
+                $bookWith = $identity->phone
+                    ? \App\Utility\PhoneNumber::format($identity->phone)
+                    : $identity->email;
+                ?>
                 <p class="hero-note">
-                    Book with <strong><?= h($identity->email) ?></strong>
+                    Book with <strong><?= h($bookWith) ?></strong>
                     so your appointments show up here.
                 </p>
             <?php endif; ?>

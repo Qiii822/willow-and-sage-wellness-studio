@@ -93,7 +93,7 @@ $this->Paginator->options([
                                     ($customer->surname ?? '')
                                 );
                                 $email = $customer->email;
-                                $phone = null;
+                                $phone = \App\Utility\PhoneNumber::format($customer->phone);
                                 $created = $customer->created_at;
                             } else {
                                 $name = trim(

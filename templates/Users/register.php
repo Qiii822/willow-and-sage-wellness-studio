@@ -21,6 +21,11 @@ $this->Html->script(
     'field_counter',
     ['block' => true]
 );
+
+$this->Html->script(
+    'password_toggle',
+    ['block' => true]
+);
 ?>
 
 <div class="login-page">
@@ -105,6 +110,24 @@ $this->Html->script(
                 </div>
 
                 <div class="form-group">
+                    <?= $this->Form->control('phone', [
+                        'type' => 'tel',
+                        'required' => true,
+                        'label' => 'Mobile number',
+                        'placeholder' => '0412 345 678',
+                        'class' => 'form-control',
+                        'autocomplete' => 'tel',
+                        'inputmode' => 'tel',
+                        'maxlength' => 20,
+                    ]) ?>
+
+                    <p class="field-hint">
+                        Use this same number when you book, so your
+                        appointments show up in your account.
+                    </p>
+                </div>
+
+                <div class="form-group">
                     <?= $this->Form->control('password', [
                         'type' => 'password',
                         'required' => true,
@@ -114,6 +137,7 @@ $this->Html->script(
                         'autocomplete' => 'new-password',
                         'minlength' => UsersTable::PASSWORD_MIN,
                         'maxlength' => UsersTable::PASSWORD_MAX,
+                        'data-toggle' => '1',
                     ]) ?>
 
                     <p class="field-hint">
@@ -133,6 +157,7 @@ $this->Html->script(
                         'autocomplete' => 'new-password',
                         'minlength' => UsersTable::PASSWORD_MIN,
                         'maxlength' => UsersTable::PASSWORD_MAX,
+                        'data-toggle' => '1',
                     ]) ?>
 
                     <p class="field-hint">

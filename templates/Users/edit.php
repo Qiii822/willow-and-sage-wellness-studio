@@ -63,6 +63,19 @@ $isEditingSelf = $identity->id === $user->id;
             <p class="user-form-hint">Maximum <?= UsersTable::EMAIL_MAX ?> characters</p>
         </div>
 
+        <div class="user-form-field">
+            <?= $this->Form->control('phone', [
+                'type' => 'tel',
+                'label' => 'Mobile Number',
+                'placeholder' => '0412 345 678',
+                'maxlength' => 20,
+            ]) ?>
+            <p class="user-form-hint">
+                Australian mobile. Used to match the account to its Square
+                customer record.
+            </p>
+        </div>
+
         <?php if ($isSuperAdmin && !$isEditingSelf): ?>
 
             <?= $this->Form->control('roles', [

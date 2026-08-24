@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Utility\PhoneNumber;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -66,6 +67,20 @@ class UsersTable extends Table
             ->maxLength('surname', self::NAME_MAX, 'Surname cannot be more than ' . self::NAME_MAX . ' characters')
             ->requirePresence('surname', 'create')
             ->notEmptyString('surname');
+
+        /*
+         * The entity rewrites this to E.164 on the way in, so by the time the
+         * rule runs a valid number already looks like +61415555365. Anything
+         * that could not be parsed arrives unchanged and fails here.
+         */
+        $validator
+            ->scalar('phone')
+            ->requirePresence('phone', 'create')
+            ->notEmptyString('phone', 'Mobile number is required')
+            ->add('phone', 'australianMobile', [
+                'rule' => fn ($value) => PhoneNumber::isValid($value),
+                'message' => 'Enter an Australian mobile number, e.g. 0412 345 678',
+            ]);
 
         $validator = $this->applyPasswordRules($validator, true);
 
@@ -145,6 +160,26 @@ class UsersTable extends Table
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->isUnique(['email']), ['errorField' => 'email']);
+
+        /*
+         * One account per mobile. The comparison is safe because the entity
+         * has already normalised the value, so two spellings of the same
+         * number collide here rather than creating a second account that
+         * would later match the same Square customer.
+         *
+         * allowMultipleNulls keeps the accounts created before this column
+         * existed from colliding with each other.
+         */
+        $rules->add(
+            $rules->isUnique(
+                ['phone'],
+                [
+                    'allowMultipleNulls' => true,
+                    'message' => 'An account already exists for this mobile number.',
+                ]
+            ),
+            ['errorField' => 'phone']
+        );
 
         return $rules;
     }

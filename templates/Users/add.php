@@ -56,6 +56,20 @@ $this->Html->css(
             <p class="user-form-hint">Maximum <?= UsersTable::EMAIL_MAX ?> characters</p>
         </div>
 
+        <div class="user-form-field">
+            <?= $this->Form->control('phone', [
+                'type' => 'tel',
+                'label' => 'Mobile Number',
+                'required' => true,
+                'placeholder' => '0412 345 678',
+                'maxlength' => 20,
+            ]) ?>
+            <p class="user-form-hint">
+                Australian mobile. Used to match the account to its Square
+                customer record.
+            </p>
+        </div>
+
         <div class="user-password-field">
 
             <label for="password">Password</label>
