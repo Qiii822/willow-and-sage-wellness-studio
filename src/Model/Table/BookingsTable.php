@@ -28,6 +28,22 @@ use Cake\Validation\Validator;
  */
 class BookingsTable extends Table
 {
+    /**
+     * Square booking status values, mapped to their display labels.
+     *
+     * Single source of truth for the set of valid statuses - used for
+     * validation as well as for building the status filter on the
+     * bookings index page.
+     */
+    public const STATUSES = [
+        'pending' => 'Pending',
+        'cancelled_by_customer' => 'Cancelled By Customer',
+        'cancelled_by_seller' => 'Cancelled By Seller',
+        'declined' => 'Declined',
+        'accepted' => 'Accepted',
+        'no_show' => 'No Show',
+    ];
+
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -66,14 +82,7 @@ class BookingsTable extends Table
 
         $validator
             ->scalar('status')
-            ->inList('status', [
-                'pending',
-                'cancelled_by_customer',
-                'cancelled_by_seller',
-                'declined',
-                'accepted',
-                'no_show',
-            ])
+            ->inList('status', array_keys(self::STATUSES))
             ->requirePresence('status', 'create')
             ->notEmptyString('status');
 
