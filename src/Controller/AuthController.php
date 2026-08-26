@@ -227,7 +227,7 @@ class AuthController extends AppController
     }
 
     /**
-     * Manually triggers a full sync (customers and bookings) from Square.
+     * Manually triggers a full sync (customers, bookings, and payments) from Square.
      *
      * @return \Cake\Http\Response Redirect to the Settings page.
      */
