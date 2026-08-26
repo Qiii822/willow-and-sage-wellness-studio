@@ -57,7 +57,8 @@
 
 /* Filter bar */
 
-.bookings-filter-form {
+.bookings-filter-form,
+.payments-filter-form {
     display: flex;
     align-items: flex-end;
     flex-wrap: wrap;
@@ -208,6 +209,22 @@
 .status-badge.cancelled-by-seller,
 .status-badge.declined,
 .status-badge.no-show {
+    color: #7a2e2e;
+    background: #f5dede;
+    border: 1px solid #e6bcbc;
+}
+
+/* Completed / approved payment */
+.status-badge.completed,
+.status-badge.approved {
+    color: #285438;
+    background: #dcecdf;
+    border: 1px solid #bdd8c2;
+}
+
+/* Canceled / failed payment */
+.status-badge.canceled,
+.status-badge.failed {
     color: #7a2e2e;
     background: #f5dede;
     border: 1px solid #e6bcbc;
