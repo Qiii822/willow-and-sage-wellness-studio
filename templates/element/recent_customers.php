@@ -33,6 +33,7 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Account Created</th>
+                <th></th>
             </tr>
             </thead>
 
@@ -63,6 +64,20 @@
                         <?php else: ?>
                             —
                         <?php endif; ?>
+                    </td>
+
+                    <td>
+                        <?= $this->Html->link(
+                            'View',
+                            [
+                                'controller' => 'Customers',
+                                'action' => 'view',
+                                $customer->id,
+                            ],
+                            [
+                                'class' => 'table-action',
+                            ]
+                        ) ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
