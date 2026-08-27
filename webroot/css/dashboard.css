@@ -57,17 +57,49 @@ select {
 
 
 /* =========================================================
-   Dashboard customisation controls
+   Dashboard heading and toolbar
    ========================================================= */
 
-.dashboard-customise-bar {
+.dashboard-heading {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
+    align-items: flex-start;
+    justify-content: space-between;
 
-    gap: 10px;
-    margin: 22px 0 18px;
+    gap: 24px;
+    margin-bottom: 28px;
 }
+
+.dashboard-heading-text h1 {
+    margin: 0 0 8px;
+
+    color: var(--text-primary);
+
+    font-size: 34px;
+    font-weight: 750;
+    letter-spacing: -0.8px;
+}
+
+.dashboard-heading-text p {
+    margin: 0;
+
+    color: var(--text-secondary);
+
+    font-size: 15px;
+}
+
+.dashboard-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+
+/* =========================================================
+   Dashboard customisation controls
+   ========================================================= */
 
 .dashboard-customise-btn {
     display: inline-flex;
@@ -76,10 +108,11 @@ select {
 
     gap: 8px;
 
-    min-height: 42px;
+    min-height: 46px;
     padding: 0 14px;
 
     color: var(--text-secondary);
+
     font-family: inherit;
     font-size: 14px;
     font-weight: 700;
@@ -172,9 +205,9 @@ select {
     margin: 0 0 6px;
 
     color: var(--text-primary);
+
     font-size: 24px;
     font-weight: 750;
-
     letter-spacing: -0.5px;
 }
 
@@ -182,6 +215,7 @@ select {
     margin: 0;
 
     color: var(--text-secondary);
+
     font-size: 14px;
 }
 
@@ -229,7 +263,6 @@ select {
     align-items: flex-start;
 
     min-height: 150px;
-
     padding: 20px;
 
     text-align: left;
@@ -285,6 +318,7 @@ select {
     margin: 0 0 7px;
 
     color: var(--text-primary);
+
     font-size: 16px;
     font-weight: 750;
 }
@@ -559,14 +593,6 @@ select {
    Dashboard filters
    ========================================================= */
 
-.top-actions {
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-
-    gap: 10px;
-}
-
 .date-filter-form {
     display: flex;
     align-items: flex-end;
@@ -680,7 +706,7 @@ select {
 
 
 /* =========================================================
-   Filter buttons
+   Filter button
    ========================================================= */
 
 .custom-date-apply {
@@ -691,9 +717,6 @@ select {
     height: 46px;
 
     margin: 0;
-}
-
-.custom-date-apply {
     padding: 0 16px;
 
     color: var(--on-primary);
@@ -719,6 +742,7 @@ select {
     transform: translateY(-1px);
 }
 
+
 /* =========================================================
    Responsive
    ========================================================= */
@@ -738,8 +762,14 @@ select {
 
 @media (max-width: 900px) {
 
-    .top-actions {
+    .dashboard-heading {
         align-items: stretch;
+        flex-direction: column;
+    }
+
+    .dashboard-toolbar {
+        align-items: stretch;
+        justify-content: flex-start;
         flex-direction: column;
     }
 
