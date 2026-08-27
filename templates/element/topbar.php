@@ -94,7 +94,7 @@ $today = \Cake\I18n\FrozenDate::today()
             <!-- Custom dates -->
             <div
                 class="custom-date-range
-                <?= ($range ?? '') === 'custom'
+            <?= ($range ?? '') === 'custom'
                     ? 'show'
                     : '' ?>"
                 id="custom-date-range"
@@ -144,6 +144,30 @@ $today = \Cake\I18n\FrozenDate::today()
             </div>
 
         </form>
+
+
+        <!-- Dashboard customisation buttons -->
+        <div class="dashboard-customise-actions">
+
+            <button
+                type="button"
+                class="dashboard-customise-btn"
+                id="add-widget-btn"
+            >
+                <i data-lucide="plus"></i>
+                Add widget
+            </button>
+
+            <button
+                type="button"
+                class="dashboard-customise-btn"
+                id="edit-layout-btn"
+            >
+                <i data-lucide="pencil"></i>
+                Edit layout
+            </button>
+
+        </div>
 
     </div>
 

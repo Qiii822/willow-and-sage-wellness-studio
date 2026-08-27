@@ -15,28 +15,7 @@ $this->setLayout('dashboard');
 
             <?= $this->element('topbar') ?>
 
-            <!-- Dashboard customisation controls -->
-            <div class="dashboard-customise-bar">
 
-                <button
-                    type="button"
-                    class="dashboard-customise-btn"
-                    id="add-widget-btn"
-                >
-                    <i data-lucide="plus"></i>
-                    Add widget
-                </button>
-
-                <button
-                    type="button"
-                    class="dashboard-customise-btn"
-                    id="edit-layout-btn"
-                >
-                    <i data-lucide="pencil"></i>
-                    Edit layout
-                </button>
-
-            </div>
 
 
             <!-- Dashboard Grid -->
