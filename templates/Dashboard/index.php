@@ -1,8 +1,45 @@
 <?php
-/** @var \App\View\AppView $this */
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\User|null $identity
+ * @var string $range
+ * @var string|null $selectedDay
+ * @var string|null $selectedWeek
+ * @var int|null $selectedYear
+ * @var int|null $selectedMonth
+ * @var string|null $startDate
+ * @var string|null $endDate
+ * @var array $availableYears
+ */
 
 $this->assign('title', 'Dashboard');
 $this->setLayout('dashboard');
+
+$today = \Cake\I18n\FrozenDate::today();
+
+$todayString =
+    $today->format('Y-m-d');
+
+$currentMonth =
+    (int)$today->format('n');
+
+$currentWeek =
+    $today->format('o-\WW');
+
+$months = [
+    1 => 'January',
+    2 => 'February',
+    3 => 'March',
+    4 => 'April',
+    5 => 'May',
+    6 => 'June',
+    7 => 'July',
+    8 => 'August',
+    9 => 'September',
+    10 => 'October',
+    11 => 'November',
+    12 => 'December',
+];
 ?>
 
 <div class="container-fluid p-0">
@@ -13,28 +50,293 @@ $this->setLayout('dashboard');
 
         <main class="main-content">
 
-            <?= $this->element('topbar') ?>
+            <!-- Dashboard heading -->
+            <div class="dashboard-heading">
 
-            <!-- Dashboard customisation controls -->
-            <div class="dashboard-customise-bar">
+                <div class="dashboard-heading-text">
 
-                <button
-                    type="button"
-                    class="dashboard-customise-btn"
-                    id="add-widget-btn"
-                >
-                    <i data-lucide="plus"></i>
-                    Add widget
-                </button>
+                    <h1>
+                        Welcome back, <?= h($identity->first_name ?? '') ?>
+                    </h1>
 
-                <button
-                    type="button"
-                    class="dashboard-customise-btn"
-                    id="edit-layout-btn"
-                >
-                    <i data-lucide="pencil"></i>
-                    Edit layout
-                </button>
+                    <p>
+                        Here's what's happening with the business today.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-toolbar">
+
+                    <form
+                        class="date-filter-form"
+                        method="get"
+                        action="<?= $this->Url->build([
+                            'controller' => 'Dashboard',
+                            'action' => 'index'
+                        ]) ?>"
+                    >
+
+                        <!-- Daily -->
+                        <div
+                            class="filter-extra"
+                            data-filter-panel="day"
+                        >
+
+                            <input
+                                type="date"
+                                name="day"
+                                max="<?= h($todayString) ?>"
+                                value="<?= h(
+                                    $selectedDay
+                                    ?? $todayString
+                                ) ?>"
+                            >
+
+                        </div>
+
+
+                        <!-- Weekly -->
+                        <div
+                            class="filter-extra"
+                            data-filter-panel="week"
+                        >
+
+                            <input
+                                type="week"
+                                name="week"
+                                max="<?= h($currentWeek) ?>"
+                                value="<?= h(
+                                    $selectedWeek
+                                    ?? $currentWeek
+                                ) ?>"
+                            >
+
+                        </div>
+
+
+                        <!-- Monthly -->
+                        <div
+                            class="filter-extra filter-month"
+                            data-filter-panel="month"
+                        >
+
+                            <select
+                                name="month_year"
+                                class="dashboard-filter-select"
+                            >
+
+                                <?php foreach ($availableYears as $year): ?>
+
+                                    <option
+                                        value="<?= h($year) ?>"
+                                        <?= (int)$selectedYear === (int)$year
+                                            ? 'selected'
+                                            : '' ?>
+                                    >
+                                        <?= h($year) ?>
+                                    </option>
+
+                                <?php endforeach; ?>
+
+                            </select>
+
+
+                            <select
+                                name="month"
+                                class="dashboard-filter-select"
+                            >
+
+                                <?php foreach ($months as $number => $label): ?>
+
+                                    <option
+                                        value="<?= h($number) ?>"
+                                        <?= (int)(
+                                            $selectedMonth
+                                            ?? $currentMonth
+                                        ) === $number
+                                            ? 'selected'
+                                            : '' ?>
+                                    >
+                                        <?= h($label) ?>
+                                    </option>
+
+                                <?php endforeach; ?>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Yearly -->
+                        <div
+                            class="filter-extra"
+                            data-filter-panel="year"
+                        >
+
+                            <select
+                                name="selected_year"
+                                class="dashboard-filter-select"
+                            >
+
+                                <?php foreach ($availableYears as $year): ?>
+
+                                    <option
+                                        value="<?= h($year) ?>"
+                                        <?= (int)$selectedYear === (int)$year
+                                            ? 'selected'
+                                            : '' ?>
+                                    >
+                                        <?= h($year) ?>
+                                    </option>
+
+                                <?php endforeach; ?>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Custom -->
+                        <div
+                            class="custom-date-range"
+                            id="custom-date-range"
+                            data-filter-panel="custom"
+                        >
+
+                            <div class="custom-date-field">
+
+                                <label for="start-date">
+                                    Start
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="start-date"
+                                    name="start_date"
+                                    max="<?= h($todayString) ?>"
+                                    value="<?= h($startDate ?? '') ?>"
+                                >
+
+                            </div>
+
+
+                            <div class="custom-date-field">
+
+                                <label for="end-date">
+                                    End
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="end-date"
+                                    name="end_date"
+                                    max="<?= h($todayString) ?>"
+                                    value="<?= h($endDate ?? '') ?>"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Main range selector -->
+                        <select
+                            name="range"
+                            id="dashboard-range-select"
+                            class="dashboard-range-select"
+                        >
+
+                            <option
+                                value="today"
+                                <?= ($range ?? 'today') === 'today'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Today
+                            </option>
+
+                            <option
+                                value="day"
+                                <?= ($range ?? '') === 'day'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Daily
+                            </option>
+
+                            <option
+                                value="week"
+                                <?= ($range ?? '') === 'week'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Weekly
+                            </option>
+
+                            <option
+                                value="month"
+                                <?= ($range ?? '') === 'month'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Monthly
+                            </option>
+
+                            <option
+                                value="year"
+                                <?= ($range ?? '') === 'year'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Yearly
+                            </option>
+
+                            <option
+                                value="custom"
+                                <?= ($range ?? '') === 'custom'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Custom
+                            </option>
+
+                        </select>
+
+
+                        <button
+                            type="submit"
+                            class="custom-date-apply"
+                            id="dashboard-filter-apply"
+                        >
+                            Apply
+                        </button>
+
+                    </form>
+
+
+                    <!-- Add widget -->
+                    <button
+                        type="button"
+                        class="dashboard-customise-btn"
+                        id="add-widget-btn"
+                    >
+                        <i data-lucide="plus"></i>
+                        Add widget
+                    </button>
+
+
+                    <!-- Edit layout -->
+                    <button
+                        type="button"
+                        class="dashboard-customise-btn"
+                        id="edit-layout-btn"
+                    >
+                        <i data-lucide="pencil"></i>
+                        Edit layout
+                    </button>
+
+                </div>
 
             </div>
 
@@ -45,7 +347,6 @@ $this->setLayout('dashboard');
                 class="dashboard-widget-grid"
             >
 
-                <!-- Drop slots -->
                 <div
                     class="dashboard-drop-slot"
                     data-slot="1"
@@ -271,8 +572,6 @@ $this->setLayout('dashboard');
 
                     <div class="widget-library-grid">
 
-
-                        <!-- Total Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -280,9 +579,7 @@ $this->setLayout('dashboard');
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="users"></i>
-
                             </div>
 
                             <h3>
@@ -296,7 +593,6 @@ $this->setLayout('dashboard');
                         </button>
 
 
-                        <!-- New Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -304,9 +600,7 @@ $this->setLayout('dashboard');
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="user-plus"></i>
-
                             </div>
 
                             <h3>
@@ -314,7 +608,7 @@ $this->setLayout('dashboard');
                             </h3>
 
                             <p>
-                                View customers added on the selected date.
+                                View customers added during the selected period.
                             </p>
 
                         </button>
@@ -368,7 +662,6 @@ $this->setLayout('dashboard');
                         </button>
 
 
-                        <!-- Recent Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -376,9 +669,7 @@ $this->setLayout('dashboard');
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="list"></i>
-
                             </div>
 
                             <h3>
@@ -390,7 +681,6 @@ $this->setLayout('dashboard');
                             </p>
 
                         </button>
-
 
                     </div>
 
