@@ -56,7 +56,11 @@ return function (RouteBuilder $routes): void {
          * to use (in this case, templates/Pages/home.php)...
          */
         $builder->connect('/', ['controller' => 'Dashboard', 'action' => 'index']);
-        
+
+        // The studio's public landing page. Left off '/' for now, so staff
+        // still land on the dashboard when they sign in.
+        $builder->connect('/home', ['controller' => 'Home', 'action' => 'index']);
+
         $builder->connect('/account', ['controller' => 'Users', 'action' => 'profile']);
         $builder->connect('/account/change-password', ['controller' => 'Users', 'action' => 'changePassword']);
 
