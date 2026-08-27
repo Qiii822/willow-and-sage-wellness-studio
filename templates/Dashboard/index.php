@@ -20,9 +20,6 @@ $today = \Cake\I18n\FrozenDate::today();
 $todayString =
     $today->format('Y-m-d');
 
-$currentYear =
-    (int)$today->format('Y');
-
 $currentMonth =
     (int)$today->format('n');
 
@@ -372,7 +369,6 @@ $months = [
 
 
                 <!-- Total Customers -->
-
                 <div
                     class="dashboard-widget widget-small"
                     data-widget="total-customers"
@@ -399,15 +395,12 @@ $months = [
 
                     </div>
 
-                    <?= $this->element(
-                        'total_customers'
-                    ) ?>
+                    <?= $this->element('total_customers') ?>
 
                 </div>
 
 
                 <!-- New Customers -->
-
                 <div
                     class="dashboard-widget widget-small"
                     data-widget="new-customers"
@@ -434,9 +427,7 @@ $months = [
 
                     </div>
 
-                    <?= $this->element(
-                        'new_customers'
-                    ) ?>
+                    <?= $this->element('new_customers') ?>
 
                 </div>
 
@@ -506,7 +497,6 @@ $months = [
 
 
                 <!-- Recent Customers -->
-
                 <div
                     class="dashboard-widget widget-wide"
                     data-widget="recent-customers"
@@ -532,9 +522,7 @@ $months = [
 
                     </div>
 
-                    <?= $this->element(
-                        'recent_customers'
-                    ) ?>
+                    <?= $this->element('recent_customers') ?>
 
                 </div>
 

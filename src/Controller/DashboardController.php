@@ -291,7 +291,6 @@ class DashboardController extends AppController
                         ->addMonths(1);
 
 
-
                 $previousPeriodStart =
                     $periodStart
                         ->subMonths(1);
@@ -307,13 +306,6 @@ class DashboardController extends AppController
              */
             case 'year':
 
-                $selectedYear =
-                    (int)(
-                    $selectedYear
-                        ?: $today->format('Y')
-                    );
-
-
                 $periodStart =
                     new FrozenTime(
                         $selectedYear .
@@ -324,7 +316,6 @@ class DashboardController extends AppController
                 $periodEnd =
                     $periodStart
                         ->addYears(1);
-
 
 
                 $previousPeriodStart =
@@ -567,9 +558,9 @@ class DashboardController extends AppController
             );
 
 
-    /*
-     * Send data to view.
-     */
+        /*
+         * Send data to view.
+         */
         $this->set(compact(
             'identity',
             'range',
