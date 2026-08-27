@@ -1,8 +1,17 @@
 <?php
-/** @var \App\View\AppView $this */
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\User|null $identity
+ * @var string $range
+ * @var string|null $startDate
+ * @var string|null $endDate
+ */
 
 $this->assign('title', 'Dashboard');
 $this->setLayout('dashboard');
+
+$today = \Cake\I18n\FrozenDate::today()
+    ->format('Y-m-d');
 ?>
 
 <div class="container-fluid p-0">
@@ -13,12 +22,179 @@ $this->setLayout('dashboard');
 
         <main class="main-content">
 
-            <?= $this->element('topbar') ?>
+
+            <!-- =====================================================
+                 Dashboard Heading + Toolbar
+                 ===================================================== -->
+
+            <div class="dashboard-heading">
+
+                <div class="dashboard-heading-text">
+
+                    <h1>
+                        Welcome back, <?= h($identity->first_name ?? '') ?>
+                    </h1>
+
+                    <p>
+                        Here's what's happening with the business today.
+                    </p>
+
+                </div>
 
 
+                <div class="dashboard-toolbar">
+
+                    <!-- Range filter -->
+                    <form
+                        class="date-filter-form"
+                        method="get"
+                        action="<?= $this->Url->build([
+                            'controller' => 'Dashboard',
+                            'action' => 'index'
+                        ]) ?>"
+                    >
+
+                        <select
+                            name="range"
+                            id="dashboard-range-select"
+                            class="dashboard-range-select"
+                            onchange="handleRangeChange(this)"
+                        >
+
+                            <option
+                                value="day"
+                                <?= ($range ?? 'day') === 'day'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Daily
+                            </option>
+
+                            <option
+                                value="week"
+                                <?= ($range ?? '') === 'week'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Weekly
+                            </option>
+
+                            <option
+                                value="month"
+                                <?= ($range ?? '') === 'month'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Monthly
+                            </option>
+
+                            <option
+                                value="year"
+                                <?= ($range ?? '') === 'year'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Yearly
+                            </option>
+
+                            <option
+                                value="custom"
+                                <?= ($range ?? '') === 'custom'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Custom
+                            </option>
+
+                        </select>
 
 
-            <!-- Dashboard Grid -->
+                        <!-- Custom date range -->
+                        <div
+                            class="custom-date-range
+                            <?= ($range ?? '') === 'custom'
+                                ? 'show'
+                                : '' ?>"
+                            id="custom-date-range"
+                        >
+
+                            <div class="custom-date-field">
+
+                                <label for="start-date">
+                                    Start
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="start-date"
+                                    name="start_date"
+                                    max="<?= h($today) ?>"
+                                    value="<?= h($startDate ?? '') ?>"
+                                >
+
+                            </div>
+
+
+                            <div class="custom-date-field">
+
+                                <label for="end-date">
+                                    End
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="end-date"
+                                    name="end_date"
+                                    max="<?= h($today) ?>"
+                                    value="<?= h($endDate ?? '') ?>"
+                                >
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="custom-date-apply"
+                            >
+                                Apply
+                            </button>
+
+                        </div>
+
+                    </form>
+
+
+                    <!-- Add widget -->
+                    <button
+                        type="button"
+                        class="dashboard-customise-btn"
+                        id="add-widget-btn"
+                    >
+                        <i data-lucide="plus"></i>
+                        Add widget
+                    </button>
+
+
+                    <!-- Edit layout -->
+                    <button
+                        type="button"
+                        class="dashboard-customise-btn"
+                        id="edit-layout-btn"
+                    >
+                        <i data-lucide="pencil"></i>
+                        Edit layout
+                    </button>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 Dashboard Grid
+                 ===================================================== -->
+
             <div
                 id="dashboard-widgets"
                 class="dashboard-widget-grid"
@@ -138,7 +314,10 @@ $this->setLayout('dashboard');
             </div>
 
 
-            <!-- Widget Library -->
+            <!-- =====================================================
+                 Widget Library
+                 ===================================================== -->
+
             <div
                 class="widget-modal"
                 id="widget-modal"
@@ -190,9 +369,7 @@ $this->setLayout('dashboard');
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="users"></i>
-
                             </div>
 
                             <h3>
@@ -214,9 +391,7 @@ $this->setLayout('dashboard');
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="user-plus"></i>
-
                             </div>
 
                             <h3>
@@ -224,7 +399,7 @@ $this->setLayout('dashboard');
                             </h3>
 
                             <p>
-                                View customers added on the selected date.
+                                View customers added during the selected period.
                             </p>
 
                         </button>
@@ -238,9 +413,7 @@ $this->setLayout('dashboard');
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="list"></i>
-
                             </div>
 
                             <h3>
@@ -252,7 +425,6 @@ $this->setLayout('dashboard');
                             </p>
 
                         </button>
-
 
                     </div>
 
