@@ -182,7 +182,6 @@ class DashboardController extends AppController
              * Weekly
              */
             case 'week':
-
                 if (empty($selectedWeek)) {
 
                     $selectedWeek =
@@ -250,6 +249,12 @@ class DashboardController extends AppController
              */
             case 'month':
 
+                $selectedYear =
+                    (int)(
+                    $selectedYear
+                        ?: $today->format('Y')
+                    );
+
                 $selectedMonth =
                     (int)(
                     $selectedMonth
@@ -286,6 +291,7 @@ class DashboardController extends AppController
                         ->addMonths(1);
 
 
+
                 $previousPeriodStart =
                     $periodStart
                         ->subMonths(1);
@@ -301,6 +307,13 @@ class DashboardController extends AppController
              */
             case 'year':
 
+                $selectedYear =
+                    (int)(
+                    $selectedYear
+                        ?: $today->format('Y')
+                    );
+
+
                 $periodStart =
                     new FrozenTime(
                         $selectedYear .
@@ -311,6 +324,7 @@ class DashboardController extends AppController
                 $periodEnd =
                     $periodStart
                         ->addYears(1);
+
 
 
                 $previousPeriodStart =

@@ -45,6 +45,7 @@ select {
 .dashboard-container {
     display: flex;
 
+
     min-height: 100vh;
 }
 
@@ -84,6 +85,8 @@ select {
 .dashboard-heading-text h1 {
     margin: 0 0 8px;
 
+    color:
+        var(--text-primary);
     color:
         var(--text-primary);
 
@@ -381,7 +384,7 @@ input[type="date"] {
     position: relative;
 
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 
     gap: 24px;
 }
@@ -467,7 +470,7 @@ input[type="date"] {
         );
 
     background-size:
-        calc(25% - 6px) 100px;
+        calc(33.333% - 8px) 100px;
 
     background-position:
         12px
