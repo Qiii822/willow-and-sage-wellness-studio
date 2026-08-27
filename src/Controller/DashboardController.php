@@ -16,6 +16,12 @@ class DashboardController extends AppController
         $customersTable =
             $this->fetchTable('Customers');
 
+        $bookingsTable =
+            $this->fetchTable('Bookings');
+
+        $paymentsTable =
+            $this->fetchTable('Payments');
+
 
         /*
          * Selected range
@@ -263,6 +269,50 @@ class DashboardController extends AppController
                 ->all();
 
 
+        /*
+         * Total bookings that existed
+         * by the end of the selected range.
+         */
+        $totalBookings =
+            $bookingsTable
+                ->find()
+                ->where([
+                    'square_created_at <' =>
+                        $periodEnd,
+                ])
+                ->count();
+
+
+        /*
+         * Total income (sum of completed
+         * payments) by the end of the
+         * selected range. Stored in the
+         * smallest denomination (e.g. cents) -
+         * currency is always AUD.
+         */
+        $totalIncomeCents =
+            (int)(
+                $paymentsTable
+                    ->find()
+                    ->select([
+                        'total' =>
+                            $paymentsTable
+                                ->find()
+                                ->func()
+                                ->sum('amount'),
+                    ])
+                    ->where([
+                        'status' => 'completed',
+
+                        'square_created_at <' =>
+                            $periodEnd,
+                    ])
+                    ->first()
+                    ?->total
+                ?? 0
+            );
+
+
         $this->set(compact(
             'identity',
             'range',
@@ -275,7 +325,9 @@ class DashboardController extends AppController
             'totalCustomers',
             'customersSelectedDate',
             'previousCustomers',
-            'recentCustomers'
+            'recentCustomers',
+            'totalBookings',
+            'totalIncomeCents'
         ));
 
 

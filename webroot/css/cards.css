@@ -114,6 +114,28 @@
     background: var(--amber-light);
 }
 
+/* Dashboard stat widget icons (total_customers, new_customers, total_bookings, total_income) */
+
+.stat-icon-blue {
+    color: var(--blue);
+    background: var(--blue-light);
+}
+
+.stat-icon-green {
+    color: var(--green);
+    background: var(--green-light);
+}
+
+.stat-icon-amber {
+    color: var(--amber);
+    background: var(--amber-light);
+}
+
+.stat-icon-purple {
+    color: var(--purple);
+    background: var(--purple-light);
+}
+
 /* Growth badge */
 
 .positive {

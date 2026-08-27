@@ -95,15 +95,4 @@ $this->Html->css('profile', ['block' => true]);
 
     </div>
 
-    <?= $this->Html->link(
-        '← Back to Dashboard',
-        [
-            'controller' => 'Dashboard',
-            'action' => 'index'
-        ],
-        [
-            'class' => 'profile-back'
-        ]
-    ) ?>
-
 </div>
