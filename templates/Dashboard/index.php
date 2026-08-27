@@ -9,6 +9,7 @@
  * @var int|null $selectedMonth
  * @var string|null $startDate
  * @var string|null $endDate
+ * @var array $availableYears
  */
 
 $this->assign('title', 'Dashboard');
@@ -18,9 +19,6 @@ $today = \Cake\I18n\FrozenDate::today();
 
 $todayString =
     $today->format('Y-m-d');
-
-$currentYear =
-    (int)$today->format('Y');
 
 $currentMonth =
     (int)$today->format('n');
@@ -52,11 +50,7 @@ $months = [
 
         <main class="main-content">
 
-
-            <!-- =====================================================
-                 Dashboard heading
-                 ===================================================== -->
-
+            <!-- Dashboard heading -->
             <div class="dashboard-heading">
 
                 <div class="dashboard-heading-text">
@@ -83,11 +77,7 @@ $months = [
                         ]) ?>"
                     >
 
-
-                        <!-- =================================================
-                             Daily filter
-                             ================================================= -->
-
+                        <!-- Daily -->
                         <div
                             class="filter-extra"
                             data-filter-panel="day"
@@ -106,10 +96,7 @@ $months = [
                         </div>
 
 
-                        <!-- =================================================
-                             Weekly filter
-                             ================================================= -->
-
+                        <!-- Weekly -->
                         <div
                             class="filter-extra"
                             data-filter-panel="week"
@@ -128,10 +115,7 @@ $months = [
                         </div>
 
 
-                        <!-- =================================================
-                             Monthly filter
-                             ================================================= -->
-
+                        <!-- Monthly -->
                         <div
                             class="filter-extra filter-month"
                             data-filter-panel="month"
@@ -142,27 +126,18 @@ $months = [
                                 class="dashboard-filter-select"
                             >
 
-                                <?php
-                                for (
-                                    $year = $currentYear;
-                                    $year >= $currentYear - 10;
-                                    $year--
-                                ):
-                                    ?>
+                                <?php foreach ($availableYears as $year): ?>
 
                                     <option
                                         value="<?= h($year) ?>"
-                                        <?= (int)(
-                                            $selectedYear
-                                            ?? $currentYear
-                                        ) === $year
+                                        <?= (int)$selectedYear === (int)$year
                                             ? 'selected'
                                             : '' ?>
                                     >
                                         <?= h($year) ?>
                                     </option>
 
-                                <?php endfor; ?>
+                                <?php endforeach; ?>
 
                             </select>
 
@@ -172,10 +147,7 @@ $months = [
                                 class="dashboard-filter-select"
                             >
 
-                                <?php foreach (
-                                    $months
-                                    as $number => $label
-                                ): ?>
+                                <?php foreach ($months as $number => $label): ?>
 
                                     <option
                                         value="<?= h($number) ?>"
@@ -196,10 +168,7 @@ $months = [
                         </div>
 
 
-                        <!-- =================================================
-                             Yearly filter
-                             ================================================= -->
-
+                        <!-- Yearly -->
                         <div
                             class="filter-extra"
                             data-filter-panel="year"
@@ -210,37 +179,25 @@ $months = [
                                 class="dashboard-filter-select"
                             >
 
-                                <?php
-                                for (
-                                    $year = $currentYear;
-                                    $year >= $currentYear - 10;
-                                    $year--
-                                ):
-                                    ?>
+                                <?php foreach ($availableYears as $year): ?>
 
                                     <option
                                         value="<?= h($year) ?>"
-                                        <?= (int)(
-                                            $selectedYear
-                                            ?? $currentYear
-                                        ) === $year
+                                        <?= (int)$selectedYear === (int)$year
                                             ? 'selected'
                                             : '' ?>
                                     >
                                         <?= h($year) ?>
                                     </option>
 
-                                <?php endfor; ?>
+                                <?php endforeach; ?>
 
                             </select>
 
                         </div>
 
 
-                        <!-- =================================================
-                             Custom filter
-                             ================================================= -->
-
+                        <!-- Custom -->
                         <div
                             class="custom-date-range"
                             id="custom-date-range"
@@ -258,10 +215,7 @@ $months = [
                                     id="start-date"
                                     name="start_date"
                                     max="<?= h($todayString) ?>"
-                                    value="<?= h(
-                                        $startDate
-                                        ?? ''
-                                    ) ?>"
+                                    value="<?= h($startDate ?? '') ?>"
                                 >
 
                             </div>
@@ -278,10 +232,7 @@ $months = [
                                     id="end-date"
                                     name="end_date"
                                     max="<?= h($todayString) ?>"
-                                    value="<?= h(
-                                        $endDate
-                                        ?? ''
-                                    ) ?>"
+                                    value="<?= h($endDate ?? '') ?>"
                                 >
 
                             </div>
@@ -289,10 +240,7 @@ $months = [
                         </div>
 
 
-                        <!-- =================================================
-                             Range selector
-                             ================================================= -->
-
+                        <!-- Main range selector -->
                         <select
                             name="range"
                             id="dashboard-range-select"
@@ -393,16 +341,11 @@ $months = [
             </div>
 
 
-            <!-- =====================================================
-                 Dashboard grid
-                 ===================================================== -->
-
+            <!-- Dashboard Grid -->
             <div
                 id="dashboard-widgets"
                 class="dashboard-widget-grid"
             >
-
-                <!-- Drop slots -->
 
                 <div
                     class="dashboard-drop-slot"
@@ -426,7 +369,6 @@ $months = [
 
 
                 <!-- Total Customers -->
-
                 <div
                     class="dashboard-widget widget-small"
                     data-widget="total-customers"
@@ -453,15 +395,12 @@ $months = [
 
                     </div>
 
-                    <?= $this->element(
-                        'total_customers'
-                    ) ?>
+                    <?= $this->element('total_customers') ?>
 
                 </div>
 
 
                 <!-- New Customers -->
-
                 <div
                     class="dashboard-widget widget-small"
                     data-widget="new-customers"
@@ -488,9 +427,7 @@ $months = [
 
                     </div>
 
-                    <?= $this->element(
-                        'new_customers'
-                    ) ?>
+                    <?= $this->element('new_customers') ?>
 
                 </div>
 
@@ -560,7 +497,6 @@ $months = [
 
 
                 <!-- Recent Customers -->
-
                 <div
                     class="dashboard-widget widget-wide"
                     data-widget="recent-customers"
@@ -586,19 +522,14 @@ $months = [
 
                     </div>
 
-                    <?= $this->element(
-                        'recent_customers'
-                    ) ?>
+                    <?= $this->element('recent_customers') ?>
 
                 </div>
 
             </div>
 
 
-            <!-- =====================================================
-                 Widget Library
-                 ===================================================== -->
-
+            <!-- Widget Library -->
             <div
                 class="widget-modal"
                 id="widget-modal"

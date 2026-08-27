@@ -60,6 +60,65 @@ class DashboardController extends AppController
 
 
         /*
+         * Find years that actually contain
+         * customer data.
+         */
+        $availableYears = $customersTable
+            ->find()
+            ->select(['square_created_at'])
+            ->where([
+                'square_created_at IS NOT' => null,
+            ])
+            ->all()
+            ->map(function ($customer) {
+                return (int)$customer
+                    ->square_created_at
+                    ->format('Y');
+            })
+            ->unique()
+            ->toList();
+
+        rsort($availableYears);
+
+        /*
+         * Show newest year first.
+         */
+        $availableYears =
+            array_reverse(
+                $availableYears
+            );
+
+
+        /*
+         * Default to the newest year
+         * that actually has data.
+         */
+        $defaultYear =
+            $availableYears[0]
+            ?? (int)$today->format('Y');
+
+
+        if (
+            empty($selectedYear) ||
+            !in_array(
+                (int)$selectedYear,
+                $availableYears,
+                true
+            )
+        ) {
+
+            $selectedYear =
+                $defaultYear;
+
+        } else {
+
+            $selectedYear =
+                (int)$selectedYear;
+
+        }
+
+
+        /*
          * Work out current and previous periods.
          */
         switch ($range) {
@@ -105,11 +164,13 @@ class DashboardController extends AppController
 
 
                 $periodEnd =
-                    $periodStart->addDays(1);
+                    $periodStart
+                        ->addDays(1);
 
 
                 $previousPeriodStart =
-                    $periodStart->subDays(1);
+                    $periodStart
+                        ->subDays(1);
 
                 $previousPeriodEnd =
                     $periodStart;
@@ -163,17 +224,20 @@ class DashboardController extends AppController
                 } else {
 
                     $periodStart =
-                        $today->startOfWeek();
+                        $today
+                            ->startOfWeek();
 
                 }
 
 
                 $periodEnd =
-                    $periodStart->addWeeks(1);
+                    $periodStart
+                        ->addWeeks(1);
 
 
                 $previousPeriodStart =
-                    $periodStart->subWeeks(1);
+                    $periodStart
+                        ->subWeeks(1);
 
                 $previousPeriodEnd =
                     $periodStart;
@@ -186,18 +250,25 @@ class DashboardController extends AppController
              */
             case 'month':
 
-                $selectedYear =
-                    (int)(
-                    $selectedYear
-                        ?: $today->format('Y')
-                    );
-
-
                 $selectedMonth =
                     (int)(
                     $selectedMonth
                         ?: $today->format('n')
                     );
+
+
+                /*
+                 * Prevent invalid month values.
+                 */
+                if (
+                    $selectedMonth < 1 ||
+                    $selectedMonth > 12
+                ) {
+
+                    $selectedMonth =
+                        (int)$today->format('n');
+
+                }
 
 
                 $periodStart =
@@ -211,11 +282,13 @@ class DashboardController extends AppController
 
 
                 $periodEnd =
-                    $periodStart->addMonths(1);
+                    $periodStart
+                        ->addMonths(1);
 
 
                 $previousPeriodStart =
-                    $periodStart->subMonths(1);
+                    $periodStart
+                        ->subMonths(1);
 
                 $previousPeriodEnd =
                     $periodStart;
@@ -228,13 +301,6 @@ class DashboardController extends AppController
              */
             case 'year':
 
-                $selectedYear =
-                    (int)(
-                    $selectedYear
-                        ?: $today->format('Y')
-                    );
-
-
                 $periodStart =
                     new FrozenTime(
                         $selectedYear .
@@ -243,11 +309,13 @@ class DashboardController extends AppController
 
 
                 $periodEnd =
-                    $periodStart->addYears(1);
+                    $periodStart
+                        ->addYears(1);
 
 
                 $previousPeriodStart =
-                    $periodStart->subYears(1);
+                    $periodStart
+                        ->subYears(1);
 
                 $previousPeriodEnd =
                     $periodStart;
@@ -303,10 +371,16 @@ class DashboardController extends AppController
                             ->addDays(1);
 
 
+                    /*
+                     * Previous period uses
+                     * the same duration.
+                     */
                     $periodSeconds =
-                        $periodEnd->getTimestamp()
+                        $periodEnd
+                            ->getTimestamp()
                         -
-                        $periodStart->getTimestamp();
+                        $periodStart
+                            ->getTimestamp();
 
 
                     $previousPeriodEnd =
@@ -479,6 +553,9 @@ class DashboardController extends AppController
             );
 
 
+    /*
+     * Send data to view.
+     */
         $this->set(compact(
             'identity',
             'range',
@@ -497,7 +574,8 @@ class DashboardController extends AppController
             'previousCustomers',
             'recentCustomers',
             'totalBookings',
-            'totalIncomeCents'
+            'totalIncomeCents',
+            'availableYears'
         ));
 
 
