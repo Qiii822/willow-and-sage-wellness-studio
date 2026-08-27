@@ -9,6 +9,7 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\Utility\Security;
 use Cake\Datasource\EntityInterface;
+use Cake\I18n\DateTime;
 
 /**
  * Identities Model
@@ -116,6 +117,45 @@ class IdentitiesTable extends Table
         $tokens = $this->decryptedTokens($identity);
 
         return $tokens['refresh_token'] ?? null;
+    }
+
+    /**
+     * Persists a refreshed access/refresh token pair onto an existing
+     * Identity row.
+
+     * Square's PKCE refresh tokens are single-use: the caller must pass
+     * the brand new refresh_token that came back with this refresh
+     *
+     * @param \Cake\Datasource\EntityInterface $identity The identity row being refreshed.
+     * @param string $accessToken The new access token.
+     * @param string $refreshToken The new (rotated) refresh token.
+     * @param \Cake\I18n\DateTime $expiresAt The new access token's expiry.
+     * @return \Cake\Datasource\EntityInterface The updated identity row.
+     * @throws \RuntimeException If the row fails to save.
+     */
+    public function applyRefreshedTokens(
+        EntityInterface $identity,
+        string $accessToken,
+        string $refreshToken,
+        DateTime $expiresAt,
+    ): EntityInterface {
+        $encrypted = $this->encryptTokens([
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken,
+        ]);
+
+        $identity = $this->patchEntity($identity, [
+            'tokens' => $encrypted,
+            'expires_at' => $expiresAt,
+            'refreshed_at' => DateTime::now(),
+        ]);
+
+        if (!$this->save($identity)) {
+            \Cake\Log\Log::error('Failed to save refreshed identity: ' . json_encode($identity->getErrors()));
+            throw new \RuntimeException('Failed to save refreshed Square tokens.');
+        }
+
+        return $identity;
     }
 
     /**

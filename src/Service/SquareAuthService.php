@@ -22,6 +22,13 @@ use Square\OAuth\Requests\RevokeTokenRequest;
  */
 class SquareAuthService
 {
+    /**
+     * How old (in days) an access token is allowed to get before it's
+     * refreshed on retrieval. Squares docs recommend refreshing
+     * every 7 days or less
+     */
+    protected const REFRESH_THRESHOLD_DAYS = 7;
+
     protected \Cake\ORM\Table $identitiesTable;
 
     public function __construct()
@@ -114,11 +121,114 @@ class SquareAuthService
      * null if Square has never been connected or the connection has been
      * revoked.
      *
+     * Every time the active identity is retrieved this way, its token age
+     * is checked and refreshed if it's due
+     *
      * @return \Cake\Datasource\EntityInterface|null
      */
     public function getActiveIdentity(): ?\Cake\Datasource\EntityInterface
     {
-        return $this->identitiesTable->getActiveConnection();
+        $identity = $this->identitiesTable->getActiveConnection();
+
+        if (!$identity) {
+            return null;
+        }
+
+        return $this->refreshIfStale($identity);
+    }
+
+    /**
+     * Refreshes the given identity's access token if it's older than
+     * REFRESH_THRESHOLD_DAYS, otherwise returns it unchanged.
+     *
+     * @param \Cake\Datasource\EntityInterface $identity
+     * @return \Cake\Datasource\EntityInterface|null The (possibly refreshed)
+     *  identity, or null if Square rejected the refresh outright and the
+     *  connection had to be marked revoked.
+     */
+    protected function refreshIfStale(\Cake\Datasource\EntityInterface $identity): ?\Cake\Datasource\EntityInterface
+    {
+        $tokenAge = $identity->refreshed_at ?? $identity->created_at;
+
+        if ($tokenAge->wasWithinLast(self::REFRESH_THRESHOLD_DAYS . ' days')) {
+            return $identity;
+        }
+
+        try {
+            return $this->refreshToken($identity);
+        } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+            // Square rejected the refresh token outright (expired, already
+            // used, or revoked seller-side). The connection can't recover
+            // on its own, so mark it revoked locally - this makes the app
+            // accurately show "disconnected" and prompt an admin to
+            // reconnect, rather than silently retrying forever with a
+            // refresh token Square will never accept again.
+            \Cake\Log\Log::error('Square refresh token rejected, marking connection revoked: ' . $e->getMessage());
+
+            $identity = $this->identitiesTable->patchEntity($identity, [
+                'revoked' => true,
+                'revoked_at' => DateTime::now(),
+            ]);
+            $this->identitiesTable->save($identity);
+
+            return null;
+        } catch (\Throwable $e) {
+            // Transient failure (network blip, Square-side outage). The
+            // existing access token is still valid for now, log it and
+            // try again next time the identity is retrieved, rather than
+            // breaking whatever action triggered this lookup.
+            \Cake\Log\Log::error('Square token refresh attempt failed, will retry later: ' . $e->getMessage());
+
+            return $identity;
+        }
+    }
+
+    /**
+     * Exchanges the identity's stored refresh token for a new
+     * access/refresh token pair and persists them on the same Identity
+     * row.
+     *
+     * @param \Cake\Datasource\EntityInterface $identity
+     * @return \Cake\Datasource\EntityInterface The identity with rotated tokens.
+     * @throws \RuntimeException If there's no refresh token to use, or
+     *  Square's response is missing required token fields.
+     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
+     *  If Square rejects the refresh token.
+     */
+    public function refreshToken(\Cake\Datasource\EntityInterface $identity): \Cake\Datasource\EntityInterface
+    {
+        $refreshToken = $this->identitiesTable->getDecryptedRefreshToken($identity);
+
+        if (!$refreshToken) {
+            throw new \RuntimeException('No refresh token available on the active Square connection.');
+        }
+
+        $provider = $this->createProvider();
+
+        // SQUARE OAUTH FLOW - TOKEN REFRESH //
+        // Refresh tokens obtained via the PKCE flow are single-use: Square
+        // returns a brand new refresh_token in this response, which we
+        // must store in place of the one we just used.
+        $accessToken = $provider->getAccessToken('refresh_token', [
+            'refresh_token' => $refreshToken,
+        ]);
+
+        $tokenPayload = $accessToken->jsonSerialize();
+
+        if (
+            empty($tokenPayload['access_token'])
+            || empty($tokenPayload['refresh_token'])
+            || empty($tokenPayload['expires_at'])
+        ) {
+            throw new \RuntimeException('Square refresh response was missing required token fields.');
+        }
+
+        return $this->identitiesTable->applyRefreshedTokens(
+            $identity,
+            $tokenPayload['access_token'],
+            $tokenPayload['refresh_token'],
+            DateTime::parse($tokenPayload['expires_at']),
+        );
     }
 
     /**
@@ -127,8 +237,6 @@ class SquareAuthService
      * record as revoked locally regardless of whether the remote call
      * succeeded (so a failed revoke call never leaves the app thinking
      * it still has a usable connection).
-     *
-     * No-ops if there is no active connection to revoke.
      *
      * @return void
      */
