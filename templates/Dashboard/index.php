@@ -3,6 +3,10 @@
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\User|null $identity
  * @var string $range
+ * @var string|null $selectedDay
+ * @var string|null $selectedWeek
+ * @var int|null $selectedYear
+ * @var int|null $selectedMonth
  * @var string|null $startDate
  * @var string|null $endDate
  */
@@ -10,8 +14,34 @@
 $this->assign('title', 'Dashboard');
 $this->setLayout('dashboard');
 
-$today = \Cake\I18n\FrozenDate::today()
-    ->format('Y-m-d');
+$today = \Cake\I18n\FrozenDate::today();
+
+$todayString =
+    $today->format('Y-m-d');
+
+$currentYear =
+    (int)$today->format('Y');
+
+$currentMonth =
+    (int)$today->format('n');
+
+$currentWeek =
+    $today->format('o-\WW');
+
+$months = [
+    1 => 'January',
+    2 => 'February',
+    3 => 'March',
+    4 => 'April',
+    5 => 'May',
+    6 => 'June',
+    7 => 'July',
+    8 => 'August',
+    9 => 'September',
+    10 => 'October',
+    11 => 'November',
+    12 => 'December',
+];
 ?>
 
 <div class="container-fluid p-0">
@@ -24,7 +54,7 @@ $today = \Cake\I18n\FrozenDate::today()
 
 
             <!-- =====================================================
-                 Dashboard Heading + Toolbar
+                 Dashboard heading
                  ===================================================== -->
 
             <div class="dashboard-heading">
@@ -44,7 +74,6 @@ $today = \Cake\I18n\FrozenDate::today()
 
                 <div class="dashboard-toolbar">
 
-                    <!-- Range filter -->
                     <form
                         class="date-filter-form"
                         method="get"
@@ -54,16 +83,234 @@ $today = \Cake\I18n\FrozenDate::today()
                         ]) ?>"
                     >
 
+
+                        <!-- =================================================
+                             Daily filter
+                             ================================================= -->
+
+                        <div
+                            class="filter-extra"
+                            data-filter-panel="day"
+                        >
+
+                            <input
+                                type="date"
+                                name="day"
+                                max="<?= h($todayString) ?>"
+                                value="<?= h(
+                                    $selectedDay
+                                    ?? $todayString
+                                ) ?>"
+                            >
+
+                        </div>
+
+
+                        <!-- =================================================
+                             Weekly filter
+                             ================================================= -->
+
+                        <div
+                            class="filter-extra"
+                            data-filter-panel="week"
+                        >
+
+                            <input
+                                type="week"
+                                name="week"
+                                max="<?= h($currentWeek) ?>"
+                                value="<?= h(
+                                    $selectedWeek
+                                    ?? $currentWeek
+                                ) ?>"
+                            >
+
+                        </div>
+
+
+                        <!-- =================================================
+                             Monthly filter
+                             ================================================= -->
+
+                        <div
+                            class="filter-extra filter-month"
+                            data-filter-panel="month"
+                        >
+
+                            <select
+                                name="month_year"
+                                class="dashboard-filter-select"
+                            >
+
+                                <?php
+                                for (
+                                    $year = $currentYear;
+                                    $year >= $currentYear - 10;
+                                    $year--
+                                ):
+                                    ?>
+
+                                    <option
+                                        value="<?= h($year) ?>"
+                                        <?= (int)(
+                                            $selectedYear
+                                            ?? $currentYear
+                                        ) === $year
+                                            ? 'selected'
+                                            : '' ?>
+                                    >
+                                        <?= h($year) ?>
+                                    </option>
+
+                                <?php endfor; ?>
+
+                            </select>
+
+
+                            <select
+                                name="month"
+                                class="dashboard-filter-select"
+                            >
+
+                                <?php foreach (
+                                    $months
+                                    as $number => $label
+                                ): ?>
+
+                                    <option
+                                        value="<?= h($number) ?>"
+                                        <?= (int)(
+                                            $selectedMonth
+                                            ?? $currentMonth
+                                        ) === $number
+                                            ? 'selected'
+                                            : '' ?>
+                                    >
+                                        <?= h($label) ?>
+                                    </option>
+
+                                <?php endforeach; ?>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             Yearly filter
+                             ================================================= -->
+
+                        <div
+                            class="filter-extra"
+                            data-filter-panel="year"
+                        >
+
+                            <select
+                                name="selected_year"
+                                class="dashboard-filter-select"
+                            >
+
+                                <?php
+                                for (
+                                    $year = $currentYear;
+                                    $year >= $currentYear - 10;
+                                    $year--
+                                ):
+                                    ?>
+
+                                    <option
+                                        value="<?= h($year) ?>"
+                                        <?= (int)(
+                                            $selectedYear
+                                            ?? $currentYear
+                                        ) === $year
+                                            ? 'selected'
+                                            : '' ?>
+                                    >
+                                        <?= h($year) ?>
+                                    </option>
+
+                                <?php endfor; ?>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             Custom filter
+                             ================================================= -->
+
+                        <div
+                            class="custom-date-range"
+                            id="custom-date-range"
+                            data-filter-panel="custom"
+                        >
+
+                            <div class="custom-date-field">
+
+                                <label for="start-date">
+                                    Start
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="start-date"
+                                    name="start_date"
+                                    max="<?= h($todayString) ?>"
+                                    value="<?= h(
+                                        $startDate
+                                        ?? ''
+                                    ) ?>"
+                                >
+
+                            </div>
+
+
+                            <div class="custom-date-field">
+
+                                <label for="end-date">
+                                    End
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="end-date"
+                                    name="end_date"
+                                    max="<?= h($todayString) ?>"
+                                    value="<?= h(
+                                        $endDate
+                                        ?? ''
+                                    ) ?>"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             Range selector
+                             ================================================= -->
+
                         <select
                             name="range"
                             id="dashboard-range-select"
                             class="dashboard-range-select"
-                            onchange="handleRangeChange(this)"
                         >
 
                             <option
+                                value="today"
+                                <?= ($range ?? 'today') === 'today'
+                                    ? 'selected'
+                                    : '' ?>
+                            >
+                                Today
+                            </option>
+
+                            <option
                                 value="day"
-                                <?= ($range ?? 'day') === 'day'
+                                <?= ($range ?? '') === 'day'
                                     ? 'selected'
                                     : '' ?>
                             >
@@ -109,57 +356,13 @@ $today = \Cake\I18n\FrozenDate::today()
                         </select>
 
 
-                        <!-- Custom date range -->
-                        <div
-                            class="custom-date-range
-                            <?= ($range ?? '') === 'custom'
-                                ? 'show'
-                                : '' ?>"
-                            id="custom-date-range"
+                        <button
+                            type="submit"
+                            class="custom-date-apply"
+                            id="dashboard-filter-apply"
                         >
-
-                            <div class="custom-date-field">
-
-                                <label for="start-date">
-                                    Start
-                                </label>
-
-                                <input
-                                    type="date"
-                                    id="start-date"
-                                    name="start_date"
-                                    max="<?= h($today) ?>"
-                                    value="<?= h($startDate ?? '') ?>"
-                                >
-
-                            </div>
-
-
-                            <div class="custom-date-field">
-
-                                <label for="end-date">
-                                    End
-                                </label>
-
-                                <input
-                                    type="date"
-                                    id="end-date"
-                                    name="end_date"
-                                    max="<?= h($today) ?>"
-                                    value="<?= h($endDate ?? '') ?>"
-                                >
-
-                            </div>
-
-
-                            <button
-                                type="submit"
-                                class="custom-date-apply"
-                            >
-                                Apply
-                            </button>
-
-                        </div>
+                            Apply
+                        </button>
 
                     </form>
 
@@ -185,14 +388,13 @@ $today = \Cake\I18n\FrozenDate::today()
                         Edit layout
                     </button>
 
-
                 </div>
 
             </div>
 
 
             <!-- =====================================================
-                 Dashboard Grid
+                 Dashboard grid
                  ===================================================== -->
 
             <div
@@ -201,6 +403,7 @@ $today = \Cake\I18n\FrozenDate::today()
             >
 
                 <!-- Drop slots -->
+
                 <div
                     class="dashboard-drop-slot"
                     data-slot="1"
@@ -223,6 +426,7 @@ $today = \Cake\I18n\FrozenDate::today()
 
 
                 <!-- Total Customers -->
+
                 <div
                     class="dashboard-widget widget-small"
                     data-widget="total-customers"
@@ -249,12 +453,15 @@ $today = \Cake\I18n\FrozenDate::today()
 
                     </div>
 
-                    <?= $this->element('total_customers') ?>
+                    <?= $this->element(
+                        'total_customers'
+                    ) ?>
 
                 </div>
 
 
                 <!-- New Customers -->
+
                 <div
                     class="dashboard-widget widget-small"
                     data-widget="new-customers"
@@ -281,7 +488,9 @@ $today = \Cake\I18n\FrozenDate::today()
 
                     </div>
 
-                    <?= $this->element('new_customers') ?>
+                    <?= $this->element(
+                        'new_customers'
+                    ) ?>
 
                 </div>
 
@@ -351,6 +560,7 @@ $today = \Cake\I18n\FrozenDate::today()
 
 
                 <!-- Recent Customers -->
+
                 <div
                     class="dashboard-widget widget-wide"
                     data-widget="recent-customers"
@@ -376,7 +586,9 @@ $today = \Cake\I18n\FrozenDate::today()
 
                     </div>
 
-                    <?= $this->element('recent_customers') ?>
+                    <?= $this->element(
+                        'recent_customers'
+                    ) ?>
 
                 </div>
 
@@ -429,8 +641,6 @@ $today = \Cake\I18n\FrozenDate::today()
 
                     <div class="widget-library-grid">
 
-
-                        <!-- Total Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -452,7 +662,6 @@ $today = \Cake\I18n\FrozenDate::today()
                         </button>
 
 
-                        <!-- New Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -522,7 +731,6 @@ $today = \Cake\I18n\FrozenDate::today()
                         </button>
 
 
-                        <!-- Recent Customers -->
                         <button
                             type="button"
                             class="widget-library-item"

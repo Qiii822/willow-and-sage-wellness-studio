@@ -19,7 +19,24 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('widget-modal-overlay');
 
     const libraryItems =
-        document.querySelectorAll('.widget-library-item');
+        document.querySelectorAll(
+            '.widget-library-item'
+        );
+
+    const rangeSelect =
+        document.getElementById(
+            'dashboard-range-select'
+        );
+
+    const filterPanels =
+        document.querySelectorAll(
+            '[data-filter-panel]'
+        );
+
+    const filterApplyButton =
+        document.getElementById(
+            'dashboard-filter-apply'
+        );
 
     const STORAGE_KEY =
         'wendy-dashboard-layout';
@@ -33,10 +50,89 @@ document.addEventListener('DOMContentLoaded', function () {
        ===================================================== */
 
     function refreshIcons() {
+
         if (window.lucide) {
             lucide.createIcons();
         }
+
     }
+
+
+    /* =====================================================
+       Dashboard range filters
+       ===================================================== */
+
+    function updateRangeFilter() {
+
+        if (!rangeSelect) {
+            return;
+        }
+
+        const selectedRange =
+            rangeSelect.value;
+
+        filterPanels.forEach(function (panel) {
+
+            const active =
+                panel.dataset.filterPanel ===
+                selectedRange;
+
+            panel.classList.toggle(
+                'show',
+                active
+            );
+
+            panel
+                .querySelectorAll(
+                    'input, select, button'
+                )
+                .forEach(function (control) {
+
+                    control.disabled =
+                        !active;
+
+                });
+
+        });
+
+
+        /*
+         * Today requires no additional
+         * filter controls.
+         */
+        if (filterApplyButton) {
+
+            filterApplyButton.style.display =
+                selectedRange === 'today'
+                    ? 'none'
+                    : 'inline-flex';
+
+        }
+
+    }
+
+
+    rangeSelect?.addEventListener(
+        'change',
+        function () {
+
+            updateRangeFilter();
+
+            /*
+             * Today immediately reloads
+             * the dashboard.
+             */
+            if (rangeSelect.value === 'today') {
+
+                rangeSelect.form.submit();
+
+            }
+
+        }
+    );
+
+
+    updateRangeFilter();
 
 
     /* =====================================================
@@ -44,29 +140,38 @@ document.addEventListener('DOMContentLoaded', function () {
        ===================================================== */
 
     function openWidgetLibrary() {
+
         modal?.classList.add('open');
 
         updateWidgetLibrary();
+
     }
 
+
     function closeWidgetLibrary() {
+
         modal?.classList.remove('open');
+
     }
+
 
     addButton?.addEventListener(
         'click',
         openWidgetLibrary
     );
 
+
     modalClose?.addEventListener(
         'click',
         closeWidgetLibrary
     );
 
+
     modalOverlay?.addEventListener(
         'click',
         closeWidgetLibrary
     );
+
 
     document.addEventListener(
         'keydown',
@@ -94,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     item.dataset.widget;
 
                 const widget =
-                    dashboard.querySelector(
+                    dashboard?.querySelector(
                         '[data-widget="' +
                         widgetName +
                         '"]'
@@ -109,8 +214,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
                 saveLayout();
+
                 updateWidgetLibrary();
+
                 closeWidgetLibrary();
+
             }
         );
 
@@ -127,10 +235,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             editing = !editing;
 
-            dashboard.classList.toggle(
+            dashboard?.classList.toggle(
                 'editing',
                 editing
             );
+
 
             if (editing) {
 
@@ -145,21 +254,27 @@ document.addEventListener('DOMContentLoaded', function () {
                     ' Edit layout';
 
                 saveLayout();
+
             }
 
+
             const widgets =
-                dashboard.querySelectorAll(
+                dashboard?.querySelectorAll(
                     '.dashboard-widget'
                 );
 
-            widgets.forEach(function (widget) {
+            widgets?.forEach(
+                function (widget) {
 
-                widget.draggable =
-                    editing;
+                    widget.draggable =
+                        editing;
 
-            });
+                }
+            );
+
 
             refreshIcons();
+
         }
     );
 
@@ -196,7 +311,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
 
                     saveLayout();
+
                     updateWidgetLibrary();
+
                 }
             );
 
@@ -212,7 +329,9 @@ document.addEventListener('DOMContentLoaded', function () {
         function (event) {
 
             if (!editing) {
+
                 event.preventDefault();
+
                 return;
             }
 
@@ -233,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             event.dataTransfer.effectAllowed =
                 'move';
+
         }
     );
 
@@ -259,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.dashboard-drop-slot'
                 );
 
+
             document
                 .querySelectorAll(
                     '.dashboard-drop-slot'
@@ -271,10 +392,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 });
 
+
             if (slot) {
+
                 slot.classList.add(
                     'drag-over'
                 );
+
             }
 
         }
@@ -298,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             event.preventDefault();
 
+
             const slot =
                 event.target.closest(
                     '.dashboard-drop-slot'
@@ -307,10 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            /*
-             * Only small widgets use
-             * the three top grid slots.
-             */
+
             if (
                 !draggedWidget.classList.contains(
                     'widget-small'
@@ -319,11 +441,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+
             const newSlot =
                 slot.dataset.slot;
 
             const oldSlot =
                 draggedWidget.dataset.slot;
+
 
             const existingWidget =
                 dashboard.querySelector(
@@ -333,10 +457,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '"]'
                 );
 
-            /*
-             * If another widget already occupies
-             * this position, swap them.
-             */
+
             if (
                 existingWidget &&
                 existingWidget !== draggedWidget
@@ -347,13 +468,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
+
             draggedWidget.dataset.slot =
                 newSlot;
 
+
             updateWidgetPositions();
+
             saveLayout();
 
             clearDropHighlights();
+
         }
     );
 
@@ -379,12 +504,13 @@ document.addEventListener('DOMContentLoaded', function () {
             clearDropHighlights();
 
             saveLayout();
+
         }
     );
 
 
     /* =====================================================
-       Clear Drop Slot Highlight
+       Clear Drop Highlights
        ===================================================== */
 
     function clearDropHighlights() {
@@ -400,6 +526,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
             });
+
     }
 
 
@@ -409,10 +536,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateWidgetPositions() {
 
+        if (!dashboard) {
+            return;
+        }
+
+
         const smallWidgets =
             dashboard.querySelectorAll(
                 '.dashboard-widget.widget-small'
             );
+
 
         smallWidgets.forEach(
             function (widget) {
@@ -429,6 +562,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 widget.style.gridRow =
                     '1';
+
             }
         );
 
@@ -437,6 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
             dashboard.querySelectorAll(
                 '.dashboard-drop-slot'
             );
+
 
         slots.forEach(
             function (slot) {
@@ -449,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 slot.style.gridRow =
                     '1';
+
             }
         );
 
@@ -458,6 +594,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 '[data-widget="recent-customers"]'
             );
 
+
         if (recentCustomers) {
 
             recentCustomers.style.gridColumn =
@@ -465,7 +602,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             recentCustomers.style.gridRow =
                 '2';
+
         }
+
     }
 
 
@@ -475,10 +614,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function saveLayout() {
 
+        if (!dashboard) {
+            return;
+        }
+
+
         const widgets =
             dashboard.querySelectorAll(
                 '.dashboard-widget'
             );
+
 
         const layout =
             Array
@@ -505,10 +650,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 });
 
+
         localStorage.setItem(
             STORAGE_KEY,
             JSON.stringify(layout)
         );
+
     }
 
 
@@ -518,6 +665,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function loadLayout() {
 
+        if (!dashboard) {
+            return;
+        }
+
+
         const saved =
             localStorage.getItem(
                 STORAGE_KEY
@@ -526,6 +678,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!saved) {
             return;
         }
+
 
         let layout;
 
@@ -539,6 +692,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
 
         }
+
 
         layout.forEach(
             function (savedWidget) {
@@ -554,10 +708,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
+
                 widget.classList.toggle(
                     'widget-hidden',
                     !savedWidget.visible
                 );
+
 
                 if (savedWidget.slot) {
 
@@ -568,6 +724,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
         );
+
     }
 
 
@@ -583,16 +740,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 const widgetName =
                     item.dataset.widget;
 
+
                 const widget =
-                    dashboard.querySelector(
+                    dashboard?.querySelector(
                         '[data-widget="' +
                         widgetName +
                         '"]'
                     );
 
+
                 if (!widget) {
                     return;
                 }
+
 
                 const visible =
                     !widget
@@ -601,6 +761,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             'widget-hidden'
                         );
 
+
                 item.classList.toggle(
                     'already-added',
                     visible
@@ -608,6 +769,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
         );
+
     }
 
 
@@ -624,22 +786,3 @@ document.addEventListener('DOMContentLoaded', function () {
     refreshIcons();
 
 });
-
-function handleRangeChange(select) {
-
-    const customRange =
-        document.getElementById(
-            'custom-date-range'
-        );
-
-    if (select.value === 'custom') {
-
-        customRange?.classList.add('show');
-
-        return;
-    }
-
-    customRange?.classList.remove('show');
-
-    select.form.submit();
-}
