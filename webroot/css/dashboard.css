@@ -683,8 +683,7 @@ select {
    Filter buttons
    ========================================================= */
 
-.custom-date-apply,
-.export-btn {
+.custom-date-apply {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -719,11 +718,6 @@ select {
 
     transform: translateY(-1px);
 }
-
-.export-btn {
-    gap: 8px;
-}
-
 
 /* =========================================================
    Responsive

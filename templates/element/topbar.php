@@ -145,25 +145,6 @@ $today = \Cake\I18n\FrozenDate::today()
 
         </form>
 
-
-        <!-- Export -->
-        <?= $this->Html->link(
-            '<i data-lucide="download"></i> Export customers',
-            [
-                'controller' => 'Dashboard',
-                'action' => 'exportCustomers',
-                '?' => [
-                    'range' => $range ?? 'day',
-                    'start_date' => $startDate ?? null,
-                    'end_date' => $endDate ?? null,
-                ]
-            ],
-            [
-                'escape' => false,
-                'class' => 'export-btn'
-            ]
-        ) ?>
-
     </div>
 
 </div>
