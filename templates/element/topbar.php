@@ -2,7 +2,9 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\User|null $identity
- * @var string $selectedDate
+ * @var string $range
+ * @var string|null $startDate
+ * @var string|null $endDate
  */
 
 $today = \Cake\I18n\FrozenDate::today()
@@ -10,43 +12,158 @@ $today = \Cake\I18n\FrozenDate::today()
 ?>
 
 <div class="top-bar">
+
     <div>
-        <h1>Welcome back, <?= h($identity->first_name ?? '') ?></h1>
+        <h1>
+            Welcome back, <?= h($identity->first_name ?? '') ?>
+        </h1>
+
         <p class="subtitle">
             Here's what's happening with the business today.
         </p>
     </div>
 
+
     <div class="top-actions">
 
         <form
-                class="date-filter-form"
-                method="get"
-                action="<?= $this->Url->build([
-                    'controller' => 'Dashboard',
-                    'action' => 'index'
-                ]) ?>"
+            class="date-filter-form"
+            method="get"
+            action="<?= $this->Url->build([
+                'controller' => 'Dashboard',
+                'action' => 'index'
+            ]) ?>"
         >
-            <input
-                    type="date"
-                    name="date"
-                    max="<?= h($today) ?>"
-                    value="<?= h($selectedDate ?? $today) ?>"
-                    onchange="this.form.submit()"
+
+            <!-- Range -->
+            <select
+                name="range"
+                id="dashboard-range-select"
+                class="dashboard-range-select"
+                onchange="handleRangeChange(this)"
             >
+
+                <option
+                    value="day"
+                    <?= ($range ?? 'day') === 'day'
+                        ? 'selected'
+                        : '' ?>
+                >
+                    Daily
+                </option>
+
+                <option
+                    value="week"
+                    <?= ($range ?? '') === 'week'
+                        ? 'selected'
+                        : '' ?>
+                >
+                    Weekly
+                </option>
+
+                <option
+                    value="month"
+                    <?= ($range ?? '') === 'month'
+                        ? 'selected'
+                        : '' ?>
+                >
+                    Monthly
+                </option>
+
+                <option
+                    value="year"
+                    <?= ($range ?? '') === 'year'
+                        ? 'selected'
+                        : '' ?>
+                >
+                    Yearly
+                </option>
+
+                <option
+                    value="custom"
+                    <?= ($range ?? '') === 'custom'
+                        ? 'selected'
+                        : '' ?>
+                >
+                    Custom
+                </option>
+
+            </select>
+
+
+            <!-- Custom dates -->
+            <div
+                class="custom-date-range
+                <?= ($range ?? '') === 'custom'
+                    ? 'show'
+                    : '' ?>"
+                id="custom-date-range"
+            >
+
+                <div class="custom-date-field">
+
+                    <label for="start-date">
+                        Start
+                    </label>
+
+                    <input
+                        type="date"
+                        id="start-date"
+                        name="start_date"
+                        max="<?= h($today) ?>"
+                        value="<?= h($startDate ?? '') ?>"
+                    >
+
+                </div>
+
+
+                <div class="custom-date-field">
+
+                    <label for="end-date">
+                        End
+                    </label>
+
+                    <input
+                        type="date"
+                        id="end-date"
+                        name="end_date"
+                        max="<?= h($today) ?>"
+                        value="<?= h($endDate ?? '') ?>"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="custom-date-apply"
+                >
+                    Apply
+                </button>
+
+            </div>
+
         </form>
 
-        <button
-            class="export-btn"
-            type="button"
-            id="export-customers"
-            data-date="<?= h($selectedDate ?? $today) ?>"
-        >
-            <i data-lucide="download"></i>
-            Export customers
-        </button>
+
+        <!-- Export -->
+        <?= $this->Html->link(
+            '<i data-lucide="download"></i> Export customers',
+            [
+                'controller' => 'Dashboard',
+                'action' => 'exportCustomers',
+                '?' => [
+                    'range' => $range ?? 'day',
+                    'start_date' => $startDate ?? null,
+                    'end_date' => $endDate ?? null,
+                ]
+            ],
+            [
+                'escape' => false,
+                'class' => 'export-btn'
+            ]
+        ) ?>
 
     </div>
+
 </div>
-
-
