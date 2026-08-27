@@ -61,6 +61,11 @@ $this->setLayout('dashboard');
                     data-slot="3"
                 ></div>
 
+                <div
+                    class="dashboard-drop-slot"
+                    data-slot="4"
+                ></div>
+
 
                 <!-- Total Customers -->
                 <div
@@ -122,6 +127,70 @@ $this->setLayout('dashboard');
                     </div>
 
                     <?= $this->element('new_customers') ?>
+
+                </div>
+
+
+                <!-- Total Bookings -->
+                <div
+                    class="dashboard-widget widget-small"
+                    data-widget="total-bookings"
+                    data-slot="3"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+                    <?= $this->element('total_bookings') ?>
+
+                </div>
+
+
+                <!-- Total Income -->
+                <div
+                    class="dashboard-widget widget-small"
+                    data-widget="total-income"
+                    data-slot="4"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+                    <?= $this->element('total_income') ?>
 
                 </div>
 
@@ -246,6 +315,54 @@ $this->setLayout('dashboard');
 
                             <p>
                                 View customers added on the selected date.
+                            </p>
+
+                        </button>
+
+
+                        <!-- Total Bookings -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="total-bookings"
+                        >
+
+                            <div class="widget-library-icon">
+
+                                <i data-lucide="calendar-check"></i>
+
+                            </div>
+
+                            <h3>
+                                Total Bookings
+                            </h3>
+
+                            <p>
+                                View the total number of bookings.
+                            </p>
+
+                        </button>
+
+
+                        <!-- Total Income -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="total-income"
+                        >
+
+                            <div class="widget-library-icon">
+
+                                <i data-lucide="dollar-sign"></i>
+
+                            </div>
+
+                            <h3>
+                                Total Income
+                            </h3>
+
+                            <p>
+                                View total income from completed payments.
                             </p>
 
                         </button>

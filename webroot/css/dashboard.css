@@ -329,7 +329,7 @@ select {
     position: relative;
 
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 
     gap: 24px;
 }
@@ -394,7 +394,7 @@ select {
         );
 
     background-size:
-        calc(33.333% - 8px) 100px;
+        calc(25% - 6px) 100px;
 
     background-position:
         12px 12px;
