@@ -17,11 +17,7 @@ $this->Html->css('landing', ['block' => true]);
  * is a real anchor - the remaining nav entries are still inert buttons
  * until the pages behind them exist.
  */
-$bookingUrl = env(
-    'SQUARE_BOOKING_URL',
-    'https://book.squareup.com/appointments/r2a8ubnahl2pug/location/LPSB9KGV9MYAJ/services'
-    . '?buttonTextColor=ffffff&color=4d4d4d&locale=en-AU&referrer=so'
-);
+$bookingUrl = $this->SiteContent->raw('booking.url');
 
 $navItems = [
     'Gift card',
@@ -33,9 +29,9 @@ $navItems = [
     <div class="site-header-inner">
 
         <?= $this->Html->link(
-            'Willow and Sage Wellness Studio',
+            $this->SiteContent->get('site.brand'),
             ['controller' => 'Home', 'action' => 'index'],
-            ['class' => 'site-brand']
+            ['class' => 'site-brand', 'escape' => false]
         ) ?>
 
         <nav class="site-nav" aria-label="Main">

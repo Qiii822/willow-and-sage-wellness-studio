@@ -61,6 +61,9 @@ return function (RouteBuilder $routes): void {
         // still land on the dashboard when they sign in.
         $builder->connect('/home', ['controller' => 'Home', 'action' => 'index']);
 
+        // Editor for the words on that page.
+        $builder->connect('/website-content', ['controller' => 'SiteContents', 'action' => 'index']);
+
         $builder->connect('/account', ['controller' => 'Users', 'action' => 'profile']);
         $builder->connect('/account/change-password', ['controller' => 'Users', 'action' => 'changePassword']);
 

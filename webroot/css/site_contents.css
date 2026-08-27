@@ -1,0 +1,203 @@
+/* =========================================================
+   Home page content editor
+
+   Lives in the dashboard shell, so it borrows the page
+   background and sidebar from dashboard.css.
+   ========================================================= */
+
+.content-page {
+    width: min(880px, 100%);
+
+    padding: 32px 36px 60px;
+}
+
+.content-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin-bottom: 26px;
+}
+
+.content-header h1 {
+    margin: 0 0 6px;
+
+    color: #2f2d2b;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+}
+
+.content-header p {
+    max-width: 520px;
+    margin: 0;
+
+    color: #6b6259;
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   Groups
+   ========================================================= */
+
+.content-card {
+    margin-bottom: 20px;
+    padding: 24px 26px;
+
+    background: #fffdfa;
+    border: 1px solid rgba(24, 20, 17, 0.07);
+    border-radius: 16px;
+
+    box-shadow: 0 8px 22px rgba(24, 20, 17, 0.04);
+}
+
+.content-card h2 {
+    margin: 0 0 18px;
+
+    color: #2f2d2b;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.content-field {
+    margin-bottom: 18px;
+}
+
+.content-field:last-child {
+    margin-bottom: 0;
+}
+
+.content-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #2f2d2b;
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.content-input {
+    width: 100%;
+
+    padding: 11px 14px;
+
+    color: #2f2d2b;
+    font-family: inherit;
+    font-size: 14.5px;
+    line-height: 1.55;
+
+    background: #fff;
+    border: 1px solid rgba(24, 20, 17, 0.14);
+    border-radius: 10px;
+
+    /* Textareas only grow downwards; sideways would break the layout. */
+    resize: vertical;
+}
+
+.content-input:focus {
+    border-color: #b0916c;
+    outline: none;
+
+    box-shadow: 0 0 0 3px rgba(176, 145, 108, 0.25);
+}
+
+.content-help {
+    margin: 6px 0 0;
+
+    color: #6b6259;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+
+.content-actions {
+    display: flex;
+    gap: 12px;
+
+    margin-top: 24px;
+}
+
+.content-button {
+    min-height: 44px;
+
+    padding: 0 24px;
+
+    color: #fff;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: #8b7e74;
+    border: 0;
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.content-button:hover {
+    color: #fff;
+
+    background: #6f645b;
+}
+
+/* Also used on an <a>, which needs the box behaviour a button gets free. */
+.content-button.secondary {
+    display: inline-flex;
+    align-items: center;
+
+    color: #6f645b;
+
+    background: transparent;
+    border: 1px solid rgba(139, 126, 116, 0.4);
+}
+
+.content-button.secondary:hover {
+    color: #6f645b;
+
+    background: rgba(139, 126, 116, 0.1);
+}
+
+.content-button.danger {
+    color: #b3382c;
+
+    background: transparent;
+    border: 1px solid rgba(179, 56, 44, 0.35);
+}
+
+.content-button.danger:hover {
+    color: #b3382c;
+
+    background: rgba(179, 56, 44, 0.08);
+}
+
+/* Set apart from the save action, so the two are not clicked by mistake. */
+.content-reset {
+    margin-top: 34px;
+    padding-top: 22px;
+
+    border-top: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+@media (max-width: 640px) {
+    .content-page {
+        padding: 24px 18px 48px;
+    }
+
+    .content-card {
+        padding: 20px 16px;
+    }
+
+    .content-actions .content-button {
+        width: 100%;
+    }
+}

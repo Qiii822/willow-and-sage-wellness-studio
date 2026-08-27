@@ -24,6 +24,8 @@ $isPayments =
 $isSettings =
     $controller === 'Users' &&
     $action === 'settings';
+
+$isSiteContent = $controller === 'SiteContents';
 ?>
 
 <aside class="sidebar">
@@ -109,6 +111,29 @@ $isSettings =
                     '<i data-lucide="users"></i><span>Users</span>',
                     [
                         'controller' => 'Users',
+                        'action' => 'index'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
+
+        <?php endif; ?>
+
+
+        <?php if (in_array(
+            $role,
+            ['admin', 'superadmin'],
+            true
+        )): ?>
+
+            <li class="<?= $isSiteContent ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="pencil"></i><span>Website content</span>',
+                    [
+                        'controller' => 'SiteContents',
                         'action' => 'index'
                     ],
                     [

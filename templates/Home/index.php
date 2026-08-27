@@ -5,7 +5,8 @@
  * @var \App\View\AppView $this
  */
 
-$this->assign('title', 'Willow and Sage Wellness Studio');
+// Every string on this page comes from the editor under Website content.
+$this->assign('title', $this->SiteContent->get('site.title'));
 
 $this->Html->css(
     'landing',
@@ -33,11 +34,7 @@ foreach ([
 }
 
 // Booking lives on Square; the hero button leaves the site for it.
-$bookingUrl = env(
-    'SQUARE_BOOKING_URL',
-    'https://book.squareup.com/appointments/r2a8ubnahl2pug/location/LPSB9KGV9MYAJ/services'
-    . '?buttonTextColor=ffffff&color=4d4d4d&locale=en-AU&referrer=so'
-);
+$bookingUrl = $this->SiteContent->raw('booking.url');
 ?>
 
 <?= $this->element('site_header') ?>
@@ -54,18 +51,15 @@ $bookingUrl = env(
         <div class="hero-content">
 
             <p class="hero-eyebrow">
-                Wellness studio &middot; Ingle Farm, Adelaide
+                <?= $this->SiteContent->get('hero.eyebrow') ?>
             </p>
 
             <h1 class="hero-title">
-                Slow down.<br>
-                Unwind.<br>
-                Feel nurtured.
+                <?= $this->SiteContent->lines('hero.title') ?>
             </h1>
 
             <p class="hero-lead">
-                Relaxation massage, facials and natural nail care in a calming
-                home-based studio.
+                <?= $this->SiteContent->get('hero.lead') ?>
             </p>
 
             <a
@@ -74,7 +68,7 @@ $bookingUrl = env(
                 target="_blank"
                 rel="noopener"
             >
-                Book a treatment
+                <?= $this->SiteContent->get('hero.cta') ?>
             </a>
 
 
@@ -88,51 +82,35 @@ $bookingUrl = env(
 
             <div class="section-intro">
 
-                <h2>Service menu</h2>
+                <h2><?= $this->SiteContent->get('services.heading') ?></h2>
 
-                <p>
-                    Willow &amp; Sage Wellness Studio is a calming home-based
-                    wellness space in Ingle Farm, Adelaide, offering relaxation
-                    massage, facials, and natural nail care treatments designed
-                    to help you slow down, unwind, and feel nurtured.
-                </p>
+                <p><?= $this->SiteContent->get('services.intro') ?></p>
 
             </div>
 
             <div class="feature-grid">
 
-                <article class="feature-card">
-                    <span class="feature-icon">
-                        <i data-lucide="heart"></i>
-                    </span>
-                    <h3>Relaxation massage</h3>
-                    <p>
-                        Unhurried, full-body massage to release held tension
-                        and quiet a busy head.
-                    </p>
-                </article>
+                <?php
+                /*
+                 * The icons stay in the template: they are part of the design
+                 * rather than copy, and picking one is not something the
+                 * editor should have to reason about.
+                 */
+                $serviceIcons = ['heart', 'sparkles', 'flower'];
+                ?>
 
-                <article class="feature-card">
-                    <span class="feature-icon">
-                        <i data-lucide="sparkles"></i>
-                    </span>
-                    <h3>Facials</h3>
-                    <p>
-                        Gentle, skin-first facials chosen to suit how your skin
-                        is behaving on the day.
-                    </p>
-                </article>
+                <?php foreach ($serviceIcons as $index => $icon): ?>
+                    <?php $n = $index + 1; ?>
 
-                <article class="feature-card">
-                    <span class="feature-icon">
-                        <i data-lucide="flower"></i>
-                    </span>
-                    <h3>Natural nail care</h3>
-                    <p>
-                        Manicures and pedicures using natural products,
-                        finished without the rush.
-                    </p>
-                </article>
+                    <article class="feature-card">
+                        <span class="feature-icon">
+                            <i data-lucide="<?= h($icon) ?>"></i>
+                        </span>
+                        <h3><?= $this->SiteContent->get("service.{$n}.title") ?></h3>
+                        <p><?= $this->SiteContent->get("service.{$n}.body") ?></p>
+                    </article>
+
+                <?php endforeach; ?>
 
             </div>
 
