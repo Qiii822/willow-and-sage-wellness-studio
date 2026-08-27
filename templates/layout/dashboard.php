@@ -17,7 +17,7 @@
 <?= $this->fetch('title') ?>
 </title>
 
-<?= $this->Html->meta('icon') ?>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
 <!-- Base CSS -->
 <?= $this->Html->css('normalize.min') ?>
