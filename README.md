@@ -21,3 +21,11 @@ Logon and go to the dashboard and connect with Square.
 3. Go to <https://developer.squareup.com/apps>
 4. Click Sandbox test accounts.
 5. Click Square Dashboard for the `Auth` user.
+
+## Scheduled Tasks
+
+The Square access token must be refreshed periodically (Square recommends every 7 days or less) independent of whether anyone is using the app. Wire the following into the server's crontab:
+
+```0 3 * * * cd /path/to/app && bin/cake refresh_square_token >> logs/refresh_square_token.log 2>&1```
+
+Note: `refresh_square_token` is a safety net as normal usage (syncs, admins viewing Settings) already refreshes the token on-demand via SquareAuthService This just covers periods where the app sits unused as recommended by Square's docs.
