@@ -105,6 +105,92 @@
     box-shadow: 0 0 0 3px rgba(176, 145, 108, 0.25);
 }
 
+/* =========================================================
+   Image field
+   ========================================================= */
+
+.content-image-preview {
+    margin-bottom: 12px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(24, 20, 17, 0.1);
+    border-radius: 12px;
+}
+
+.content-image-preview img {
+    display: block;
+
+    width: 100%;
+    max-height: 220px;
+
+    /* Shows the framing the hero will actually use. */
+    object-fit: cover;
+}
+
+.content-file {
+    width: 100%;
+
+    padding: 10px 12px;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    background: #fff;
+    border: 1px dashed rgba(24, 20, 17, 0.2);
+    border-radius: 10px;
+
+    cursor: pointer;
+}
+
+/* Note under the preview while a chosen file is not yet uploaded. */
+.content-image-note {
+    margin: 8px 0 0;
+
+    color: #6b6259;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.content-image-note[hidden],
+.content-image-preview[hidden] {
+    display: none;
+}
+
+/*
+ * Upload errors, shown against the field rather than at the top of the
+ * page. The framework's default markup is a bare div, so it is styled
+ * here to read as a field message.
+ */
+.content-field-flash .message {
+    margin: 10px 0 0;
+    padding: 11px 14px;
+
+    font-size: 13.5px;
+    line-height: 1.5;
+
+    border-radius: 10px;
+}
+
+.content-field-flash .message.error {
+    color: #8c2f24;
+
+    background: #fbeae8;
+    border: 1px solid #f0cdc8;
+}
+
+.content-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 10px;
+
+    color: #6b6259;
+    font-size: 13.5px;
+    font-weight: 400;
+}
+
 .content-help {
     margin: 6px 0 0;
 

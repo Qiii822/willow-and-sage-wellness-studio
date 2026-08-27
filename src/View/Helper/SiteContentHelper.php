@@ -49,6 +49,39 @@ class SiteContentHelper extends Helper
     }
 
     /**
+     * The hero backdrop's URL, or null to leave the gradient showing.
+     *
+     * Prefers a photo uploaded through the editor. With none set - or when
+     * its file has gone missing - it falls back to the picture shipped in
+     * webroot/img, so the page never loses its backdrop because of a stale
+     * database row.
+     *
+     * @return string|null
+     */
+    public function heroImageUrl(): ?string
+    {
+        $uploaded = $this->raw('hero.image');
+
+        if ($uploaded !== '') {
+            $uploads = new \App\Service\ImageUploadService();
+
+            if ($uploads->exists($uploaded)) {
+                return $this->getView()->Url->image(
+                    \App\Service\ImageUploadService::DIRECTORY . '/' . basename($uploaded)
+                );
+            }
+        }
+
+        foreach (['hero.webp', 'hero.jpg', 'hero.png', 'homepage.webp', 'homepage.jpg'] as $candidate) {
+            if (file_exists(WWW_ROOT . 'img' . DS . $candidate)) {
+                return $this->getView()->Url->image($candidate);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * The unescaped value, for places that are not HTML output - a URL in an
      * attribute the caller escapes itself, or a comparison.
      *

@@ -13,25 +13,8 @@ $this->Html->css(
     ['block' => true]
 );
 
-/*
- * Backdrop photo. Drop any of these into webroot/img/ and it is picked up
- * automatically; with none present the hero falls back to its gradient.
- * First match wins, so `hero.*` overrides the studio's default shot.
- */
-$heroImage = null;
-
-foreach ([
-    'hero.webp',
-    'hero.jpg',
-    'hero.png',
-    'homepage.webp',
-    'homepage.jpg',
-] as $candidate) {
-    if (file_exists(WWW_ROOT . 'img' . DS . $candidate)) {
-        $heroImage = $this->Url->image($candidate);
-        break;
-    }
-}
+// Uploaded through Website content, or the picture shipped with the site.
+$heroImage = $this->SiteContent->heroImageUrl();
 
 // Booking lives on Square; the hero button leaves the site for it.
 $bookingUrl = $this->SiteContent->raw('booking.url');

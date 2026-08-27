@@ -23,6 +23,13 @@ class SiteContentsTable extends Table
     public const TYPE_TEXTAREA = 'textarea';
 
     /**
+     * An uploaded picture. The stored value is a filename inside
+     * webroot/img/uploads, written by the upload service rather than by
+     * saveValues(), which only handles typed text.
+     */
+    public const TYPE_IMAGE = 'image';
+
+    /**
      * @var array<string, array{group: string, label: string, type: string, default: string, help?: string}>
      */
     public const FIELDS = [
@@ -48,6 +55,15 @@ class SiteContentsTable extends Table
             'help' => 'Where the Book buttons send people. Must start with https://',
         ],
 
+        'hero.image' => [
+            'group' => 'Hero',
+            'label' => 'Background photo',
+            'type' => self::TYPE_IMAGE,
+            'default' => '',
+            'help' => 'JPEG, PNG or WebP, up to 5 MB. Landscape works best; '
+                . 'around 2000px wide keeps it sharp on large screens. '
+                . 'With none set, the photo shipped with the site is used.',
+        ],
         'hero.eyebrow' => [
             'group' => 'Hero',
             'label' => 'Small line above the heading',
@@ -235,6 +251,11 @@ class SiteContentsTable extends Table
         $saved = 0;
 
         foreach (self::FIELDS as $key => $field) {
+            // Pictures arrive as uploads, not as text in the form data.
+            if ($field['type'] === self::TYPE_IMAGE) {
+                continue;
+            }
+
             if (!array_key_exists($key, $submitted)) {
                 continue;
             }
@@ -257,7 +278,36 @@ class SiteContentsTable extends Table
     }
 
     /**
+     * Stores one field's value directly, bypassing the text whitelist.
+     *
+     * Used for image fields, whose value is a filename produced by the
+     * upload service rather than something the browser submitted.
+     *
+     * @param string $key
+     * @param string $value
+     * @return bool
+     */
+    public function setValue(string $key, string $value): bool
+    {
+        if (!isset(self::FIELDS[$key])) {
+            return false;
+        }
+
+        $row = $this->find()->where(['content_key' => $key])->first()
+            ?? $this->newEmptyEntity();
+
+        $row->content_key = $key;
+        $row->value = $value;
+
+        return (bool)$this->save($row);
+    }
+
+    /**
      * Restores every field to the text declared in FIELDS.
+     *
+     * Uploaded files are left on disk: the row pointing at them is what is
+     * removed, and deleting them is the caller's business since it needs to
+     * know which files were in use.
      *
      * @return void
      */

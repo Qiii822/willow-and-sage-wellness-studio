@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\Table\SiteContentsTable;
+use App\Service\ImageUploadService;
 use Cake\Http\Response;
 
 /**
@@ -36,19 +37,30 @@ class SiteContentsController extends AppController
 
         if ($this->request->is(['post', 'put', 'patch'])) {
             if ($this->request->getData('reset') !== null) {
-                $this->SiteContents->resetToDefaults();
+                $this->resetEverything();
 
                 $this->Flash->success('The home page has been restored to its original wording.');
 
                 return $this->redirect(['action' => 'index']);
             }
 
-            $saved = $this->SiteContents->saveValues($this->request->getData());
+            $this->SiteContents->saveValues($this->request->getData());
 
-            if ($saved > 0) {
-                $this->Flash->success('The home page has been updated.');
+            /*
+             * The picture is handled after the text, so a rejected upload
+             * still leaves the wording saved and only reports what failed.
+             */
+            $imageError = $this->handleHeroImage();
+
+            if ($imageError !== null) {
+                /*
+                 * Keyed so the editor can show this beside the file field it
+                 * is about, rather than as a page-level banner far from the
+                 * control that caused it.
+                 */
+                $this->Flash->error($imageError, ['key' => 'heroImage']);
             } else {
-                $this->Flash->error('Nothing was saved. Please try again.');
+                $this->Flash->success('The home page has been updated.');
             }
 
             return $this->redirect(['action' => 'index']);
@@ -64,5 +76,56 @@ class SiteContentsController extends AppController
         }
 
         $this->set(compact('values', 'groups'));
+    }
+
+    /**
+     * Applies a hero photo upload or removal.
+     *
+     * @return string|null An error to show, or null when nothing went wrong.
+     */
+    protected function handleHeroImage(): ?string
+    {
+        $uploader = new ImageUploadService();
+        $current = (string)$this->SiteContents->values()['hero.image'];
+
+        if ($this->request->getData('hero_image_remove')) {
+            $uploader->delete($current);
+            $this->SiteContents->setValue('hero.image', '');
+
+            return null;
+        }
+
+        $file = $this->request->getUploadedFile('hero_image');
+
+        if (!$file || $file->getError() === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        $result = $uploader->store($file, 'hero');
+
+        if (!$result['ok']) {
+            return $result['error'];
+        }
+
+        $this->SiteContents->setValue('hero.image', $result['filename']);
+
+        // Only once the replacement is safely stored.
+        $uploader->delete($current);
+
+        return null;
+    }
+
+    /**
+     * Clears saved copy and removes any uploaded picture with it.
+     *
+     * @return void
+     */
+    protected function resetEverything(): void
+    {
+        $uploader = new ImageUploadService();
+
+        $uploader->delete((string)$this->SiteContents->values()['hero.image']);
+
+        $this->SiteContents->resetToDefaults();
     }
 }

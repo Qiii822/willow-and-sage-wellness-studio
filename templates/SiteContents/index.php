@@ -12,6 +12,7 @@ use App\Model\Table\SiteContentsTable;
 $this->assign('title', 'Website Content');
 
 $this->Html->css('site_contents', ['block' => true]);
+$this->Html->script('site_contents', ['block' => true]);
 ?>
 
 <div class="content-page">
@@ -38,9 +39,11 @@ $this->Html->css('site_contents', ['block' => true]);
 
     </div>
 
+    <?php // enctype is required or the browser sends the file's name only. ?>
     <?= $this->Form->create(null, [
         'class' => 'content-form',
         'url' => ['action' => 'index'],
+        'type' => 'file',
     ]) ?>
 
     <?php foreach ($groups as $groupName => $fields): ?>
@@ -57,7 +60,50 @@ $this->Html->css('site_contents', ['block' => true]);
                         <?= h($field['label']) ?>
                     </label>
 
-                    <?php if ($field['type'] === SiteContentsTable::TYPE_TEXTAREA): ?>
+                    <?php if ($field['type'] === SiteContentsTable::TYPE_IMAGE): ?>
+
+                        <?php $currentUrl = $this->SiteContent->heroImageUrl(); ?>
+
+                        <?php /*
+                         * Always rendered, so the script has somewhere to put
+                         * a preview even when no photo is set yet.
+                         */ ?>
+                        <div
+                            class="content-image-preview"
+                            data-preview-for="hero_image"
+                            <?= $currentUrl ? '' : 'hidden' ?>
+                        >
+                            <img
+                                src="<?= h((string)$currentUrl) ?>"
+                                alt="Background photo"
+                                data-original-src="<?= h((string)$currentUrl) ?>"
+                            >
+                            <p class="content-image-note" hidden>
+                                Preview of the photo you chose. It replaces the
+                                current one when you save.
+                            </p>
+                        </div>
+
+                        <?= $this->Form->file('hero_image', [
+                            'id' => 'field-' . str_replace('.', '-', $key),
+                            'class' => 'content-file',
+                            'accept' => 'image/jpeg,image/png,image/webp',
+                            'data-preview' => 'hero_image',
+                        ]) ?>
+
+                        <?php // Upload problems belong next to the file field. ?>
+                        <div class="content-field-flash">
+                            <?= $this->Flash->render('heroImage') ?>
+                        </div>
+
+                        <?php if (($values[$key] ?? '') !== ''): ?>
+                            <label class="content-checkbox">
+                                <?= $this->Form->checkbox('hero_image_remove', ['hiddenField' => false]) ?>
+                                Remove the uploaded photo and go back to the original
+                            </label>
+                        <?php endif; ?>
+
+                    <?php elseif ($field['type'] === SiteContentsTable::TYPE_TEXTAREA): ?>
 
                         <?= $this->Form->textarea($key, [
                             'id' => 'field-' . str_replace('.', '-', $key),
