@@ -84,9 +84,77 @@
         });
     }
 
+    /**
+     * Up/down reordering of the page's blocks.
+     *
+     * Rows carry their key in a hidden input, so moving the row in the DOM
+     * is all that is needed - the form posts them in their new order and the
+     * server reads that sequence. No position numbers to keep in step.
+     */
+    function attachReordering(list) {
+        function refresh() {
+            var rows = list.querySelectorAll('.section-row');
+
+            rows.forEach(function (row, index) {
+                var up = row.querySelector('[data-move="up"]');
+                var down = row.querySelector('[data-move="down"]');
+
+                // Nothing to swap with at the ends.
+                if (up) {
+                    up.disabled = index === 0;
+                }
+
+                if (down) {
+                    down.disabled = index === rows.length - 1;
+                }
+            });
+        }
+
+        list.addEventListener('click', function (event) {
+            var button = event.target.closest('[data-move]');
+
+            if (!button) {
+                return;
+            }
+
+            var row = button.closest('.section-row');
+
+            if (button.dataset.move === 'up') {
+                var previous = row.previousElementSibling;
+
+                if (previous) {
+                    list.insertBefore(row, previous);
+                }
+            } else {
+                var next = row.nextElementSibling;
+
+                if (next) {
+                    list.insertBefore(next, row);
+                }
+            }
+
+            refresh();
+
+            // Keep the keyboard on the button that just moved.
+            button.focus();
+        });
+
+        list.addEventListener('change', function (event) {
+            if (event.target.type === 'checkbox') {
+                event.target.closest('.section-row')
+                    .classList.toggle('is-hidden', !event.target.checked);
+            }
+        });
+
+        refresh();
+    }
+
     function init() {
         document.querySelectorAll('input[type="file"][data-preview]')
             .forEach(attach);
+
+        document.querySelectorAll('[data-section-list]')
+            .forEach(attachReordering);
     }
 
     if (document.readyState === 'loading') {

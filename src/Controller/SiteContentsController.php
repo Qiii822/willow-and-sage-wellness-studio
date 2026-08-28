@@ -44,6 +44,8 @@ class SiteContentsController extends AppController
                 return $this->redirect(['action' => 'index']);
             }
 
+            $this->saveLayout();
+
             $this->SiteContents->saveValues($this->request->getData());
 
             /*
@@ -67,6 +69,7 @@ class SiteContentsController extends AppController
         }
 
         $values = $this->SiteContents->values();
+        $sections = $this->fetchTable('SiteSections')->layout();
 
         // Grouped so the form reads in the order the page does.
         $groups = [];
@@ -75,7 +78,31 @@ class SiteContentsController extends AppController
             $groups[$field['group']][$key] = $field;
         }
 
-        $this->set(compact('values', 'groups'));
+        $this->set(compact('values', 'groups', 'sections'));
+    }
+
+    /**
+     * Stores the block order, visibility and arrangement.
+     *
+     * The order is taken from the sequence `section_order` arrives in, which
+     * the editor rewrites as rows are moved, so the saved order is whatever
+     * was on screen.
+     *
+     * @return void
+     */
+    protected function saveLayout(): void
+    {
+        $order = (array)$this->request->getData('section_order');
+
+        if ($order === []) {
+            return;
+        }
+
+        $this->fetchTable('SiteSections')->saveLayout(
+            $order,
+            (array)$this->request->getData('section_visible'),
+            (array)$this->request->getData('section_variant')
+        );
     }
 
     /**
@@ -127,5 +154,6 @@ class SiteContentsController extends AppController
         $uploader->delete((string)$this->SiteContents->values()['hero.image']);
 
         $this->SiteContents->resetToDefaults();
+        $this->fetchTable('SiteSections')->resetToDefaults();
     }
 }

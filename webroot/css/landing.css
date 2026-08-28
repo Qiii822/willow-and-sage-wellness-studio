@@ -495,6 +495,71 @@ button.site-avatar[aria-expanded="true"] {
 }
 
 /* =========================================================
+   Block arrangements
+
+   Each option offered in the content editor. Keeping them to
+   a fixed set means every choice is one that was designed.
+   ========================================================= */
+
+.hero.hero-align-centre {
+    justify-content: center;
+    text-align: center;
+}
+
+.hero-align-centre .hero-content {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.hero-align-centre .hero-lead {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-intro.section-align-centre {
+    margin-left: auto;
+    margin-right: auto;
+
+    text-align: center;
+}
+
+/*
+ * Blocks are ordered from the editor, so two strips can end up adjacent.
+ * The second drops its top padding and its gradient, which would otherwise
+ * restart and show as a seam.
+ */
+.feature-strip + .feature-strip {
+    padding-top: 0;
+
+    background: var(--background);
+}
+
+/*
+ * Stacked rows: icon beside the text rather than above it.
+ *
+ * Written as a compound selector so it outranks the .feature-grid rule
+ * below, which sets the same property and would otherwise win on source
+ * order alone.
+ */
+.feature-grid.feature-grid-rows {
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.feature-grid-rows .feature-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: 20px;
+}
+
+.feature-grid-rows .feature-icon {
+    grid-row: 1 / span 2;
+
+    margin-bottom: 0;
+}
+
+/* =========================================================
    Feature strip
    ========================================================= */
 

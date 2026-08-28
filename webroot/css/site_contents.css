@@ -106,6 +106,156 @@
 }
 
 /* =========================================================
+   Page layout: block order, visibility and arrangement
+   ========================================================= */
+
+.content-card-lead {
+    margin: -10px 0 18px;
+
+    color: #6b6259;
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+.section-list {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.section-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 10px;
+    padding: 14px 16px;
+
+    background: #fff;
+    border: 1px solid rgba(24, 20, 17, 0.1);
+    border-radius: 12px;
+}
+
+.section-row:last-child {
+    margin-bottom: 0;
+}
+
+/* A hidden block is dimmed, not removed, so it can be brought back. */
+.section-row.is-hidden {
+    background: #f6f4f1;
+    opacity: 0.6;
+}
+
+.section-move {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.section-move-button {
+    width: 28px;
+    height: 22px;
+
+    color: #6b6259;
+    font-size: 13px;
+    line-height: 1;
+
+    background: #f3f0ec;
+    border: 1px solid rgba(24, 20, 17, 0.12);
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+.section-move-button:hover:not([disabled]) {
+    color: #2f2d2b;
+    background: #e7e2db;
+}
+
+.section-move-button[disabled] {
+    cursor: default;
+    opacity: 0.35;
+}
+
+.section-detail {
+    display: flex;
+    flex: 1 1 220px;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.section-detail strong {
+    color: #2f2d2b;
+    font-size: 14.5px;
+}
+
+.section-detail span {
+    color: #6b6259;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.section-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-left: auto;
+}
+
+.section-select {
+    width: auto;
+    min-width: 150px;
+
+    padding: 8px 12px;
+
+    font-size: 13.5px;
+}
+
+.section-visible {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #6b6259;
+    font-size: 13.5px;
+
+    white-space: nowrap;
+}
+
+/* Announced to screen readers, invisible on screen. */
+.visually-hidden {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    margin: -1px;
+    padding: 0;
+
+    overflow: hidden;
+
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .section-controls {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .section-select {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* =========================================================
    Image field
    ========================================================= */
 

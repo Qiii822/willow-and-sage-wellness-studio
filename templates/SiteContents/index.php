@@ -46,6 +46,78 @@ $this->Html->script('site_contents', ['block' => true]);
         'type' => 'file',
     ]) ?>
 
+    <section class="content-card">
+
+        <h2>Page layout</h2>
+        <p class="content-card-lead">
+            Move blocks up and down, hide the ones you do not need, and pick
+            how each is arranged. The footer always stays at the bottom.
+        </p>
+
+        <ul class="section-list" data-section-list>
+
+            <?php foreach ($sections as $section): ?>
+
+                <li class="section-row<?= $section['visible'] ? '' : ' is-hidden' ?>">
+
+                    <?php /*
+                     * Order is read from the sequence these arrive in, so the
+                     * script only has to move the row - no numbers to keep in
+                     * step.
+                     */ ?>
+                    <?= $this->Form->hidden('section_order[]', [
+                        'value' => $section['key'],
+                    ]) ?>
+
+                    <div class="section-move">
+                        <button type="button" class="section-move-button" data-move="up"
+                                aria-label="Move <?= h($section['label']) ?> up">&uarr;</button>
+                        <button type="button" class="section-move-button" data-move="down"
+                                aria-label="Move <?= h($section['label']) ?> down">&darr;</button>
+                    </div>
+
+                    <div class="section-detail">
+                        <strong><?= h($section['label']) ?></strong>
+                        <span><?= h($section['description']) ?></span>
+                    </div>
+
+                    <div class="section-controls">
+
+                        <label class="section-variant">
+                            <span class="visually-hidden">
+                                Arrangement for <?= h($section['label']) ?>
+                            </span>
+                            <?= $this->Form->select(
+                                'section_variant[' . $section['key'] . ']',
+                                $section['variants'],
+                                [
+                                    'value' => $section['variant'],
+                                    'class' => 'content-input section-select',
+                                ]
+                            ) ?>
+                        </label>
+
+                        <label class="section-visible">
+                            <?= $this->Form->checkbox(
+                                'section_visible[' . $section['key'] . ']',
+                                [
+                                    'checked' => $section['visible'],
+                                    'hiddenField' => false,
+                                ]
+                            ) ?>
+                            Show
+                        </label>
+
+                    </div>
+
+                </li>
+
+            <?php endforeach; ?>
+
+        </ul>
+
+    </section>
+
     <?php foreach ($groups as $groupName => $fields): ?>
 
         <section class="content-card">

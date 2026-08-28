@@ -1,105 +1,27 @@
-﻿<?php
+<?php
 /**
  * Customer facing home page
  *
+ * The page is assembled from blocks whose order, visibility and arrangement
+ * are set under Website content; the wording inside each comes from the same
+ * editor. Nothing here is hard-coded except which blocks exist.
+ *
  * @var \App\View\AppView $this
+ * @var array<int, array<string, mixed>> $sections
  */
 
-// Every string on this page comes from the editor under Website content.
 $this->assign('title', $this->SiteContent->get('site.title'));
 
-$this->Html->css(
-    'landing',
-    ['block' => true]
-);
-
-// Uploaded through Website content, or the picture shipped with the site.
-$heroImage = $this->SiteContent->heroImageUrl();
-
-// Booking lives on Square; the hero button leaves the site for it.
-$bookingUrl = $this->SiteContent->raw('booking.url');
+$this->Html->css('landing', ['block' => true]);
 ?>
 
 <?= $this->element('site_header') ?>
 
 <main class="site-main">
 
-    <section
-        class="hero<?= $heroImage ? ' has-photo' : '' ?>"
-        <?php if ($heroImage) : ?>
-            style="--hero-photo: url('<?= h($heroImage) ?>');"
-        <?php endif; ?>
-    >
-
-        <div class="hero-content">
-
-            <p class="hero-eyebrow">
-                <?= $this->SiteContent->get('hero.eyebrow') ?>
-            </p>
-
-            <h1 class="hero-title">
-                <?= $this->SiteContent->lines('hero.title') ?>
-            </h1>
-
-            <p class="hero-lead">
-                <?= $this->SiteContent->get('hero.lead') ?>
-            </p>
-
-            <a
-                class="hero-cta"
-                href="<?= h($bookingUrl) ?>"
-                target="_blank"
-                rel="noopener"
-            >
-                <?= $this->SiteContent->get('hero.cta') ?>
-            </a>
-
-
-        </div>
-
-    </section>
-
-    <section class="feature-strip">
-
-        <div class="feature-strip-inner">
-
-            <div class="section-intro">
-
-                <h2><?= $this->SiteContent->get('services.heading') ?></h2>
-
-                <p><?= $this->SiteContent->get('services.intro') ?></p>
-
-            </div>
-
-            <div class="feature-grid">
-
-                <?php
-                /*
-                 * The icons stay in the template: they are part of the design
-                 * rather than copy, and picking one is not something the
-                 * editor should have to reason about.
-                 */
-                $serviceIcons = ['heart', 'sparkles', 'flower'];
-                ?>
-
-                <?php foreach ($serviceIcons as $index => $icon): ?>
-                    <?php $n = $index + 1; ?>
-
-                    <article class="feature-card">
-                        <span class="feature-icon">
-                            <i data-lucide="<?= h($icon) ?>"></i>
-                        </span>
-                        <h3><?= $this->SiteContent->get("service.{$n}.title") ?></h3>
-                        <p><?= $this->SiteContent->get("service.{$n}.body") ?></p>
-                    </article>
-
-                <?php endforeach; ?>
-
-            </div>
-
-        </div>
-
-    </section>
+    <?php foreach ($sections as $section): ?>
+        <?= $this->element($section['element'], ['variant' => $section['variant']]) ?>
+    <?php endforeach; ?>
 
 </main>
 

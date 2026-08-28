@@ -25,6 +25,11 @@ class HomeController extends AppController
 
     public function index(): Response
     {
+        $this->set(
+            'sections',
+            $this->fetchTable('SiteSections')->visibleLayout()
+        );
+
         return $this->render();
     }
 }
