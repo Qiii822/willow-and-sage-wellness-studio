@@ -22,7 +22,6 @@ class DashboardController extends AppController
         $paymentsTable =
             $this->fetchTable('Payments');
 
-
         /*
          * Selected range.
          */
@@ -80,14 +79,6 @@ class DashboardController extends AppController
 
         rsort($availableYears);
 
-        /*
-         * Show newest year first.
-         */
-        $availableYears =
-            array_reverse(
-                $availableYears
-            );
-
 
         /*
          * Default to the newest year
@@ -123,9 +114,6 @@ class DashboardController extends AppController
          */
         switch ($range) {
 
-            /*
-             * Today
-             */
             case 'today':
 
                 $periodStart =
@@ -143,9 +131,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Daily
-             */
             case 'day':
 
                 if (empty($selectedDay)) {
@@ -155,18 +140,15 @@ class DashboardController extends AppController
 
                 }
 
-
                 $periodStart =
                     new FrozenTime(
                         $selectedDay .
                         ' 00:00:00'
                     );
 
-
                 $periodEnd =
                     $periodStart
                         ->addDays(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -178,9 +160,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Weekly
-             */
             case 'week':
                 if (empty($selectedWeek)) {
 
@@ -191,11 +170,6 @@ class DashboardController extends AppController
 
                 }
 
-
-                /*
-                 * Expected format:
-                 * 2026-W35
-                 */
                 if (
                     preg_match(
                         '/^(\d{4})-W(\d{2})$/',
@@ -209,7 +183,6 @@ class DashboardController extends AppController
 
                     $weekNumber =
                         (int)$matches[2];
-
 
                     $periodStart =
                         FrozenTime::now()
@@ -228,11 +201,9 @@ class DashboardController extends AppController
 
                 }
 
-
                 $periodEnd =
                     $periodStart
                         ->addWeeks(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -244,9 +215,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Monthly
-             */
             case 'month':
 
                 $selectedYear =
@@ -261,10 +229,6 @@ class DashboardController extends AppController
                         ?: $today->format('n')
                     );
 
-
-                /*
-                 * Prevent invalid month values.
-                 */
                 if (
                     $selectedMonth < 1 ||
                     $selectedMonth > 12
@@ -275,7 +239,6 @@ class DashboardController extends AppController
 
                 }
 
-
                 $periodStart =
                     new FrozenTime(
                         sprintf(
@@ -285,11 +248,9 @@ class DashboardController extends AppController
                         )
                     );
 
-
                 $periodEnd =
                     $periodStart
                         ->addMonths(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -301,9 +262,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Yearly
-             */
             case 'year':
 
                 $periodStart =
@@ -312,11 +270,9 @@ class DashboardController extends AppController
                         '-01-01 00:00:00'
                     );
 
-
                 $periodEnd =
                     $periodStart
                         ->addYears(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -328,9 +284,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Custom range
-             */
             case 'custom':
 
                 if (
@@ -338,10 +291,6 @@ class DashboardController extends AppController
                     !empty($endDate)
                 ) {
 
-                    /*
-                     * If dates are reversed,
-                     * swap them.
-                     */
                     if ($startDate > $endDate) {
 
                         [
@@ -354,18 +303,12 @@ class DashboardController extends AppController
 
                     }
 
-
                     $periodStart =
                         new FrozenTime(
                             $startDate .
                             ' 00:00:00'
                         );
 
-
-                    /*
-                     * Add one day so the selected
-                     * end date is inclusive.
-                     */
                     $periodEnd =
                         (
                         new FrozenTime(
@@ -375,11 +318,6 @@ class DashboardController extends AppController
                         )
                             ->addDays(1);
 
-
-                    /*
-                     * Previous period uses
-                     * the same duration.
-                     */
                     $periodSeconds =
                         $periodEnd
                             ->getTimestamp()
@@ -387,10 +325,8 @@ class DashboardController extends AppController
                         $periodStart
                             ->getTimestamp();
 
-
                     $previousPeriodEnd =
                         $periodStart;
-
 
                     $previousPeriodStart =
                         $periodStart
@@ -400,10 +336,6 @@ class DashboardController extends AppController
 
                 } else {
 
-                    /*
-                     * Custom selected but dates
-                     * have not been entered yet.
-                     */
                     $periodStart =
                         $today;
 
@@ -421,9 +353,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Invalid range falls back to Today.
-             */
             default:
 
                 $range =
@@ -559,6 +488,145 @@ class DashboardController extends AppController
 
 
         /*
+         * -------------------------------------------------
+         * CUSTOMER REBOOKING / BOOKING HISTORY
+         * -------------------------------------------------
+         */
+
+        /*
+         * For now, a customer is considered
+         * inactive after 7 days without
+         * an accepted booking.
+         */
+        $inactiveThresholdDays = 7;
+
+
+        /*
+         * Get customers that have a Square customer ID.
+         */
+        $customersForRebooking =
+            $customersTable
+                ->find()
+                ->where([
+                    'square_customer_id IS NOT' => null,
+                ])
+                ->all();
+
+
+        $rebookingCustomers = [];
+
+
+        foreach ($customersForRebooking as $customer) {
+
+            /*
+             * Find the customer's most recent
+             * accepted booking.
+             */
+            $lastBooking =
+                $bookingsTable
+                    ->find()
+                    ->where([
+                        'square_customer_id' =>
+                            $customer->square_customer_id,
+
+                        'status' =>
+                            'accepted',
+
+                        'start_at IS NOT' =>
+                            null,
+
+                        /*
+                         * Do not treat future
+                         * appointments as a previous visit.
+                         */
+                        'start_at <=' =>
+                            FrozenTime::now(),
+                    ])
+                    ->orderBy([
+                        'start_at' =>
+                            'DESC',
+                    ])
+                    ->first();
+
+
+            /*
+             * If the customer has never had
+             * an accepted booking, skip them
+             * for now.
+             */
+            if ($lastBooking === null) {
+                continue;
+            }
+
+
+            $lastBookingTime =
+                new FrozenTime(
+                    $lastBooking->start_at
+                );
+
+
+            /*
+             * Calculate full days since
+             * the customer's last booking.
+             */
+            $daysSinceLastBooking =
+                (int)floor(
+                    (
+                        FrozenTime::now()
+                            ->getTimestamp()
+                        -
+                        $lastBookingTime
+                            ->getTimestamp()
+                    )
+                    / 86400
+                );
+
+
+            /*
+             * Only include customers that
+             * have passed the inactive threshold.
+             */
+            if (
+                $daysSinceLastBooking >=
+                $inactiveThresholdDays
+            ) {
+
+                $rebookingCustomers[] = [
+                    'customer' =>
+                        $customer,
+
+                    'lastBooking' =>
+                        $lastBooking,
+
+                    'daysSinceLastBooking' =>
+                        $daysSinceLastBooking,
+                ];
+
+            }
+        }
+
+
+        /*
+         * Customers who have been inactive
+         * for the longest appear first.
+         */
+        usort(
+            $rebookingCustomers,
+            function (
+                array $customerA,
+                array $customerB
+            ): int {
+
+                return
+                    $customerB['daysSinceLastBooking']
+                    <=>
+                    $customerA['daysSinceLastBooking'];
+
+            }
+        );
+
+
+        /*
          * Send data to view.
          */
         $this->set(compact(
@@ -580,7 +648,9 @@ class DashboardController extends AppController
             'recentCustomers',
             'totalBookings',
             'totalIncomeCents',
-            'availableYears'
+            'availableYears',
+            'rebookingCustomers',
+            'inactiveThresholdDays'
         ));
 
 
