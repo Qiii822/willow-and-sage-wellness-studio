@@ -666,6 +666,45 @@ class DashboardController extends AppController
 
         $customer = $customersTable->get($customerId);
 
+        $bookingsTable = $this->fetchTable('Bookings');
+
+        $lastBooking = $bookingsTable
+            ->find()
+            ->where([
+                'square_customer_id' => $customer->square_customer_id,
+                'status' => 'accepted',
+                'start_at IS NOT' => null,
+                'start_at <=' => FrozenTime::now(),
+            ])
+            ->orderBy([
+                'start_at' => 'DESC',
+            ])
+            ->first();
+
+        if ($lastBooking === null) {
+            $this->Flash->error(
+                'No previous accepted booking was found for this customer.'
+            );
+
+            return $this->redirect([
+                'controller' => 'Dashboard',
+                'action' => 'index',
+            ]);
+        }
+
+        $lastBookingTime = new FrozenTime(
+            $lastBooking->start_at
+        );
+
+        $daysSinceLastBooking = (int)floor(
+            (
+                FrozenTime::now()->getTimestamp()
+                -
+                $lastBookingTime->getTimestamp()
+            )
+            / 86400
+        );
+
         $customerName = trim(
             ($customer->given_name ?? $customer->first_name ?? '')
             . ' '
@@ -695,15 +734,17 @@ class DashboardController extends AppController
             $mailer = new Mailer('rebooking_test');
 
             $mailer
-                ->setEmailFormat('text')
+                ->setEmailFormat('html')
                 ->setTo($testEmail)
-                ->setSubject('Test Rebooking Reminder')
-                ->setBodyText(
-                    "Hi {$customerName},\n\n"
-                    . "It's been a while since your last appointment.\n\n"
-                    . "We'd love to welcome you back.\n\n"
-                    . "This is a development test rebooking reminder."
-                );
+                ->setSubject('We’d love to see you again')
+                ->setViewVars([
+                    'customerName' => $customerName,
+                    'daysSinceLastBooking' => $daysSinceLastBooking,
+                ]);
+
+            $mailer
+                ->viewBuilder()
+                ->setTemplate('rebooking_reminder');
 
             $mailer->deliver();
 
