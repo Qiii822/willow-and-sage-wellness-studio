@@ -742,18 +742,19 @@ $months = [
                                             <!-- Action -->
                                             <td>
 
-                                                <button
-                                                    type="button"
-                                                    class="rebooking-reminder-btn"
-                                                    disabled
-                                                    title="Email reminder will be added next"
-                                                >
-
-                                                    <i data-lucide="mail"></i>
-
-                                                    Send Reminder
-
-                                                </button>
+                                                <?= $this->Form->postLink(
+                                                    '<i data-lucide="mail"></i> Send Reminder',
+                                                    [
+                                                        'controller' => 'Dashboard',
+                                                        'action' => 'sendRebookingReminder',
+                                                        $customer->id,
+                                                    ],
+                                                    [
+                                                        'escape' => false,
+                                                        'class' => 'rebooking-reminder-btn',
+                                                        'confirm' => 'Send a TEST reminder email for ' . $customerName . '?',
+                                                    ]
+                                                ) ?>
 
                                             </td>
 

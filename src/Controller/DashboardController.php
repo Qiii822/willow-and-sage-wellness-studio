@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use Cake\Http\Response;
 use Cake\I18n\FrozenTime;
+use Cake\Mailer\Mailer;
 
 class DashboardController extends AppController
 {
@@ -655,5 +656,73 @@ class DashboardController extends AppController
 
 
         return $this->render();
+    }
+
+    public function sendRebookingReminder(string $customerId): Response
+    {
+        $this->request->allowMethod(['post']);
+
+        $customersTable = $this->fetchTable('Customers');
+
+        $customer = $customersTable->get($customerId);
+
+        $customerName = trim(
+            ($customer->given_name ?? $customer->first_name ?? '')
+            . ' '
+            . ($customer->family_name ?? $customer->last_name ?? '')
+        );
+
+        if ($customerName === '') {
+            $customerName = 'Customer';
+        }
+
+        // Development safety:
+        // Never send to the real customer's email address.
+        $testEmail = env('REBOOKING_TEST_EMAIL');
+
+        if (empty($testEmail)) {
+            $this->Flash->error(
+                'Rebooking test email is not configured.'
+            );
+
+            return $this->redirect([
+                'controller' => 'Dashboard',
+                'action' => 'index',
+            ]);
+        }
+
+        try {
+            $mailer = new Mailer('rebooking_test');
+
+            $mailer
+                ->setEmailFormat('text')
+                ->setTo($testEmail)
+                ->setSubject('Test Rebooking Reminder')
+                ->setBodyText(
+                    "Hi {$customerName},\n\n"
+                    . "It's been a while since your last appointment.\n\n"
+                    . "We'd love to welcome you back.\n\n"
+                    . "This is a development test rebooking reminder."
+                );
+
+            $mailer->deliver();
+
+            $this->Flash->success(
+                'Test rebooking reminder sent successfully.'
+            );
+        } catch (\Throwable $e) {
+            \Cake\Log\Log::error(
+                'Rebooking reminder failed: ' . $e->getMessage()
+            );
+
+            $this->Flash->error(
+                'Unable to send the test rebooking reminder.'
+            );
+        }
+
+        return $this->redirect([
+            'controller' => 'Dashboard',
+            'action' => 'index',
+        ]);
     }
 }
