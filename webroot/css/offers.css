@@ -19,6 +19,19 @@
 /* Cards across, as many as fit. */
 .offers-list-cards {
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+
+    justify-items: center;
+}
+
+/*
+ * Running a single offer is a normal state, and auto-fit would give that one
+ * card the whole row - a 16:10 picture then stands nearly 700px tall and
+ * swallows the page. The cap keeps one card the size of one card; with
+ * several, the tracks are narrower than the cap and nothing changes.
+ */
+.offers-list-cards .offer-card {
+    width: 100%;
+    max-width: 420px;
 }
 
 .offer-card {
