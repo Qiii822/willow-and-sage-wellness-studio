@@ -355,15 +355,36 @@
 
 .content-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
 
     margin-top: 24px;
 }
 
+/*
+ * Laid out as a flex box rather than relying on the centring a <button>
+ * gets for free, because this class is worn by both <button> and <a>. The
+ * height comes from min-height with no vertical padding, so on an anchor
+ * the label would otherwise sit against the top of the pill.
+ */
 .content-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /*
+     * These sit in flex rows, where a child shrinks past its own label
+     * rather than let the row overflow. Every such row here wraps, so
+     * refusing to shrink sends a button to the next line instead of
+     * squeezing its text into a narrower pill than it needs.
+     */
+    flex-shrink: 0;
+
     min-height: 44px;
 
     padding: 0 24px;
+
+    white-space: nowrap;
 
     color: #fff;
     font-family: inherit;
@@ -386,11 +407,7 @@
     background: #6f645b;
 }
 
-/* Also used on an <a>, which needs the box behaviour a button gets free. */
 .content-button.secondary {
-    display: inline-flex;
-    align-items: center;
-
     color: #6f645b;
 
     background: transparent;
