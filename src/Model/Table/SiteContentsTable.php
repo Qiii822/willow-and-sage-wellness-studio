@@ -30,7 +30,7 @@ class SiteContentsTable extends Table
     public const TYPE_IMAGE = 'image';
 
     /**
-     * @var array<string, array{group: string, label: string, type: string, default: string, help?: string}>
+     * @var array<string, array{group: string, label: string, type: string, default: string, help?: string, validate?: string}>
      */
     public const FIELDS = [
         'site.title' => [
@@ -53,6 +53,7 @@ class SiteContentsTable extends Table
                 . '/location/LPSB9KGV9MYAJ/services'
                 . '?buttonTextColor=ffffff&color=4d4d4d&locale=en-AU&referrer=so',
             'help' => 'Where the Book buttons send people. Must start with https://',
+            'validate' => 'url',
         ],
 
         'hero.image' => [
@@ -235,10 +236,15 @@ class SiteContentsTable extends Table
     /**
      * Writes submitted copy, ignoring anything not declared in FIELDS.
      *
+     * A field whose value fails its declared `validate` rule is skipped
+     * whatever was already saved for it stays in place - and reported back
+     * in the returned array so the caller can tell the admin what went wrong
+     *
      * @param array<string, mixed> $submitted
-     * @return int How many fields were written.
+     * @return array<string, string> Field key to error message, for any
+     *  field that was rejected. Empty when everything submitted was valid.
      */
-    public function saveValues(array $submitted): int
+    public function saveValues(array $submitted): array
     {
         /*
          * Field names contain dots, which the form helper renders as nested
@@ -248,7 +254,7 @@ class SiteContentsTable extends Table
          */
         $submitted = \Cake\Utility\Hash::flatten($submitted);
 
-        $saved = 0;
+        $errors = [];
 
         foreach (self::FIELDS as $key => $field) {
             // Pictures arrive as uploads, not as text in the form data.
@@ -263,18 +269,55 @@ class SiteContentsTable extends Table
             // Normalise line endings so stored text does not vary by browser.
             $value = str_replace("\r\n", "\n", trim((string)$submitted[$key]));
 
+            $validationError = $this->validationErrorFor($field, $value);
+
+            if ($validationError !== null) {
+                $errors[$key] = $field['label'] . ': ' . $validationError;
+
+                continue;
+            }
+
             $row = $this->find()->where(['content_key' => $key])->first()
                 ?? $this->newEmptyEntity();
 
             $row->content_key = $key;
             $row->value = $value;
 
-            if ($this->save($row)) {
-                $saved++;
+            $this->save($row);
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Checks one field's submitted value against its declared `validate`
+     * rule, if it has one.
+     *
+     * A blank value is always allowed regardless of rule - values() already
+     * falls back to the field's default when the stored value is blank, so
+     * clearing a field is a valid way to reset it rather than something to
+     * reject here.
+     *
+     * @param array{group: string, label: string, type: string, default: string, help?: string, validate?: string} $field
+     * @param string $value The trimmed, submitted value.
+     * @return string|null An error message, or null when the value is fine.
+     */
+    protected function validationErrorFor(array $field, string $value): ?string
+    {
+        if ($value === '' || !isset($field['validate'])) {
+            return null;
+        }
+
+        if ($field['validate'] === 'url') {
+            $isHttps = str_starts_with(strtolower($value), 'https://');
+            $isWellFormed = filter_var($value, FILTER_VALIDATE_URL) !== false;
+
+            if (!$isHttps || !$isWellFormed) {
+                return 'Must be a full web address starting with https://';
             }
         }
 
-        return $saved;
+        return null;
     }
 
     /**

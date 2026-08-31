@@ -46,7 +46,10 @@ class SiteContentsController extends AppController
 
             $this->saveLayout();
 
-            $this->SiteContents->saveValues($this->request->getData());
+            // Any field that fails its own validation (e.g. the booking
+            // link) is left untouched rather than saved - everything else
+            // submitted is still written.
+            $valueErrors = $this->SiteContents->saveValues($this->request->getData());
 
             /*
              * The picture is handled after the text, so a rejected upload
@@ -61,6 +64,12 @@ class SiteContentsController extends AppController
                  * control that caused it.
                  */
                 $this->Flash->error($imageError, ['key' => 'heroImage']);
+            } elseif ($valueErrors !== []) {
+                // Framework's default Flash element renders this as a single
+                // escaped line, so errors are joined rather than newline-separated.
+                $this->Flash->error(
+                    "Some changes weren't saved - " . implode('; ', $valueErrors)
+                );
             } else {
                 $this->Flash->success('The home page has been updated.');
             }
