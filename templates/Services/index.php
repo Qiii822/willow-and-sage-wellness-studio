@@ -24,6 +24,24 @@ $bookingUrl = $this->SiteContent->raw('booking.url');
             <p class="services-eyebrow"><?= $this->SiteContent->get('services.heading') ?></p>
             <h1><?= $this->SiteContent->get('services.menu_heading') ?></h1>
             <p class="services-lead"><?= $this->SiteContent->get('services.intro') ?></p>
+
+            <?php /*
+             * Repeated at the top as well as the foot of the page. The menu
+             * runs long enough that someone who already knows what they want
+             * should not have to scroll past all of it to reach Square.
+             */ ?>
+            <?php if ($menu !== []): ?>
+                <p class="services-header-action">
+                    <a
+                        class="hero-cta"
+                        href="<?= h($bookingUrl) ?>"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        Book on Square
+                    </a>
+                </p>
+            <?php endif; ?>
         </header>
 
         <?php if ($menu === []): ?>

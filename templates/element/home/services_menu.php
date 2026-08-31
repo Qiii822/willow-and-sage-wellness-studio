@@ -36,25 +36,23 @@ $this->Html->css('services', ['block' => true]);
 
             <?php foreach ($menu as $category => $services): ?>
 
-                <?php
-                $count = count($services);
-
-                // The cheapest treatment reads as "from $X".
-                $prices = array_filter(array_map(
-                    fn ($service) => $service->price_cents,
-                    $services
-                ), fn ($cents) => $cents !== null);
-                ?>
+                <?php $count = count($services); ?>
 
                 <article class="services-overview-card">
 
                     <h3><?= h($category) ?></h3>
 
+                    <?php /*
+                     * Deliberately no "from $X" here. The cheapest row in a
+                     * category is often an add-on - $15 for hot stones on top
+                     * of a massage - so the lowest price is not the price of
+                     * anything you can actually book on its own, and reading
+                     * "Massage from $15" next to an $85 massage feels like a
+                     * bait. Prices live on the full menu, where each one sits
+                     * beside what it actually buys.
+                     */ ?>
                     <p class="services-overview-count">
                         <?= $count ?> treatment<?= $count === 1 ? '' : 's' ?>
-                        <?php if ($prices !== []): ?>
-                            &middot; from AU$<?= h(number_format(min($prices) / 100, 2)) ?>
-                        <?php endif; ?>
                     </p>
 
                 </article>

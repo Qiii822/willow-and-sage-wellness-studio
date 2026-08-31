@@ -7,7 +7,6 @@
  */
 
 $heroImage = $this->SiteContent->heroImageUrl();
-$bookingUrl = $this->SiteContent->raw('booking.url');
 ?>
 
 <section
@@ -31,14 +30,17 @@ $bookingUrl = $this->SiteContent->raw('booking.url');
             <?= $this->SiteContent->get('hero.lead') ?>
         </p>
 
-        <a
-            class="hero-cta"
-            href="<?= h($bookingUrl) ?>"
-            target="_blank"
-            rel="noopener"
-        >
-            <?= $this->SiteContent->get('hero.cta') ?>
-        </a>
+        <?php /*
+         * Goes to the treatment menu, not straight to Square: someone who
+         * has just landed here does not yet know what is on offer, and
+         * being handed a booking calendar is a question they cannot answer
+         * yet. Square is the step after choosing.
+         */ ?>
+        <?= $this->Html->link(
+            $this->SiteContent->get('hero.cta'),
+            ['controller' => 'Services', 'action' => 'index'],
+            ['class' => 'hero-cta', 'escape' => false]
+        ) ?>
 
     </div>
 

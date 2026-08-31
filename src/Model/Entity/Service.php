@@ -37,13 +37,17 @@ class Service extends Entity
     /**
      * The price as the site shows it, e.g. "AU$170.00".
      *
-     * @return string|null Null when no price is set, so the template can
-     *   leave the line out rather than print a misleading zero.
+     * A treatment with no price set reads as "Price varies" rather than
+     * showing nothing: some treatments genuinely are quoted per client, and
+     * Square words those the same way, so a silent gap would just look like
+     * the page had failed to load the number.
+     *
+     * @return string
      */
-    protected function _getPriceLabel(): ?string
+    protected function _getPriceLabel(): string
     {
         if ($this->price_cents === null) {
-            return null;
+            return 'Price varies';
         }
 
         $symbol = $this->currency === 'AUD' ? 'AU$' : $this->currency . ' ';

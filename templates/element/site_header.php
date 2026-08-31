@@ -13,12 +13,13 @@
 $this->Html->css('landing', ['block' => true]);
 
 /*
- * Booking is handled by Square, not here. That link leaves the site, so it
- * is a real anchor - the remaining nav entries are still inert buttons
- * until the pages behind them exist.
+ * "Book" goes to the treatment menu rather than to Square. Booking still
+ * finishes on Square, but choosing what to book happens here first, so the
+ * customer arrives at the calendar already knowing what they want.
+ *
+ * The remaining nav entries are still inert buttons until the pages behind
+ * them exist.
  */
-$bookingUrl = $this->SiteContent->raw('booking.url');
-
 $navItems = [
     'Gift card',
 ];
@@ -42,14 +43,11 @@ $navItems = [
                 ['class' => 'site-nav-link']
             ) ?>
 
-            <a
-                class="site-nav-link"
-                href="<?= h($bookingUrl) ?>"
-                target="_blank"
-                rel="noopener"
-            >
-                Book
-            </a>
+            <?= $this->Html->link(
+                'Book',
+                ['controller' => 'Services', 'action' => 'index'],
+                ['class' => 'site-nav-link']
+            ) ?>
 
             <?php /*
              * "My bookings" belongs to a signed-in customer, so it has no

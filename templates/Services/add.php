@@ -96,7 +96,7 @@ $this->Html->css('services_admin', ['block' => true]);
                         ? ''
                         : number_format($service->price_cents / 100, 2, '.', ''),
                 ]) ?>
-                <p class="content-help">In dollars. Leave blank to show no price.</p>
+                <p class="content-help">In dollars. Leave blank to show "Price varies".</p>
                 <?= $this->Form->error('price_cents') ?>
             </div>
 
