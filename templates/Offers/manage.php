@@ -85,13 +85,19 @@ $offers = iterator_to_array($offers);
                         <div class="section-detail">
                             <strong><?= h($offer->title) ?></strong>
                             <span>
-                                <?= $offer->image ? 'With a picture' : 'No picture' ?>
-                                <?php if (!empty($offer->terms)): ?>
-                                    &middot; <?= h($offer->terms) ?>
-                                <?php endif; ?>
-                                <?php if (!$offer->visible): ?>
-                                    &middot; hidden
-                                <?php endif; ?>
+                                <?php
+                                // The same summary the card shows, so the two
+                                // can be compared without opening the form.
+                                $meta = array_filter([
+                                    $offer->discount_label,
+                                    $offer->has_saving
+                                        ? $offer->price_before_label . ' to ' . $offer->price_after_label
+                                        : $offer->price_after_label,
+                                    $offer->image ? 'With a picture' : 'No picture',
+                                    $offer->visible ? null : 'hidden',
+                                ]);
+                                ?>
+                                <?= h(implode(' · ', $meta)) ?>
                             </span>
                         </div>
 

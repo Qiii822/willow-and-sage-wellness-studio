@@ -63,6 +63,58 @@ $currentImage = $offer->image
             <?= $this->Form->error('description') ?>
         </div>
 
+        <div class="services-admin-row">
+
+            <div class="content-field">
+                <label for="offer-price-before">Usual price</label>
+                <?= $this->Form->text('price_before', [
+                    'id' => 'offer-price-before',
+                    'class' => 'content-input',
+                    'inputmode' => 'decimal',
+                    'placeholder' => '170.00',
+                    'value' => $offer->price_before_cents === null
+                        ? ''
+                        : number_format($offer->price_before_cents / 100, 2, '.', ''),
+                ]) ?>
+                <p class="content-help">In dollars. Shown crossed out.</p>
+                <?= $this->Form->error('price_before_cents') ?>
+            </div>
+
+            <div class="content-field">
+                <label for="offer-price-after">Offer price</label>
+                <?= $this->Form->text('price_after', [
+                    'id' => 'offer-price-after',
+                    'class' => 'content-input',
+                    'inputmode' => 'decimal',
+                    'placeholder' => '140.00',
+                    'value' => $offer->price_after_cents === null
+                        ? ''
+                        : number_format($offer->price_after_cents / 100, 2, '.', ''),
+                ]) ?>
+                <p class="content-help">In dollars. What they pay now.</p>
+                <?= $this->Form->error('price_after_cents') ?>
+            </div>
+
+        </div>
+
+        <div class="content-field">
+            <label for="offer-discount">Discount badge</label>
+            <?= $this->Form->number('discount_percent', [
+                'id' => 'offer-discount',
+                'class' => 'content-input',
+                'min' => 1,
+                'max' => 99,
+                'placeholder' => '20',
+            ]) ?>
+            <p class="content-help">
+                A percentage, shown as "20% off". Only needed for an offer with
+                no set prices, like 20% off every facial - when both prices
+                above are filled in, the badge is worked out from them so the
+                two cannot disagree.
+            </p>
+            <?= $this->Form->error('discount_percent') ?>
+        </div>
+
         <div class="content-field">
             <label for="offer-terms">Small print</label>
             <?= $this->Form->text('terms', [

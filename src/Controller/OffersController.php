@@ -223,8 +223,36 @@ class OffersController extends AppController
         $data['terms'] = trim((string)($data['terms'] ?? ''));
         $data['visible'] = !empty($data['visible']);
 
-        unset($data['image'], $data['image_remove']);
+        /*
+         * Prices are typed in dollars because that is how a price is written,
+         * and kept in cents because that is how money should be stored.
+         */
+        $data['price_before_cents'] = $this->toCents($data['price_before'] ?? null);
+        $data['price_after_cents'] = $this->toCents($data['price_after'] ?? null);
+
+        $percent = trim((string)($data['discount_percent'] ?? ''));
+        $data['discount_percent'] = $percent === '' ? null : (int)$percent;
+
+        unset($data['image'], $data['image_remove'], $data['price_before'], $data['price_after']);
 
         return $data;
+    }
+
+    /**
+     * Turns a typed dollar amount into whole cents.
+     *
+     * @param mixed $value
+     * @return int|null Null for a blank field, which means "not set" rather
+     *  than zero.
+     */
+    protected function toCents(mixed $value): ?int
+    {
+        $value = trim((string)$value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        return (int)round((float)str_replace(['$', ','], '', $value) * 100);
     }
 }

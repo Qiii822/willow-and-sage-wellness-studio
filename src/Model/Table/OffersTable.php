@@ -55,6 +55,40 @@ class OffersTable extends Table
             ->maxLength('terms', 255)
             ->allowEmptyString('terms');
 
+        $validator
+            ->integer('price_before_cents')
+            ->greaterThanOrEqual('price_before_cents', 0, 'A price cannot be negative.')
+            ->allowEmptyString('price_before_cents');
+
+        $validator
+            ->integer('price_after_cents')
+            ->greaterThanOrEqual('price_after_cents', 0, 'A price cannot be negative.')
+            ->allowEmptyString('price_after_cents');
+
+        $validator
+            ->integer('discount_percent')
+            ->range('discount_percent', [1, 99], 'A discount must be between 1 and 99 percent.')
+            ->allowEmptyString('discount_percent');
+
+        /*
+         * A "now" price at or above the "was" price is not an offer, and
+         * would print a strike-through that reads as a price rise. Caught
+         * here rather than quietly hidden at render time, so whoever typed it
+         * finds out.
+         */
+        $validator->add('price_after_cents', 'lowerThanBefore', [
+            'rule' => function ($value, $context) {
+                $before = $context['data']['price_before_cents'] ?? null;
+
+                if ($before === null || $before === '' || $value === null || $value === '') {
+                    return true;
+                }
+
+                return (int)$value < (int)$before;
+            },
+            'message' => 'The offer price has to be lower than the usual price.',
+        ]);
+
         return $validator;
     }
 

@@ -60,7 +60,32 @@ $intro = $this->SiteContent->raw('offers.intro');
 
                     <div class="offer-body">
 
+                        <?php if ($offer->discount_label !== null): ?>
+                            <p class="offer-badge"><?= h($offer->discount_label) ?></p>
+                        <?php endif; ?>
+
                         <h3><?= h($offer->title) ?></h3>
+
+                        <?php if ($offer->price_after_label !== null): ?>
+                            <p class="offer-price">
+                                <?php if ($offer->has_saving): ?>
+                                    <?php /*
+                                     * The strike-through is styling, so the
+                                     * words carry the meaning for anyone who
+                                     * cannot see it.
+                                     */ ?>
+                                    <span class="offer-price-was">
+                                        <span class="visually-hidden">Usual price</span>
+                                        <s><?= h($offer->price_before_label) ?></s>
+                                    </span>
+                                <?php endif; ?>
+
+                                <span class="offer-price-now">
+                                    <span class="visually-hidden">Offer price</span>
+                                    <?= h($offer->price_after_label) ?>
+                                </span>
+                            </p>
+                        <?php endif; ?>
 
                         <?php if (!empty($offer->description)): ?>
                             <p class="offer-description">
