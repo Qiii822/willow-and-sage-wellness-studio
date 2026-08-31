@@ -55,11 +55,9 @@ return function (RouteBuilder $routes): void {
          * its action called 'display', and we pass a param to select the view file
          * to use (in this case, templates/Pages/home.php)...
          */
-        $builder->connect('/', ['controller' => 'Dashboard', 'action' => 'index']);
+        $builder->connect('/', ['controller' => 'Home', 'action' => 'index']);
 
-        // The studio's public landing page. Left off '/' for now, so staff
-        // still land on the dashboard when they sign in.
-        $builder->connect('/home', ['controller' => 'Home', 'action' => 'index']);
+        $builder->connect('/dashboard', ['controller' => 'Dashboard', 'action' => 'index']);
 
         // Editor for the words on that page.
         $builder->connect('/website-content', ['controller' => 'SiteContents', 'action' => 'index']);
