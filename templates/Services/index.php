@@ -10,6 +10,7 @@ $this->assign('title', 'Services - ' . $this->SiteContent->raw('site.title'));
 
 $this->Html->css('landing', ['block' => true]);
 $this->Html->css('services', ['block' => true]);
+$this->Html->script('services', ['block' => true]);
 
 $bookingUrl = $this->SiteContent->raw('booking.url');
 ?>
@@ -54,23 +55,53 @@ $bookingUrl = $this->SiteContent->raw('booking.url');
         <?php else: ?>
 
             <?php /*
-             * Jump links, so a long menu can be skimmed. Anchors are built
-             * from the category name rather than an id, since the category
-             * is what the reader sees.
+             * Real links, so the filter works with scripting off and a
+             * narrowed menu can be shared. services.js then intercepts them
+             * and filters in place.
              */ ?>
-            <nav class="services-jump" aria-label="Treatment categories">
-                <?php foreach (array_keys($menu) as $category): ?>
-                    <a href="#cat-<?= h(\Cake\Utility\Text::slug(strtolower($category))) ?>">
-                        <?= h($category) ?>
-                    </a>
+            <nav class="services-filter" aria-label="Filter by category" data-services-filter>
+
+                <?= $this->Html->link(
+                    'All',
+                    ['action' => 'index'],
+                    [
+                        'class' => 'services-filter-link' . ($activeCategory === null ? ' is-active' : ''),
+                        'data-filter' => 'all',
+                        'aria-current' => $activeCategory === null ? 'true' : false,
+                    ]
+                ) ?>
+
+                <?php foreach ($categories as $category): ?>
+                    <?php $slug = \App\Model\Table\ServicesTable::categorySlug($category); ?>
+                    <?= $this->Html->link(
+                        $category,
+                        ['action' => 'index', '?' => ['category' => $slug]],
+                        [
+                            'class' => 'services-filter-link'
+                                . ($activeCategory === $category ? ' is-active' : ''),
+                            'data-filter' => $slug,
+                            'aria-current' => $activeCategory === $category ? 'true' : false,
+                        ]
+                    ) ?>
                 <?php endforeach; ?>
+
             </nav>
 
+            <?php /*
+             * Every category is always rendered; the server marks the ones
+             * the filter excludes as hidden. The browser honours that with
+             * or without scripting, and because the markup is already there
+             * the script can switch categories without a round trip.
+             */ ?>
             <?php foreach ($menu as $category => $services): ?>
+
+                <?php $slug = \App\Model\Table\ServicesTable::categorySlug($category); ?>
 
                 <section
                     class="services-category"
-                    id="cat-<?= h(\Cake\Utility\Text::slug(strtolower($category))) ?>"
+                    id="cat-<?= h($slug) ?>"
+                    data-category="<?= h($slug) ?>"
+                    <?= $activeCategory !== null && $activeCategory !== $category ? 'hidden' : '' ?>
                 >
 
                     <h2><?= h($category) ?></h2>

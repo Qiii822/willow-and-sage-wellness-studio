@@ -5,6 +5,7 @@ namespace App\Model\Table;
 
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
+use Cake\Utility\Text;
 use Cake\Validation\Validator;
 use Throwable;
 
@@ -100,6 +101,46 @@ class ServicesTable extends Table
         }
 
         return $menu;
+    }
+
+    /**
+     * The URL-safe form of a category name, e.g. "Organic Facials" becomes
+     * "organic-facials".
+     *
+     * Lives here rather than in the template because both the filter links
+     * and the code that resolves a link back to a category have to agree on
+     * it; if the two ever drifted apart every filter would silently show
+     * nothing.
+     *
+     * @param string $category
+     * @return string
+     */
+    public static function categorySlug(string $category): string
+    {
+        return Text::slug(strtolower($category));
+    }
+
+    /**
+     * Resolves a slug from the URL back to the category it names.
+     *
+     * @param string|null $slug
+     * @param array<int, string> $categories The categories currently in use.
+     * @return string|null The matching category, or null when the slug is
+     *  missing or names nothing - both of which mean "show everything".
+     */
+    public static function categoryFromSlug(?string $slug, array $categories): ?string
+    {
+        if ($slug === null || $slug === '') {
+            return null;
+        }
+
+        foreach ($categories as $category) {
+            if (self::categorySlug($category) === $slug) {
+                return $category;
+            }
+        }
+
+        return null;
     }
 
     /**

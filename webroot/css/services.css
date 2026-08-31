@@ -50,10 +50,10 @@
 }
 
 /* =========================================================
-   Category jump links
+   Category filter
    ========================================================= */
 
-.services-jump {
+.services-filter {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -64,15 +64,21 @@
     border-bottom: 1px solid rgba(24, 20, 17, 0.1);
 }
 
-.services-jump a {
+/*
+ * These carry text at 14px bold, which WCAG counts as normal-size text, so
+ * every state needs 4.5:1. White on either gold only reaches 2.9:1 and
+ * 3.9:1, so the states are built from the neutral instead: the background
+ * deepens on hover, and the chosen one inverts to the dark ink.
+ */
+.services-filter-link {
     padding: 8px 16px;
 
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
 
-    background: rgba(139, 126, 116, 0.1);
+    background: rgba(139, 126, 116, 0.12);
     border-radius: 999px;
 
     transition:
@@ -80,10 +86,28 @@
         background 0.2s ease;
 }
 
-.services-jump a:hover {
+.services-filter-link:hover {
+    background: rgba(139, 126, 116, 0.24);
+}
+
+/*
+ * The chosen filter has to stay obvious once the pointer leaves it, so it
+ * holds a filled treatment rather than only showing one on hover.
+ */
+.services-filter-link.is-active {
     color: #fff;
 
-    background: var(--gold);
+    background: var(--text-primary);
+}
+
+.services-filter-link:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+/* Keeps a filtered-out category collapsed whatever else styles it. */
+.services-page [hidden] {
+    display: none !important;
 }
 
 /* =========================================================

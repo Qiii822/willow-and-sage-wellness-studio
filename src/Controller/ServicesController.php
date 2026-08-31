@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Table\ServicesTable;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 
@@ -38,13 +39,30 @@ class ServicesController extends AppController
     }
 
     /**
-     * The public treatment menu.
+     * The public treatment menu, optionally narrowed to one category.
+     *
+     * The filter is a real query parameter rather than something only the
+     * browser knows about, so a narrowed menu can be linked to and still
+     * works with scripting turned off. The page then enhances it into an
+     * instant client-side filter.
      *
      * @return \Cake\Http\Response
      */
     public function index(): Response
     {
-        $this->set('menu', $this->Services->menu());
+        $menu = $this->Services->menu();
+        $categories = array_keys($menu);
+
+        // An unrecognised category shows the whole menu rather than an error
+        // page: a stale link should still land somewhere useful.
+        $active = ServicesTable::categoryFromSlug(
+            $this->request->getQuery('category'),
+            $categories,
+        );
+
+        $this->set('menu', $menu);
+        $this->set('categories', $categories);
+        $this->set('activeCategory', $active);
 
         return $this->render();
     }
