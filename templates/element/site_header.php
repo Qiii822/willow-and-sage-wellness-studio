@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Public site header, shared by every customer-facing page.
  *
@@ -35,6 +35,12 @@ $navItems = [
         ) ?>
 
         <nav class="site-nav" aria-label="Main">
+
+            <?= $this->Html->link(
+                'Services',
+                ['controller' => 'Services', 'action' => 'index'],
+                ['class' => 'site-nav-link']
+            ) ?>
 
             <a
                 class="site-nav-link"

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\View\Helper;
 
+use App\Service\ImageUploadService;
 use Cake\ORM\TableRegistry;
 use Cake\View\Helper;
 
@@ -63,11 +64,11 @@ class SiteContentHelper extends Helper
         $uploaded = $this->raw('hero.image');
 
         if ($uploaded !== '') {
-            $uploads = new \App\Service\ImageUploadService();
+            $uploads = new ImageUploadService();
 
             if ($uploads->exists($uploaded)) {
                 return $this->getView()->Url->image(
-                    \App\Service\ImageUploadService::DIRECTORY . '/' . basename($uploaded)
+                    ImageUploadService::DIRECTORY . '/' . basename($uploaded),
                 );
             }
         }

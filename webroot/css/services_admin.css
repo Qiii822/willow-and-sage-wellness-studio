@@ -1,0 +1,70 @@
+/* =========================================================
+   Treatment menu management
+
+   Extends the content editor's styles, which this screen
+   already loads.
+   ========================================================= */
+
+.services-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.services-admin-empty {
+    margin: 0;
+
+    color: #6b6259;
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+/* Price and duration side by side; they are short and related. */
+.services-admin-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+}
+
+.services-admin-link {
+    color: #6f645b;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+.services-admin-link:hover {
+    color: #2f2d2b;
+    text-decoration: underline;
+}
+
+.services-admin-link.is-danger {
+    color: #b3382c;
+}
+
+.services-admin-link.is-danger:hover {
+    color: #8f2c22;
+}
+
+/* Validation messages from the form helper. */
+.content-field .error-message {
+    margin-top: 7px;
+
+    color: #b3382c;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.content-field .form-error {
+    border-color: #b3382c;
+}
+
+@media (max-width: 640px) {
+    .services-admin-actions .content-button {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+    }
+}

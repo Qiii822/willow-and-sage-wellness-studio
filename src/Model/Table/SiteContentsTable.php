@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use Cake\ORM\Table;
+use Cake\Utility\Hash;
+use Throwable;
 
 /**
  * Editable copy for the public home page.
@@ -98,6 +100,12 @@ class SiteContentsTable extends Table
             'type' => self::TYPE_TEXT,
             'default' => 'Service menu',
         ],
+        'services.menu_heading' => [
+            'group' => 'Services',
+            'label' => 'Heading on the services page',
+            'type' => self::TYPE_TEXT,
+            'default' => 'What we offer',
+        ],
         'services.intro' => [
             'group' => 'Services',
             'label' => 'Section introduction',
@@ -180,6 +188,10 @@ class SiteContentsTable extends Table
         ],
     ];
 
+    /**
+     * @param array<string, mixed> $config
+     * @return void
+     */
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -208,8 +220,8 @@ class SiteContentsTable extends Table
     public function values(): array
     {
         $values = array_map(
-            fn (array $field): string => $field['default'],
-            self::FIELDS
+            fn(array $field): string => $field['default'],
+            self::FIELDS,
         );
 
         try {
@@ -217,7 +229,7 @@ class SiteContentsTable extends Table
                 ->select(['content_key', 'value'])
                 ->disableHydration()
                 ->all();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Table not migrated yet: the page still renders on defaults.
             return $values;
         }
@@ -252,7 +264,7 @@ class SiteContentsTable extends Table
          * turns that structure back into the dotted keys used here, so the
          * key in FIELDS stays the one true name for a field.
          */
-        $submitted = \Cake\Utility\Hash::flatten($submitted);
+        $submitted = Hash::flatten($submitted);
 
         $errors = [];
 

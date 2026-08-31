@@ -1,0 +1,244 @@
+/* =========================================================
+   Public treatment menu
+
+   Sits inside the public site shell, so it inherits the
+   palette and the hero button style from landing.css.
+   ========================================================= */
+
+.services-page {
+    width: min(880px, 100%);
+
+    margin: 0 auto;
+    padding: 72px 40px 96px;
+}
+
+.services-header {
+    margin-bottom: 40px;
+}
+
+.services-eyebrow {
+    margin: 0 0 12px;
+
+    color: var(--gold-dark);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.services-header h1 {
+    margin: 0 0 14px;
+
+    color: var(--text-primary);
+    font-size: 46px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1.4px;
+}
+
+.services-lead {
+    max-width: 620px;
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   Category jump links
+   ========================================================= */
+
+.services-jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-bottom: 46px;
+    padding-bottom: 24px;
+
+    border-bottom: 1px solid rgba(24, 20, 17, 0.1);
+}
+
+.services-jump a {
+    padding: 8px 16px;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: rgba(139, 126, 116, 0.1);
+    border-radius: 999px;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.services-jump a:hover {
+    color: #fff;
+
+    background: var(--gold);
+}
+
+/* =========================================================
+   The menu itself
+   ========================================================= */
+
+.services-category {
+    margin-bottom: 52px;
+
+    /* Clears the sticky header when a jump link lands here. */
+    scroll-margin-top: 100px;
+}
+
+.services-category h2 {
+    margin: 0 0 22px;
+
+    color: var(--text-primary);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+}
+
+.services-list {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.service-item {
+    padding: 22px 0;
+
+    border-top: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.service-item:last-child {
+    border-bottom: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.service-item h3 {
+    margin: 0 0 8px;
+
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.service-description {
+    margin: 0 0 10px;
+
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.service-meta {
+    margin: 0;
+
+    color: var(--text-primary);
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.services-empty {
+    padding: 28px 0;
+
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   Booking prompt
+   ========================================================= */
+
+.services-cta {
+    margin-top: 20px;
+    padding: 36px;
+
+    text-align: center;
+
+    background: #f6f2ec;
+    border-radius: 20px;
+}
+
+.services-cta p {
+    margin: 0 0 20px;
+
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+/* =========================================================
+   Home page overview block
+   ========================================================= */
+
+/*
+ * Reuses the strip heading style, but this one has no paragraph under it,
+ * so it needs a smaller gap than an intro block would leave.
+ */
+.section-intro.services-overview-heading {
+    margin-bottom: 30px;
+}
+
+.section-intro.services-overview-heading h2 {
+    margin-bottom: 0;
+}
+
+.services-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+/* One per line, for a menu with only a couple of categories. */
+.services-overview.services-overview-list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.services-overview-card {
+    padding: 24px 26px;
+
+    background: #fffdfa;
+    border: 1px solid rgba(24, 20, 17, 0.07);
+    border-radius: 18px;
+}
+
+.services-overview-card h3 {
+    margin: 0 0 6px;
+
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.services-overview-count {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.services-overview-action {
+    margin-top: 30px;
+
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .services-page {
+        padding: 48px 20px 64px;
+    }
+
+    .services-header h1 {
+        font-size: 34px;
+    }
+
+    .services-cta {
+        padding: 26px 20px;
+    }
+}

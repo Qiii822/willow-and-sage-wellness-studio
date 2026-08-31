@@ -26,6 +26,8 @@ $isSettings =
     $action === 'settings';
 
 $isSiteContent = $controller === 'SiteContents';
+
+$isServices = $controller === 'Services';
 ?>
 
 <aside class="sidebar">
@@ -128,6 +130,20 @@ $isSiteContent = $controller === 'SiteContents';
             ['admin', 'superadmin'],
             true
         )): ?>
+
+            <li class="<?= $isServices ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="list"></i><span>Services</span>',
+                    [
+                        'controller' => 'Services',
+                        'action' => 'manage'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
 
             <li class="<?= $isSiteContent ? 'active' : '' ?>">
                 <?= $this->Html->link(

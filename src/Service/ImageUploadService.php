@@ -5,6 +5,7 @@ namespace App\Service;
 
 use Cake\Log\Log;
 use Psr\Http\Message\UploadedFileInterface;
+use Throwable;
 
 /**
  * Stores an uploaded image somewhere the site can serve it.
@@ -60,7 +61,7 @@ class ImageUploadService
                 'error' => sprintf(
                     'That image is %s. The limit is %s.',
                     $this->formatBytes((int)$file->getSize()),
-                    $this->formatBytes(self::MAX_BYTES)
+                    $this->formatBytes(self::MAX_BYTES),
                 ),
             ];
         }
@@ -75,6 +76,8 @@ class ImageUploadService
             return ['ok' => false, 'error' => 'The upload could not be read. Please try again.'];
         }
 
+        // Silenced deliberately: a non-image warns here, and the false return
+        // below is the answer we want, not a message in the studio's log.
         $info = @getimagesize($temp);
 
         if ($info === false || !isset(self::ALLOWED[$info[2]])) {
@@ -92,7 +95,7 @@ class ImageUploadService
             '%s-%s.%s',
             preg_replace('/[^a-z0-9-]/', '', strtolower($prefix)) ?: 'image',
             bin2hex(random_bytes(8)),
-            $extension
+            $extension,
         );
 
         $directory = $this->directoryPath();
@@ -105,7 +108,7 @@ class ImageUploadService
 
         try {
             $file->moveTo($directory . $filename);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Image upload failed: ' . $e->getMessage());
 
             return ['ok' => false, 'error' => 'The image could not be saved. Please try again.'];
@@ -132,6 +135,8 @@ class ImageUploadService
         $safe = basename($filename);
         $path = $this->directoryPath() . $safe;
 
+        // Silenced deliberately: this only ever removes an image the new
+        // upload has already replaced, so a failure is not worth reporting.
         if (is_file($path)) {
             @unlink($path);
         }
@@ -154,6 +159,12 @@ class ImageUploadService
         return $filename !== '' && is_file($this->directoryPath() . basename($filename));
     }
 
+    /**
+     * Turns a PHP upload error code into something the studio can act on.
+     *
+     * @param int $error One of the UPLOAD_ERR_* constants.
+     * @return string
+     */
     protected function describeUploadError(int $error): string
     {
         return match ($error) {
@@ -168,6 +179,10 @@ class ImageUploadService
         };
     }
 
+    /**
+     * @param int $bytes
+     * @return string A rounded size, for use in a message about a limit.
+     */
     protected function formatBytes(int $bytes): string
     {
         return $bytes >= 1024 * 1024

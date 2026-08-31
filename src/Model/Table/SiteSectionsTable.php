@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use Cake\ORM\Table;
+use Throwable;
 
 /**
  * Which blocks the home page shows, in what order, and how each is laid out.
@@ -50,8 +51,22 @@ class SiteSectionsTable extends Table
                 'rows' => 'Stacked rows',
             ],
         ],
+        'services_menu' => [
+            'label' => 'Treatment menu overview',
+            'description' => 'The categories from the services page, with a link to the full menu. '
+                . 'Hidden automatically while no treatments have been entered.',
+            'element' => 'home/services_menu',
+            'variants' => [
+                'grid' => 'Cards across',
+                'list' => 'Simple list',
+            ],
+        ],
     ];
 
+    /**
+     * @param array<string, mixed> $config
+     * @return void
+     */
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -110,7 +125,7 @@ class SiteSectionsTable extends Table
 
         try {
             $rows = $this->find()->disableHydration()->all();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Not migrated yet; the page still renders as designed.
             return array_values($sections);
         }
@@ -135,7 +150,7 @@ class SiteSectionsTable extends Table
 
         usort(
             $sections,
-            fn (array $a, array $b): int => $a['position'] <=> $b['position']
+            fn(array $a, array $b): int => $a['position'] <=> $b['position'],
         );
 
         return $sections;
@@ -150,7 +165,7 @@ class SiteSectionsTable extends Table
     {
         return array_values(array_filter(
             $this->layout(),
-            fn (array $section): bool => $section['visible']
+            fn(array $section): bool => $section['visible'],
         ));
     }
 

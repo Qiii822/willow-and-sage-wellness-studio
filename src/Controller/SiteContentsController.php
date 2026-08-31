@@ -5,7 +5,7 @@ namespace App\Controller;
 
 use App\Model\Table\SiteContentsTable;
 use App\Service\ImageUploadService;
-use Cake\Http\Response;
+use Cake\Event\EventInterface;
 
 /**
  * Website Content Controller
@@ -18,7 +18,11 @@ use Cake\Http\Response;
  */
 class SiteContentsController extends AppController
 {
-    public function beforeFilter(\Cake\Event\EventInterface $event): void
+    /**
+     * @param \Cake\Event\EventInterface $event
+     * @return void
+     */
+    public function beforeFilter(EventInterface $event): void
     {
         parent::beforeFilter($event);
 
@@ -68,7 +72,7 @@ class SiteContentsController extends AppController
                 // Framework's default Flash element renders this as a single
                 // escaped line, so errors are joined rather than newline-separated.
                 $this->Flash->error(
-                    "Some changes weren't saved - " . implode('; ', $valueErrors)
+                    "Some changes weren't saved - " . implode('; ', $valueErrors),
                 );
             } else {
                 $this->Flash->success('The home page has been updated.');
@@ -110,7 +114,7 @@ class SiteContentsController extends AppController
         $this->fetchTable('SiteSections')->saveLayout(
             $order,
             (array)$this->request->getData('section_visible'),
-            (array)$this->request->getData('section_variant')
+            (array)$this->request->getData('section_variant'),
         );
     }
 

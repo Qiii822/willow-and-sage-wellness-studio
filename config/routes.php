@@ -62,6 +62,10 @@ return function (RouteBuilder $routes): void {
         // Editor for the words on that page.
         $builder->connect('/website-content', ['controller' => 'SiteContents', 'action' => 'index']);
 
+        // Public treatment menu, and the screen staff maintain it from.
+        $builder->connect('/services', ['controller' => 'Services', 'action' => 'index']);
+        $builder->connect('/manage/services', ['controller' => 'Services', 'action' => 'manage']);
+
         $builder->connect('/account', ['controller' => 'Users', 'action' => 'profile']);
         $builder->connect('/account/change-password', ['controller' => 'Users', 'action' => 'changePassword']);
 
