@@ -23,6 +23,21 @@ $this->Html->css('landing', ['block' => true]);
 $navItems = [
     'Gift card',
 ];
+
+/*
+ * Offers are a section of the home page rather than a page of their own, so
+ * this entry is an anchor. It is only worth showing when there is something
+ * to land on: both an offer to show, and the block still switched on in the
+ * layout editor. Otherwise the link would scroll to nothing.
+ */
+$locator = \Cake\ORM\TableRegistry::getTableLocator();
+
+$showOffers = $locator->get('Offers')->current() !== []
+    && in_array(
+        'offers',
+        array_column($locator->get('SiteSections')->visibleLayout(), 'key'),
+        true
+    );
 ?>
 
 <header class="site-header">
@@ -37,11 +52,13 @@ $navItems = [
 
         <nav class="site-nav" aria-label="Main">
 
-            <?= $this->Html->link(
-                'Services',
-                ['controller' => 'Services', 'action' => 'index'],
-                ['class' => 'site-nav-link']
-            ) ?>
+            <?php if ($showOffers): ?>
+                <?= $this->Html->link(
+                    'Offers',
+                    ['controller' => 'Home', 'action' => 'index', '#' => 'offers'],
+                    ['class' => 'site-nav-link']
+                ) ?>
+            <?php endif; ?>
 
             <?= $this->Html->link(
                 'Book',

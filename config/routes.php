@@ -66,6 +66,9 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/services', ['controller' => 'Services', 'action' => 'index']);
         $builder->connect('/manage/services', ['controller' => 'Services', 'action' => 'manage']);
 
+        // Offers live on the home page, so there is only a management screen.
+        $builder->connect('/manage/offers', ['controller' => 'Offers', 'action' => 'manage']);
+
         $builder->connect('/account', ['controller' => 'Users', 'action' => 'profile']);
         $builder->connect('/account/change-password', ['controller' => 'Users', 'action' => 'changePassword']);
 

@@ -33,6 +33,16 @@ class SiteSectionsTable extends Table
                 'centre' => 'Text centred',
             ],
         ],
+        'offers' => [
+            'label' => 'Current offers',
+            'description' => 'The offers running at the moment, with their pictures. '
+                . 'Hidden automatically while none have been entered.',
+            'element' => 'home/offers',
+            'variants' => [
+                'cards' => 'Cards across',
+                'rows' => 'Picture beside text',
+            ],
+        ],
         'services_intro' => [
             'label' => 'About the studio',
             'description' => 'The heading and paragraph introducing the services.',
@@ -99,6 +109,14 @@ class SiteSectionsTable extends Table
         return $section + [
             'key' => $key,
             'position' => $position,
+            /*
+             * Where the block sits in SECTIONS. Kept alongside the saved
+             * position so a newly declared block, whose default position can
+             * collide with a position already stored for another block, still
+             * lands in a predictable place rather than depending on how the
+             * sort happens to treat the tie.
+             */
+            'declared' => $position,
             'visible' => true,
             'variant' => (string)array_key_first($section['variants']),
         ];
@@ -150,7 +168,8 @@ class SiteSectionsTable extends Table
 
         usort(
             $sections,
-            fn(array $a, array $b): int => $a['position'] <=> $b['position'],
+            fn(array $a, array $b): int => [$a['position'], $a['declared']]
+                <=> [$b['position'], $b['declared']],
         );
 
         return $sections;

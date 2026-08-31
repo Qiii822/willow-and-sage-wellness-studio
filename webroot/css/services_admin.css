@@ -26,6 +26,18 @@
     gap: 18px;
 }
 
+/* Thumbnail in the offer list, so a row is recognisable at a glance. */
+.offer-thumb {
+    flex: none;
+
+    width: 64px;
+    height: 44px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+}
+
 .services-admin-link {
     color: #6f645b;
     font-size: 13.5px;

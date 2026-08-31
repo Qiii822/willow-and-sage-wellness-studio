@@ -28,6 +28,8 @@ $isSettings =
 $isSiteContent = $controller === 'SiteContents';
 
 $isServices = $controller === 'Services';
+
+$isOffers = $controller === 'Offers';
 ?>
 
 <aside class="sidebar">
@@ -136,6 +138,20 @@ $isServices = $controller === 'Services';
                     '<i data-lucide="list"></i><span>Services</span>',
                     [
                         'controller' => 'Services',
+                        'action' => 'manage'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
+
+            <li class="<?= $isOffers ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="tag"></i><span>Offers</span>',
+                    [
+                        'controller' => 'Offers',
                         'action' => 'manage'
                     ],
                     [

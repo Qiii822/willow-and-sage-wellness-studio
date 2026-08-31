@@ -94,6 +94,20 @@ class SiteContentsTable extends Table
             'default' => 'Book a treatment',
         ],
 
+        'offers.heading' => [
+            'group' => 'Offers',
+            'label' => 'Section heading',
+            'type' => self::TYPE_TEXT,
+            'default' => 'Current offers',
+        ],
+        'offers.intro' => [
+            'group' => 'Offers',
+            'label' => 'Section introduction',
+            'type' => self::TYPE_TEXTAREA,
+            'default' => '',
+            'help' => 'Optional. A line above the offers, if they need one.',
+        ],
+
         'services.heading' => [
             'group' => 'Services',
             'label' => 'Section heading',
