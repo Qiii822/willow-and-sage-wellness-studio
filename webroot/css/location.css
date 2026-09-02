@@ -1,0 +1,145 @@
+/* =========================================================
+   Location and hours
+   ========================================================= */
+
+.section-intro.location-heading {
+    margin-bottom: 30px;
+}
+
+.section-intro.location-heading h2 {
+    margin-bottom: 0;
+}
+
+.location-grid {
+    display: grid;
+    gap: 44px;
+}
+
+.location-grid-split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+}
+
+.location-grid-stacked {
+    grid-template-columns: minmax(0, 620px);
+}
+
+/* =========================================================
+   Address and contact
+   ========================================================= */
+
+.location-address {
+    margin: 0 0 16px;
+
+    color: var(--text-secondary);
+    font-size: 16.5px;
+    font-style: normal;
+    line-height: 1.75;
+}
+
+.location-contact {
+    margin: 0 0 24px;
+    padding: 0;
+
+    list-style: none;
+}
+
+.location-contact li {
+    margin-bottom: 4px;
+}
+
+.location-contact a {
+    color: var(--text-primary);
+    font-size: 16.5px;
+    text-decoration: none;
+
+    border-bottom: 1px solid rgba(24, 20, 17, 0.2);
+}
+
+.location-contact a:hover {
+    border-bottom-color: var(--text-primary);
+}
+
+/*
+ * A link, so it reads as leaving for a map rather than as a form control,
+ * but sized like a button because it is the action of this block.
+ */
+.location-directions {
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 44px;
+    padding: 0 22px;
+
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: var(--text-primary);
+    border-radius: 999px;
+
+    transition: background 0.2s ease;
+}
+
+.location-directions:hover {
+    color: #fff;
+
+    background: #4a4643;
+}
+
+.location-directions:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   Opening hours
+   ========================================================= */
+
+.location-hours h3 {
+    margin: 0 0 14px;
+
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.location-hours dl {
+    margin: 0;
+}
+
+.location-hours-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+
+    padding: 9px 0;
+
+    border-bottom: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.location-hours-row:first-child {
+    border-top: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.location-hours dt {
+    color: var(--text-primary);
+    font-size: 15.5px;
+    font-weight: 600;
+}
+
+.location-hours dd {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 15.5px;
+    text-align: right;
+}
+
+@media (max-width: 860px) {
+    .location-grid-split {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 34px;
+    }
+}

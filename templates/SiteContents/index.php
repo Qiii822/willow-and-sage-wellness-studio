@@ -134,7 +134,18 @@ $this->Html->script('site_contents', ['block' => true]);
 
                     <?php if ($field['type'] === SiteContentsTable::TYPE_IMAGE): ?>
 
-                        <?php $currentUrl = $this->SiteContent->heroImageUrl(); ?>
+                        <?php
+                        $input = SiteContentsTable::imageInputName($key);
+
+                        /*
+                         * The hero falls back to the picture bundled with the
+                         * site; the other blocks just leave their picture out
+                         * until one is uploaded.
+                         */
+                        $currentUrl = $key === 'hero.image'
+                            ? $this->SiteContent->heroImageUrl()
+                            : $this->SiteContent->imageUrl($key);
+                        ?>
 
                         <?php /*
                          * Always rendered, so the script has somewhere to put
@@ -142,12 +153,12 @@ $this->Html->script('site_contents', ['block' => true]);
                          */ ?>
                         <div
                             class="content-image-preview"
-                            data-preview-for="hero_image"
+                            data-preview-for="<?= h($input) ?>"
                             <?= $currentUrl ? '' : 'hidden' ?>
                         >
                             <img
                                 src="<?= h((string)$currentUrl) ?>"
-                                alt="Background photo"
+                                alt="<?= h($field['label']) ?>"
                                 data-original-src="<?= h((string)$currentUrl) ?>"
                             >
                             <p class="content-image-note" hidden>
@@ -156,22 +167,24 @@ $this->Html->script('site_contents', ['block' => true]);
                             </p>
                         </div>
 
-                        <?= $this->Form->file('hero_image', [
+                        <?= $this->Form->file($input, [
                             'id' => 'field-' . str_replace('.', '-', $key),
                             'class' => 'content-file',
                             'accept' => 'image/jpeg,image/png,image/webp',
-                            'data-preview' => 'hero_image',
+                            'data-preview' => $input,
                         ]) ?>
 
                         <?php // Upload problems belong next to the file field. ?>
                         <div class="content-field-flash">
-                            <?= $this->Flash->render('heroImage') ?>
+                            <?= $this->Flash->render(SiteContentsTable::imageFlashKey($key)) ?>
                         </div>
 
                         <?php if (($values[$key] ?? '') !== ''): ?>
                             <label class="content-checkbox">
-                                <?= $this->Form->checkbox('hero_image_remove', ['hiddenField' => false]) ?>
-                                Remove the uploaded photo and go back to the original
+                                <?= $this->Form->checkbox($input . '_remove', ['hiddenField' => false]) ?>
+                                <?= $key === 'hero.image'
+                                    ? 'Remove the uploaded photo and go back to the original'
+                                    : 'Remove this photo' ?>
                             </label>
                         <?php endif; ?>
 

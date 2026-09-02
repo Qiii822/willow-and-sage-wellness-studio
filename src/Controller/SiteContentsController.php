@@ -56,18 +56,20 @@ class SiteContentsController extends AppController
             $valueErrors = $this->SiteContents->saveValues($this->request->getData());
 
             /*
-             * The picture is handled after the text, so a rejected upload
-             * still leaves the wording saved and only reports what failed.
+             * Pictures are handled after the text, so a rejected upload still
+             * leaves the wording saved and only reports what failed.
              */
-            $imageError = $this->handleHeroImage();
+            $imageErrors = $this->handleImages();
 
-            if ($imageError !== null) {
+            if ($imageErrors !== []) {
                 /*
-                 * Keyed so the editor can show this beside the file field it
-                 * is about, rather than as a page-level banner far from the
-                 * control that caused it.
+                 * Keyed per field so the editor shows each one beside the file
+                 * field it is about, rather than as a page-level banner far
+                 * from the control that caused it.
                  */
-                $this->Flash->error($imageError, ['key' => 'heroImage']);
+                foreach ($imageErrors as $flashKey => $message) {
+                    $this->Flash->error($message, ['key' => $flashKey]);
+                }
             } elseif ($valueErrors !== []) {
                 // Framework's default Flash element renders this as a single
                 // escaped line, so errors are joined rather than newline-separated.
@@ -119,40 +121,54 @@ class SiteContentsController extends AppController
     }
 
     /**
-     * Applies a hero photo upload or removal.
+     * Applies an upload or removal for every picture the editor declares.
      *
-     * @return string|null An error to show, or null when nothing went wrong.
+     * @return array<string, string> Flash key to error message, for the
+     *  pictures that were rejected. Empty when nothing went wrong.
      */
-    protected function handleHeroImage(): ?string
+    protected function handleImages(): array
     {
         $uploader = new ImageUploadService();
-        $current = (string)$this->SiteContents->values()['hero.image'];
+        $values = $this->SiteContents->values();
+        $errors = [];
 
-        if ($this->request->getData('hero_image_remove')) {
+        foreach (SiteContentsTable::FIELDS as $key => $field) {
+            if ($field['type'] !== SiteContentsTable::TYPE_IMAGE) {
+                continue;
+            }
+
+            $input = SiteContentsTable::imageInputName($key);
+            $current = (string)($values[$key] ?? '');
+
+            if ($this->request->getData($input . '_remove')) {
+                $uploader->delete($current);
+                $this->SiteContents->setValue($key, '');
+
+                continue;
+            }
+
+            $file = $this->request->getUploadedFile($input);
+
+            if (!$file || $file->getError() === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+
+            // Names the stored file after its field: hero-..., about-...
+            $result = $uploader->store($file, explode('.', $key)[0]);
+
+            if (!$result['ok']) {
+                $errors[SiteContentsTable::imageFlashKey($key)] = $result['error'];
+
+                continue;
+            }
+
+            $this->SiteContents->setValue($key, $result['filename']);
+
+            // Only once the replacement is safely stored.
             $uploader->delete($current);
-            $this->SiteContents->setValue('hero.image', '');
-
-            return null;
         }
 
-        $file = $this->request->getUploadedFile('hero_image');
-
-        if (!$file || $file->getError() === UPLOAD_ERR_NO_FILE) {
-            return null;
-        }
-
-        $result = $uploader->store($file, 'hero');
-
-        if (!$result['ok']) {
-            return $result['error'];
-        }
-
-        $this->SiteContents->setValue('hero.image', $result['filename']);
-
-        // Only once the replacement is safely stored.
-        $uploader->delete($current);
-
-        return null;
+        return $errors;
     }
 
     /**
@@ -163,8 +179,14 @@ class SiteContentsController extends AppController
     protected function resetEverything(): void
     {
         $uploader = new ImageUploadService();
+        $values = $this->SiteContents->values();
 
-        $uploader->delete((string)$this->SiteContents->values()['hero.image']);
+        // Every picture, not just the hero, or resetting would strand files.
+        foreach (SiteContentsTable::FIELDS as $key => $field) {
+            if ($field['type'] === SiteContentsTable::TYPE_IMAGE) {
+                $uploader->delete((string)($values[$key] ?? ''));
+            }
+        }
 
         $this->SiteContents->resetToDefaults();
         $this->fetchTable('SiteSections')->resetToDefaults();

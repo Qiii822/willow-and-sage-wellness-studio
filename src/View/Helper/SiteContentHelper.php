@@ -50,6 +50,46 @@ class SiteContentHelper extends Helper
     }
 
     /**
+     * One field's text as real paragraphs, split on blank lines.
+     *
+     * Several paragraphs of prose want to be separate <p> elements rather
+     * than one block held apart by <br><br>: the spacing then comes from the
+     * stylesheet, and a screen reader announces them as the separate
+     * paragraphs they are.
+     *
+     * The text is escaped first, so only the markup this method adds is ever
+     * markup. Single line breaks inside a paragraph are kept as <br>.
+     *
+     * @param string $key
+     * @return string Empty when the field is blank, so the caller can leave
+     *  the block out rather than print an empty paragraph.
+     */
+    public function paragraphs(string $key): string
+    {
+        $text = trim($this->raw($key));
+
+        if ($text === '') {
+            return '';
+        }
+
+        // Any run of blank lines separates paragraphs, whatever the line
+        // endings the browser submitted.
+        $chunks = preg_split('/(\R\s*){2,}/', $text) ?: [];
+
+        $html = '';
+
+        foreach ($chunks as $chunk) {
+            $chunk = trim($chunk);
+
+            if ($chunk !== '') {
+                $html .= '<p>' . nl2br(h($chunk), false) . '</p>';
+            }
+        }
+
+        return $html;
+    }
+
+    /**
      * The hero backdrop's URL, or null to leave the gradient showing.
      *
      * Prefers a photo uploaded through the editor. With none set - or when
@@ -61,7 +101,27 @@ class SiteContentHelper extends Helper
      */
     public function heroImageUrl(): ?string
     {
-        $uploaded = $this->raw('hero.image');
+        return $this->imageUrl(
+            'hero.image',
+            ['hero.webp', 'hero.jpg', 'hero.png', 'homepage.webp', 'homepage.jpg'],
+        );
+    }
+
+    /**
+     * The URL of an uploaded picture, or null when there is none to show.
+     *
+     * A stored filename whose file has gone missing counts as none, so a
+     * stale database row cannot leave the page pointing at a broken image.
+     *
+     * @param string $key A field declared as an image in SiteContentsTable.
+     * @param array<int, string> $fallbacks Pictures shipped in webroot/img to
+     *  fall back through, in order of preference. The hero has these; the
+     *  other blocks simply leave the picture out when none is uploaded.
+     * @return string|null
+     */
+    public function imageUrl(string $key, array $fallbacks = []): ?string
+    {
+        $uploaded = $this->raw($key);
 
         if ($uploaded !== '') {
             $uploads = new ImageUploadService();
@@ -73,7 +133,7 @@ class SiteContentHelper extends Helper
             }
         }
 
-        foreach (['hero.webp', 'hero.jpg', 'hero.png', 'homepage.webp', 'homepage.jpg'] as $candidate) {
+        foreach ($fallbacks as $candidate) {
             if (file_exists(WWW_ROOT . 'img' . DS . $candidate)) {
                 return $this->getView()->Url->image($candidate);
             }

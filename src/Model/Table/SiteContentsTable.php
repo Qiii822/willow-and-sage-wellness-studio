@@ -94,6 +94,103 @@ class SiteContentsTable extends Table
             'default' => 'Book a treatment',
         ],
 
+        'about.heading' => [
+            'group' => 'About Wendy',
+            'label' => 'Section heading',
+            'type' => self::TYPE_TEXT,
+            'default' => 'About Wendy and Willow & Sage',
+        ],
+        'about.image' => [
+            'group' => 'About Wendy',
+            'label' => 'Photo of Wendy',
+            'type' => self::TYPE_IMAGE,
+            'default' => '',
+            'help' => 'JPEG, PNG or WebP, up to 5MB. The section leaves the '
+                . 'picture out until one is uploaded.',
+        ],
+        'about.body' => [
+            'group' => 'About Wendy',
+            'label' => 'Introduction',
+            'type' => self::TYPE_TEXTAREA,
+            'default' => "Hi, I'm Wendy, the beauty therapist behind Willow & Sage "
+                . 'Wellness Studio - a peaceful home-based studio in Ingle Farm, '
+                . "Adelaide. Visits are by appointment only.\n\n"
+                . 'I created Willow & Sage as a calm, welcoming space where you can '
+                . 'slow down, feel cared for and enjoy unhurried, personalised '
+                . 'treatments. I offer relaxation massage, organic facials, '
+                . 'manicures, pedicures, natural nail care, waxing and tinting, with '
+                . "every appointment tailored to your comfort and needs.\n\n"
+                . 'I also provide gentle mobile wellness experiences for community '
+                . 'groups, retirement villages, aged-care settings and special '
+                . "events.\n\n"
+                . "Whether you're visiting for relaxation, confidence or a little "
+                . "time for yourself, you'll always receive warm, down-to-earth care.",
+            'help' => 'Leave a blank line between paragraphs.',
+        ],
+
+        'location.heading' => [
+            'group' => 'Location and hours',
+            'label' => 'Section heading',
+            'type' => self::TYPE_TEXT,
+            'default' => 'Location and Hours',
+        ],
+        'location.address' => [
+            'group' => 'Location and hours',
+            'label' => 'Address',
+            'type' => self::TYPE_TEXTAREA,
+            'default' => "Willow and Sage Wellness Studio\n"
+                . "13 Eudunda Ave\n"
+                . 'Ingle Farm, South Australia 5098',
+            'help' => 'One line per line of the address.',
+        ],
+        'location.hours' => [
+            'group' => 'Location and hours',
+            'label' => 'Opening hours',
+            'type' => self::TYPE_TEXTAREA,
+            'default' => "Monday: 9:00 am - 7:00 pm\n"
+                . "Tuesday: 10:00 am - 5:00 pm\n"
+                . "Wednesday: Closed\n"
+                . "Thursday: 9:00 am - 9:00 pm\n"
+                . "Friday: Closed\n"
+                . "Saturday: 9:00 am - 5:00 pm\n"
+                . 'Sunday: Closed',
+            'help' => 'One day per line, written as "Monday: 9:00 am - 7:00 pm". '
+                . 'The part before the colon is the day.',
+        ],
+
+        'safety.heading' => [
+            'group' => 'Comfort and hygiene',
+            'label' => 'Section heading',
+            'type' => self::TYPE_TEXT,
+            'default' => 'Your comfort, hygiene and safety',
+        ],
+        'safety.image' => [
+            'group' => 'Comfort and hygiene',
+            'label' => 'Photo of the studio',
+            'type' => self::TYPE_IMAGE,
+            'default' => '',
+            'help' => 'JPEG, PNG or WebP, up to 5MB. The section leaves the '
+                . 'picture out until one is uploaded.',
+        ],
+        'safety.body' => [
+            'group' => 'Comfort and hygiene',
+            'label' => 'Wording',
+            'type' => self::TYPE_TEXTAREA,
+            'default' => 'At Willow & Sage Wellness Studio, your comfort, hygiene and '
+                . 'safety are always a priority. Treatments are provided using '
+                . 'professional hygiene practices, clean tools, fresh towels where '
+                . "required and individual comfort checks.\n\n"
+                . 'Mobile wellness services are gentle and relaxation-based, with '
+                . "treatments adjusted to each client's comfort, mobility, skin "
+                . "condition and suitability.\n\n"
+                . 'For your wellbeing, a treatment may be modified, shortened or '
+                . 'declined if there are health, hygiene, skin, safety or '
+                . "infection-control concerns.\n\n"
+                . 'Full hygiene and safety procedures are available upon request for '
+                . 'aged-care centres, retirement villages and community organisations.',
+            'help' => 'Leave a blank line between paragraphs.',
+        ],
+
         'offers.heading' => [
             'group' => 'Offers',
             'label' => 'Section heading',
@@ -201,6 +298,36 @@ class SiteContentsTable extends Table
             'default' => 'Willowandsagewellness26@gmail.com',
         ],
     ];
+
+    /**
+     * The form field an image is uploaded through, e.g. "about.image"
+     * becomes "about_image".
+     *
+     * Dots would be read as nested arrays by the form helper, so an image
+     * field cannot carry its own key. Both the editor that renders the input
+     * and the controller that reads the upload go through here, because a
+     * disagreement between them would silently drop every upload.
+     *
+     * @param string $key
+     * @return string
+     */
+    public static function imageInputName(string $key): string
+    {
+        return str_replace('.', '_', $key);
+    }
+
+    /**
+     * The Flash key an image field's upload error is reported under, so the
+     * message renders beside that field rather than at the top of the page.
+     *
+     * @param string $key
+     * @return string
+     */
+    public static function imageFlashKey(string $key): string
+    {
+        // "hero.image" -> "heroImage", matching the existing hero key.
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('.', ' ', $key))));
+    }
 
     /**
      * @param array<string, mixed> $config

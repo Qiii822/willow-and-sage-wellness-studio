@@ -1,0 +1,75 @@
+/* =========================================================
+   Text beside a photo
+
+   Shared by the About and Comfort blocks; the arrangement
+   chosen in the editor decides which side the photo takes.
+   ========================================================= */
+
+.split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 54px;
+}
+
+/* No photo uploaded yet: the wording takes a readable column on its own. */
+.split-text-only {
+    grid-template-columns: minmax(0, 720px);
+}
+
+.split-media img {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    border-radius: 18px;
+}
+
+/*
+ * Source order puts the picture first. That is the order a narrow screen
+ * should read in, so only the wide layout moves it, and only when the
+ * arrangement asks for it.
+ */
+@media (min-width: 861px) {
+    .split-photo-right .split-media {
+        order: 2;
+    }
+}
+
+.split-body h2 {
+    margin: 0 0 20px;
+
+    color: var(--text-primary);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.9px;
+    line-height: 1.15;
+}
+
+.split-body p {
+    margin: 0 0 18px;
+
+    color: var(--text-secondary);
+    font-size: 16.5px;
+    line-height: 1.75;
+}
+
+.split-body p:last-child {
+    margin-bottom: 0;
+}
+
+/*
+ * Below this the two columns leave the text too narrow to read comfortably,
+ * so the photo goes back above the wording.
+ */
+@media (max-width: 860px) {
+    .split {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 30px;
+    }
+
+    .split-body h2 {
+        font-size: 27px;
+    }
+}

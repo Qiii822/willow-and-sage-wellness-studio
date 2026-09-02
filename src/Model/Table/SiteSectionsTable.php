@@ -61,6 +61,34 @@ class SiteSectionsTable extends Table
                 'rows' => 'Stacked rows',
             ],
         ],
+        'about' => [
+            'label' => 'About Wendy',
+            'description' => 'The introduction, with her photo beside it.',
+            'element' => 'home/about',
+            'variants' => [
+                'photo-left' => 'Photo on the left',
+                'photo-right' => 'Photo on the right',
+            ],
+        ],
+        'safety' => [
+            'label' => 'Comfort and hygiene',
+            'description' => 'What to expect on hygiene and safety, with a photo.',
+            'element' => 'home/safety',
+            'variants' => [
+                'photo-right' => 'Photo on the right',
+                'photo-left' => 'Photo on the left',
+            ],
+        ],
+        'location' => [
+            'label' => 'Location and hours',
+            'description' => 'The address, opening hours and a link through to '
+                . 'directions.',
+            'element' => 'home/location',
+            'variants' => [
+                'split' => 'Address and hours side by side',
+                'stacked' => 'Address above hours',
+            ],
+        ],
         'services_menu' => [
             'label' => 'Treatment menu overview',
             'description' => 'The categories from the services page, with a link to the full menu. '
