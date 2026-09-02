@@ -143,6 +143,15 @@ class SiteContentsTable extends Table
                 . 'Ingle Farm, South Australia 5098',
             'help' => 'One line per line of the address.',
         ],
+        'location.map_query' => [
+            'group' => 'Location and hours',
+            'label' => 'What the map should point at',
+            'type' => self::TYPE_TEXT,
+            'default' => '',
+            'help' => 'Leave blank to use the address above. Fill this in only '
+                . 'if the map lands on the wrong spot - a plain street address '
+                . 'usually works better than the studio name.',
+        ],
         'location.hours' => [
             'group' => 'Location and hours',
             'label' => 'Opening hours',

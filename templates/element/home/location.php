@@ -35,13 +35,27 @@ foreach (preg_split('/\R/', trim($this->SiteContent->raw('location.hours'))) ?: 
 }
 
 /*
- * Sent to Google Maps rather than embedded. An embedded map needs an API
- * key the studio does not have, and would load third-party tracking into
- * every visit; a link opens the map the visitor already has set up, with
- * directions from wherever they actually are.
+ * One place drives both the map and the directions link. The override
+ * exists because a geocoder can miss on a business name where it would
+ * find the plain street address.
+ */
+$mapQuery = trim($this->SiteContent->raw('location.map_query'));
+
+if ($mapQuery === '') {
+    $mapQuery = (string)preg_replace('/\s+/', ' ', $address);
+}
+
+$showMap = $variant === 'map' && $mapQuery !== '';
+
+/*
+ * Directions open in Google Maps rather than being handled here, so the
+ * route starts from wherever the visitor actually is.
  */
 $directionsUrl = 'https://www.google.com/maps/dir/?api=1&destination='
-    . rawurlencode(preg_replace('/\s+/', ' ', $address));
+    . rawurlencode($mapQuery);
+
+$mapUrl = 'https://maps.google.com/maps?q=' . rawurlencode($mapQuery)
+    . '&hl=en&z=16&output=embed';
 ?>
 
 <section class="feature-strip" id="location">
@@ -52,58 +66,90 @@ $directionsUrl = 'https://www.google.com/maps/dir/?api=1&destination='
             <h2><?= $this->SiteContent->get('location.heading') ?></h2>
         </div>
 
-        <div class="location-grid location-grid-<?= h($variant) ?>">
+        <div class="location-layout location-layout-<?= h($variant) ?>">
 
-            <div class="location-details">
+            <?php if ($showMap): ?>
+                <div class="location-map">
+                    <?php /*
+                     * Google's keyless embed. The Maps Embed API proper wants
+                     * an API key and a billing account, which is a lot of
+                     * setup for a pin on one address.
+                     *
+                     * Loaded lazily so the third-party frame is only fetched
+                     * if the visitor scrolls this far, and the referrer is
+                     * trimmed rather than handing over the full URL.
+                     */ ?>
+                    <iframe
+                        src="<?= h($mapUrl) ?>"
+                        title="Map showing where the studio is"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen
+                    ></iframe>
+                </div>
+            <?php endif; ?>
 
-                <?php if ($address !== ''): ?>
-                    <address class="location-address">
-                        <?= $this->SiteContent->lines('location.address') ?>
-                    </address>
-                <?php endif; ?>
+            <div class="location-info">
 
-                <ul class="location-contact">
-                    <?php if ($phone !== ''): ?>
-                        <li>
-                            <?php // tel: needs the number without spaces to dial. ?>
-                            <a href="tel:<?= h(preg_replace('/[^\d+]/', '', $phone)) ?>">
-                                <?= h($phone) ?>
-                            </a>
-                        </li>
+                <div class="location-details">
+
+                    <?php if ($address !== ''): ?>
+                        <address class="location-address">
+                            <?= $this->SiteContent->lines('location.address') ?>
+                        </address>
                     <?php endif; ?>
 
-                    <?php if ($email !== ''): ?>
-                        <li><a href="mailto:<?= h($email) ?>"><?= h($email) ?></a></li>
-                    <?php endif; ?>
-                </ul>
+                    <ul class="location-contact">
+                        <?php if ($phone !== ''): ?>
+                            <li>
+                                <?php // tel: needs the number without spaces to dial. ?>
+                                <a href="tel:<?= h(preg_replace('/[^\d+]/', '', $phone)) ?>">
+                                    <i data-lucide="phone" aria-hidden="true"></i>
+                                    <span><?= h($phone) ?></span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
 
-                <?php if ($address !== ''): ?>
-                    <a
-                        class="location-directions"
-                        href="<?= h($directionsUrl) ?>"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Get directions
-                    </a>
+                        <?php if ($email !== ''): ?>
+                            <li>
+                                <a href="mailto:<?= h($email) ?>">
+                                    <i data-lucide="mail" aria-hidden="true"></i>
+                                    <span><?= h($email) ?></span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+
+                    <?php if ($mapQuery !== ''): ?>
+                        <a
+                            class="location-directions"
+                            href="<?= h($directionsUrl) ?>"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <i data-lucide="navigation" aria-hidden="true"></i>
+                            <span>Get directions</span>
+                        </a>
+                    <?php endif; ?>
+
+                </div>
+
+                <?php if ($hours !== []): ?>
+                    <div class="location-hours">
+                        <h3>Opening hours</h3>
+
+                        <dl>
+                            <?php foreach ($hours as $row): ?>
+                                <div class="location-hours-row">
+                                    <dt><?= h($row['day']) ?></dt>
+                                    <dd><?= h($row['time']) ?></dd>
+                                </div>
+                            <?php endforeach; ?>
+                        </dl>
+                    </div>
                 <?php endif; ?>
 
             </div>
-
-            <?php if ($hours !== []): ?>
-                <div class="location-hours">
-                    <h3>Opening hours</h3>
-
-                    <dl>
-                        <?php foreach ($hours as $row): ?>
-                            <div class="location-hours-row">
-                                <dt><?= h($row['day']) ?></dt>
-                                <dd><?= h($row['time']) ?></dd>
-                            </div>
-                        <?php endforeach; ?>
-                    </dl>
-                </div>
-            <?php endif; ?>
 
         </div>
 

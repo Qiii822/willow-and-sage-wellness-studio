@@ -81,12 +81,13 @@ class SiteSectionsTable extends Table
         ],
         'location' => [
             'label' => 'Location and hours',
-            'description' => 'The address, opening hours and a link through to '
-                . 'directions.',
+            'description' => 'The address, opening hours, and a map with a link '
+                . 'through to directions.',
             'element' => 'home/location',
             'variants' => [
-                'split' => 'Address and hours side by side',
-                'stacked' => 'Address above hours',
+                'map' => 'Map beside the details',
+                'split' => 'No map, address and hours side by side',
+                'stacked' => 'No map, address above hours',
             ],
         ],
         'services_menu' => [
