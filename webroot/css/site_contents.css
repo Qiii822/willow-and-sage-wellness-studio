@@ -105,6 +105,43 @@
     box-shadow: 0 0 0 3px rgba(176, 145, 108, 0.25);
 }
 
+/*
+ * A native select paints its own arrow and its own padding, which do not
+ * match the text inputs beside it. Stripping that back and drawing the
+ * arrow here keeps the two looking like the same control.
+ */
+select.content-input {
+    appearance: none;
+
+    /* Room for the arrow, so a long category cannot run underneath it. */
+    padding-right: 40px;
+
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%236b6259' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+
+    cursor: pointer;
+}
+
+/* Stands in for a control that has nothing to offer yet. */
+.content-empty-field {
+    margin: 0;
+    padding: 11px 14px;
+
+    color: #6b6259;
+    font-size: 14.5px;
+    line-height: 1.55;
+
+    background: rgba(139, 126, 116, 0.08);
+    border: 1px dashed rgba(24, 20, 17, 0.18);
+    border-radius: 10px;
+}
+
+.content-empty-field a {
+    color: #6f645b;
+    font-weight: 600;
+}
+
 /* =========================================================
    Page layout: block order, visibility and arrangement
    ========================================================= */

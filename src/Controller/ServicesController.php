@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Model\Table\ServicesTable;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
+use Cake\Utility\Hash;
 
 /**
  * Services Controller
@@ -19,7 +20,15 @@ use Cake\Http\Response;
 class ServicesController extends AppController
 {
     /** Actions only staff may reach. */
-    protected const STAFF_ONLY = ['manage', 'add', 'edit', 'delete', 'reorder'];
+    protected const STAFF_ONLY = [
+        'manage',
+        'add',
+        'edit',
+        'delete',
+        'reorder',
+        'addCategory',
+        'deleteCategory',
+    ];
 
     /**
      * @param \Cake\Event\EventInterface $event
@@ -76,7 +85,20 @@ class ServicesController extends AppController
     {
         $this->requireAdmin();
 
-        $this->set('services', $this->Services->forManagement()->all());
+        $services = $this->Services->forManagement()->all();
+
+        $this->set('services', $services);
+
+        /*
+         * How many rows Square owns. Zero means nothing has been synced yet,
+         * and warning about a sync overwriting edits would only confuse.
+         */
+        $this->set(
+            'syncedCount',
+            $this->Services->find()->where(['square_catalog_id IS NOT' => null])->count(),
+        );
+
+        $this->set('categories', $this->categoryOverview());
 
         return $this->render();
     }
@@ -108,7 +130,7 @@ class ServicesController extends AppController
         }
 
         $this->set('service', $service);
-        $this->set('categories', $this->Services->categories());
+        $this->set('categories', $this->pickableCategories());
     }
 
     /**
@@ -137,7 +159,7 @@ class ServicesController extends AppController
         }
 
         $this->set('service', $service);
-        $this->set('categories', $this->Services->categories());
+        $this->set('categories', $this->pickableCategories());
 
         // Same form as adding; only the heading and target differ.
         $this->viewBuilder()->setTemplate('add');
@@ -178,6 +200,151 @@ class ServicesController extends AppController
         if ($ids !== []) {
             $this->Services->reorder($ids);
             $this->Flash->success('The menu order has been saved.');
+        }
+
+        return $this->redirect(['action' => 'manage']);
+    }
+
+    /**
+     * Every category the menu knows about, and what is filed under each.
+     *
+     * Both sources are shown: the ones on the managed list, and the ones
+     * only a treatment mentions. A category that arrived from Square
+     * before it was registered is still in use on the public page, so
+     * leaving it out of this panel would make it invisible - present in
+     * the menu, absent from the screen that is supposed to manage it.
+     *
+     * Only a registered category has an id, and only an unused one can be
+     * removed, so the two together decide whether Remove is offered.
+     *
+     * @return array<int, array{name: string, id: string|null, used: int}>
+     */
+    protected function categoryOverview(): array
+    {
+        $usage = [];
+
+        foreach ($this->Services->find()->all() as $service) {
+            $usage[$service->category] = ($usage[$service->category] ?? 0) + 1;
+        }
+
+        $overview = [];
+
+        foreach ($this->fetchTable('ServiceCategories')->find()->all() as $category) {
+            $overview[$category->name] = [
+                'name' => $category->name,
+                'id' => $category->id,
+                'used' => $usage[$category->name] ?? 0,
+            ];
+        }
+
+        foreach ($usage as $name => $count) {
+            if (!isset($overview[$name])) {
+                $overview[$name] = ['name' => $name, 'id' => null, 'used' => $count];
+            }
+        }
+
+        ksort($overview);
+
+        return array_values($overview);
+    }
+
+    /**
+     * The categories a treatment may be filed under.
+     *
+     * The managed list, plus anything already in use that is not on it -
+     * a category can arrive from Square between syncs registering it, and
+     * dropping it from the picker would quietly move those treatments.
+     *
+     * @return array<int, string>
+     */
+    protected function pickableCategories(): array
+    {
+        $names = $this->fetchTable('ServiceCategories')->names();
+
+        foreach ($this->Services->categories() as $inUse) {
+            if (!in_array($inUse, $names, true)) {
+                $names[] = $inUse;
+            }
+        }
+
+        sort($names);
+
+        return $names;
+    }
+
+    /**
+     * Adds a category to the list treatments can be filed under.
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function addCategory(): ?Response
+    {
+        $this->requireAdmin();
+        $this->request->allowMethod(['post']);
+
+        $categories = $this->fetchTable('ServiceCategories');
+
+        $category = $categories->newEntity([
+            'name' => trim((string)$this->request->getData('name')),
+        ]);
+
+        if ($categories->save($category)) {
+            $this->Flash->success('The category has been added.');
+        } else {
+            /*
+             * Reported rather than swallowed: a duplicate name and a blank
+             * one are both easy to hit, and a silent no-op would look like
+             * the button was broken.
+             */
+            $errors = Hash::flatten($category->getErrors());
+
+            $this->Flash->error(
+                $errors !== []
+                    ? (string)reset($errors)
+                    : 'The category could not be added.',
+            );
+        }
+
+        return $this->redirect(['action' => 'manage']);
+    }
+
+    /**
+     * Removes a category from the list.
+     *
+     * Only when nothing is filed under it. Deleting one that is in use
+     * would leave those treatments pointing at a heading that is no longer
+     * offered, and the public page grouping them under it regardless.
+     *
+     * @param string|null $id
+     * @return \Cake\Http\Response|null
+     */
+    public function deleteCategory(?string $id = null): ?Response
+    {
+        $this->requireAdmin();
+        $this->request->allowMethod(['post', 'delete']);
+
+        $categories = $this->fetchTable('ServiceCategories');
+        $category = $categories->get($id);
+
+        $inUse = $this->Services->find()
+            ->where(['category' => $category->name])
+            ->count();
+
+        if ($inUse > 0) {
+            $this->Flash->error(sprintf(
+                'Cannot remove "%s" - %d treatment%s still filed under it.',
+                $category->name,
+                $inUse,
+                $inUse === 1 ? ' is' : 's are',
+            ));
+
+            return $this->redirect(['action' => 'manage']);
+        }
+
+        if ($categories->delete($category)) {
+            $this->Flash->success('The category has been removed.');
+        } else {
+            $this->Flash->error('The category could not be removed.');
         }
 
         return $this->redirect(['action' => 'manage']);

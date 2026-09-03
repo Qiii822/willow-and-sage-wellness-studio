@@ -46,31 +46,61 @@ $this->Html->css('services_admin', ['block' => true]);
             <?= $this->Form->error('name') ?>
         </div>
 
+        <?php
+        /*
+         * The treatment's own category is offered even when it is not on
+         * the list, so editing a row whose category has since been removed
+         * does not silently reassign it on save.
+         */
+        $current = (string)($service->category ?? '');
+        $options = $categories;
+
+        if ($current !== '' && !in_array($current, $options, true)) {
+            $options[] = $current;
+        }
+
+        sort($options);
+        ?>
+
         <div class="content-field">
+
             <label for="service-category">Category</label>
-            <?= $this->Form->text('category', [
-                'id' => 'service-category',
-                'class' => 'content-input',
-                'required' => true,
-                'maxlength' => 100,
-                'list' => 'known-categories',
-                'placeholder' => 'e.g. Massage',
-            ]) ?>
-            <?php /*
-             * A datalist rather than a select: existing categories are
-             * offered, but a new one can be typed without having to create
-             * it somewhere else first.
-             */ ?>
-            <datalist id="known-categories">
-                <?php foreach ($categories as $category): ?>
-                    <option value="<?= h($category) ?>"></option>
-                <?php endforeach; ?>
-            </datalist>
-            <p class="content-help">
-                Treatments are grouped under this heading. Pick an existing
-                one from the list or type a new one.
-            </p>
+
+            <?php if ($options === []): ?>
+
+                <?php /*
+                 * Nothing to pick yet. A free text box here would let one
+                 * treatment invent a heading nothing else can find, so the
+                 * form sends them to the one place categories are made.
+                 */ ?>
+                <p class="content-empty-field">
+                    No categories yet.
+                    <?= $this->Html->link(
+                        'Add one on the services page',
+                        ['action' => 'manage'],
+                    ) ?>
+                    first, then come back.
+                </p>
+
+            <?php else: ?>
+
+                <?= $this->Form->select('category', array_combine($options, $options), [
+                    'id' => 'service-category',
+                    'class' => 'content-input',
+                    'required' => true,
+                    'value' => $current,
+                    'empty' => $current === '' ? 'Choose a category' : false,
+                ]) ?>
+
+                <p class="content-help">
+                    Treatments are grouped under this heading. Categories are
+                    managed on the services page.
+                </p>
+
+            <?php endif; ?>
+
             <?= $this->Form->error('category') ?>
+
         </div>
 
         <div class="content-field">
