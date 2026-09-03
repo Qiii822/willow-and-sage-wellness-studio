@@ -349,32 +349,10 @@ $months = [
                 class="dashboard-widget-grid"
             >
 
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="1"
-                ></div>
-
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="2"
-                ></div>
-
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="3"
-                ></div>
-
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="4"
-                ></div>
-
-
                 <!-- Total Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-customers"
-                    data-slot="1"
                 >
 
                     <div class="widget-edit-controls">
@@ -399,14 +377,22 @@ $months = [
 
                     <?= $this->element('total_customers') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
 
                 <!-- New Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="new-customers"
-                    data-slot="2"
                 >
 
                     <div class="widget-edit-controls">
@@ -431,14 +417,22 @@ $months = [
 
                     <?= $this->element('new_customers') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
 
                 <!-- Total Bookings -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-bookings"
-                    data-slot="3"
                 >
 
                     <div class="widget-edit-controls">
@@ -463,14 +457,22 @@ $months = [
 
                     <?= $this->element('total_bookings') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
 
                 <!-- Total Income -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-income"
-                    data-slot="4"
                 >
 
                     <div class="widget-edit-controls">
@@ -494,6 +496,15 @@ $months = [
                     </div>
 
                     <?= $this->element('total_income') ?>
+
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
                 </div>
 
@@ -525,6 +536,15 @@ $months = [
                     </div>
 
                     <?= $this->element('recent_customers') ?>
+
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
                 </div>
 
@@ -771,6 +791,15 @@ $months = [
                         <?php endif; ?>
 
                     </div>
+
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
                 </div>
 

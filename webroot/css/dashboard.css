@@ -384,7 +384,8 @@ input[type="date"] {
     position: relative;
 
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: row;
 
     gap: 24px;
 }
@@ -396,16 +397,21 @@ input[type="date"] {
 
     transition:
         opacity 0.2s ease,
-        transform 0.2s ease;
+        transform 0.2s ease,
+        grid-column 0.15s ease;
 }
 
 .dashboard-widget.widget-hidden {
     display: none;
 }
 
-.dashboard-widget.widget-small {
-    grid-column: span 1;
 
+/* Card surface - applied to widgets that need the generic
+   padded/bordered box look. Widgets with their own inner
+   card markup (e.g. recent customers, customer rebooking)
+   don't use this, so they aren't double-boxed. */
+
+.dashboard-widget.widget-card {
     min-height: 200px;
 
     padding: 24px;
@@ -429,8 +435,23 @@ input[type="date"] {
         );
 }
 
+
+/* =========================================================
+   Widget sizes - purely control how many grid columns
+   (out of 4) a widget spans. Independent of widget-card,
+   so any widget can be resized between these sizes.
+   ========================================================= */
+
+.dashboard-widget.widget-small {
+    grid-column: span 1;
+}
+
 .dashboard-widget.widget-medium {
     grid-column: span 2;
+}
+
+.dashboard-widget.widget-large {
+    grid-column: span 3;
 }
 
 .dashboard-widget.widget-wide {
@@ -470,7 +491,7 @@ input[type="date"] {
         );
 
     background-size:
-        calc(33.333% - 8px) 100px;
+        calc(25% - 9px) 100px;
 
     background-position:
         12px
@@ -496,46 +517,17 @@ input[type="date"] {
 }
 
 .dashboard-widget-grid.editing
-.dashboard-widget.widget-small {
+.dashboard-widget.widget-card {
     min-height: 180px;
 }
 
 
-/* =========================================================
-   Drop slots
-   ========================================================= */
-
-.dashboard-drop-slot {
-    display: none;
-
-    min-height: 180px;
-
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.25
-        );
-
-    border:
-        2px dashed
-        #d8cec5;
-
-    border-radius: 20px;
-}
+/* Suppress the drag-move cursor while the pointer is over
+   the resize handle, so the two gestures don't fight. */
 
 .dashboard-widget-grid.editing
-.dashboard-drop-slot {
-    display: block;
-}
-
-.dashboard-drop-slot.drag-over {
-    background:
-        var(--primary-light);
-
-    border-color:
-        var(--primary);
+.dashboard-widget:not(.widget-hidden).resizing {
+    cursor: ew-resize;
 }
 
 
@@ -643,6 +635,74 @@ input[type="date"] {
 
     transform:
         scale(0.99);
+}
+
+
+/* =========================================================
+   Widget resize handle
+   ========================================================= */
+
+.widget-resize-handle {
+    position: absolute;
+
+    right: 10px;
+    bottom: -14px;
+
+    z-index: 30;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+
+    margin: 0;
+    padding: 0;
+
+    color:
+        var(--text-secondary);
+
+    background:
+        var(--surface);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 9px;
+
+    cursor: ew-resize;
+
+    box-shadow:
+        0 4px 12px
+        rgba(
+            72,
+            64,
+            58,
+            0.10
+        );
+
+    touch-action: none;
+}
+
+.dashboard-widget-grid.editing
+.dashboard-widget:not(.widget-hidden)
+.widget-resize-handle {
+    display: flex;
+}
+
+.widget-resize-handle:hover {
+    color:
+        var(--text-primary);
+
+    background:
+        var(--primary-light);
+}
+
+.widget-resize-handle svg {
+    width: 16px;
+    height: 16px;
 }
 
 
@@ -976,6 +1036,12 @@ input[type="date"] {
             );
     }
 
+    /*
+     * At 2 columns, anything wider than "small" just
+     * takes the full row rather than overflowing.
+     */
+    .dashboard-widget.widget-medium,
+    .dashboard-widget.widget-large,
     .dashboard-widget.widget-wide {
         grid-column:
             1 / -1;
@@ -1032,9 +1098,14 @@ input[type="date"] {
 
     .dashboard-widget.widget-small,
     .dashboard-widget.widget-medium,
+    .dashboard-widget.widget-large,
     .dashboard-widget.widget-wide {
         grid-column:
             1;
+    }
+
+    .widget-resize-handle {
+        display: none !important;
     }
 }
 
