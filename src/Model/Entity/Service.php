@@ -30,8 +30,9 @@ class Service extends Entity
         'duration_minutes' => true,
         'position' => true,
         'visible' => true,
-        // Written by a future catalogue sync, never by a submitted form.
+        // Written by the catalogue sync, never by a submitted form.
         'square_catalog_id' => false,
+        'square_variation_id' => false,
     ];
 
     /**

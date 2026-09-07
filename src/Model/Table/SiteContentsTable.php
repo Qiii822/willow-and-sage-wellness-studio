@@ -47,16 +47,13 @@ class SiteContentsTable extends Table
             'type' => self::TYPE_TEXT,
             'default' => 'Willow and Sage Wellness Studio',
         ],
-        'booking.url' => [
-            'group' => 'General',
-            'label' => 'Booking link',
-            'type' => self::TYPE_TEXT,
-            'default' => 'https://book.squareup.com/appointments/r2a8ubnahl2pug'
-                . '/location/LPSB9KGV9MYAJ/services'
-                . '?buttonTextColor=ffffff&color=4d4d4d&locale=en-AU&referrer=so',
-            'help' => 'Where the Book buttons send people. Must start with https://',
-            'validate' => 'url',
-        ],
+        /*
+         * There was a `booking.url` here, pointing the Book buttons at
+         * Square's own booking page. Booking now happens on this site, so
+         * the setting had nothing left to change - and a settings box that
+         * does nothing is worse than no box at all. Any row still saved
+         * under that key is ignored, so removing it is safe.
+         */
 
         'hero.image' => [
             'group' => 'Hero',

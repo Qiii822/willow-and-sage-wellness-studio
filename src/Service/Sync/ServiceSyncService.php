@@ -117,6 +117,7 @@ class ServiceSyncService
                          * are set here rather than passed through newEntity.
                          */
                         $entity->square_catalog_id = $id;
+                        $entity->square_variation_id = $service['square_variation_id'] ?? null;
                         $entity->position = $presentation[$id]['position'] ?? $position;
                         $entity->visible = $presentation[$id]['visible'] ?? true;
 

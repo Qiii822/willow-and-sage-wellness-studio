@@ -62,6 +62,23 @@ return function (RouteBuilder $routes): void {
         // Editor for the words on that page.
         $builder->connect('/website-content', ['controller' => 'SiteContents', 'action' => 'index']);
 
+        // The booking flow: choose treatments, choose a time, enter details.
+        $builder->connect('/book', ['controller' => 'Book', 'action' => 'index']);
+        $builder->connect('/book/therapist/*', ['controller' => 'Book', 'action' => 'staff']);
+        $builder->connect('/book/time/*', ['controller' => 'Book', 'action' => 'time']);
+        $builder->connect('/book/details/*', ['controller' => 'Book', 'action' => 'details']);
+        $builder->connect('/book/done/*', ['controller' => 'Book', 'action' => 'done']);
+
+        // Where a customer sees, cancels or moves what they have booked.
+        $builder->connect('/my-bookings', ['controller' => 'MyBookings', 'action' => 'index']);
+        $builder->connect('/my-bookings/verify', ['controller' => 'MyBookings', 'action' => 'verify']);
+        $builder->connect('/my-bookings/sign-out', ['controller' => 'MyBookings', 'action' => 'signOut']);
+        $builder->connect('/my-bookings/cancel/*', ['controller' => 'MyBookings', 'action' => 'cancel']);
+        $builder->connect(
+            '/my-bookings/change-time/*',
+            ['controller' => 'MyBookings', 'action' => 'reschedule'],
+        );
+
         // Public treatment menu, and the screen staff maintain it from.
         $builder->connect('/services', ['controller' => 'Services', 'action' => 'index']);
         $builder->connect('/manage/services', ['controller' => 'Services', 'action' => 'manage']);

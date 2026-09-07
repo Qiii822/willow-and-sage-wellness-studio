@@ -31,10 +31,10 @@ $heroImage = $this->SiteContent->heroImageUrl();
         </p>
 
         <?php /*
-         * Goes to the treatment menu, not straight to Square: someone who
-         * has just landed here does not yet know what is on offer, and
-         * being handed a booking calendar is a question they cannot answer
-         * yet. Square is the step after choosing.
+         * Goes to the treatment menu rather than into the booking flow:
+         * someone who has just landed here does not yet know what is on
+         * offer, and a list of times is a question they cannot answer yet.
+         * Booking is the step after reading.
          */ ?>
         <?= $this->Html->link(
             $this->SiteContent->get('hero.cta'),

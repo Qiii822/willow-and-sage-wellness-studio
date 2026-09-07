@@ -1,0 +1,1204 @@
+/* =========================================================
+   Booking flow
+   ========================================================= */
+
+.book-page {
+    width: min(880px, 100%);
+
+    margin: 0 auto;
+    padding: 56px 40px 96px;
+}
+
+/* The cart needs a column of its own beside the menu. */
+.book-page-wide {
+    width: min(1180px, 100%);
+}
+
+.book-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 48px;
+    align-items: start;
+}
+
+/* =========================================================
+   Progress
+   ========================================================= */
+
+.book-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin: 0 0 38px;
+    padding: 0;
+
+    list-style: none;
+    counter-reset: none;
+}
+
+.book-step {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 7px 15px 7px 8px;
+
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 600;
+
+    background: var(--primary-light);
+    border-radius: 999px;
+}
+
+.book-step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 22px;
+    height: 22px;
+
+    color: var(--text-secondary);
+    font-size: 12px;
+
+    background: #fff;
+    border-radius: 50%;
+}
+
+/* The site's gold, so the flow reads as part of the studio's pages rather
+   than as a plain form dropped into them. */
+.book-step.is-current {
+    color: #fff;
+
+    background: var(--gold);
+}
+
+.book-step.is-current .book-step-number {
+    color: var(--gold-dark);
+}
+
+/* Done steps read as settled rather than as still to do. */
+.book-step.is-done {
+    color: var(--gold-dark);
+
+    background: rgba(176, 145, 108, 0.24);
+}
+
+/* =========================================================
+   Headings
+   ========================================================= */
+
+.book-header {
+    margin-bottom: 30px;
+}
+
+.book-header h1 {
+    margin: 0 0 10px;
+
+    color: var(--text-primary);
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -1.2px;
+}
+
+.book-header p {
+    max-width: 560px;
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 16.5px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   Choosing treatments
+   ========================================================= */
+
+.book-category {
+    margin-bottom: 34px;
+}
+
+.book-category h2 {
+    margin: 0 0 14px;
+
+    color: var(--text-primary);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+}
+
+.book-choices {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.book-choice {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+
+    padding: 18px 4px;
+
+    border-top: 1px solid var(--border);
+}
+
+.book-choice:last-child {
+    border-bottom: 1px solid var(--border);
+}
+
+/* A treatment already in the cart is tinted rather than outlined, so the
+   row edges stay quiet and the list keeps reading as a menu.
+
+   Driven by the checkbox itself, not by the class the script adds, so the
+   button says "Added" even with scripting off. The class is kept as well
+   for browsers without :has(). */
+.book-choice.is-chosen,
+.book-choice:has(.book-choice-input:checked) {
+    background: rgba(176, 145, 108, 0.07);
+}
+
+/*
+ * The real control, kept out of sight but not out of the accessibility
+ * tree: it still takes focus and still answers the keyboard, and the Add
+ * button beside it is only a label pointing here.
+ */
+.book-choice-input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+}
+
+.book-choice-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 4px;
+
+    min-width: 0;
+}
+
+.book-choice-name {
+    margin: 0;
+
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.book-choice-description {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.book-choice-meta {
+    margin: 0;
+
+    color: var(--gold-dark);
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.book-choice-note {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.book-add {
+    flex: 0 0 auto;
+
+    min-width: 86px;
+    padding: 9px 18px;
+
+    color: var(--gold-dark);
+    font-size: 14.5px;
+    font-weight: 600;
+    text-align: center;
+
+    background: #fff;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition:
+        color 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.book-add:hover {
+    color: #fff;
+
+    background: var(--gold);
+}
+
+/* Focus lives on the hidden checkbox, so the ring has to be drawn on the
+   label that stands in for it. */
+.book-choice-input:focus-visible ~ .book-add {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+.book-choice.is-chosen .book-add,
+.book-choice-input:checked ~ .book-add {
+    color: #fff;
+
+    background: var(--gold-dark);
+    border-color: var(--gold-dark);
+}
+
+.book-add-done,
+.book-choice.is-chosen .book-add-idle,
+.book-choice-input:checked ~ .book-add .book-add-idle {
+    display: none;
+}
+
+.book-choice.is-chosen .book-add-done,
+.book-choice-input:checked ~ .book-add .book-add-done {
+    display: inline;
+}
+
+.book-choice.is-unavailable {
+    opacity: 0.55;
+}
+
+/* =========================================================
+   The cart
+   ========================================================= */
+
+.book-cart {
+    position: sticky;
+    /* Clear of the sticky site header, which is 88px tall. */
+    top: calc(var(--header-height) + 20px);
+
+    padding: 24px;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+}
+
+.book-cart h2 {
+    margin: 0 0 14px;
+
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.book-cart-empty {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+.book-cart-items {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.book-cart-items li {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+
+    padding: 9px 0;
+
+    font-size: 14.5px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.book-cart-name {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.book-cart-price {
+    flex: 0 0 auto;
+
+    color: var(--text-secondary);
+}
+
+.book-cart-totals {
+    margin: 14px 0 0;
+}
+
+.book-cart-totals > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+
+    padding: 4px 0;
+}
+
+.book-cart-totals dt {
+    color: var(--text-secondary);
+    font-size: 14.5px;
+}
+
+.book-cart-totals dd {
+    margin: 0;
+
+    color: var(--text-primary);
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.book-cart-total {
+    margin-top: 6px;
+    padding-top: 10px;
+
+    border-top: 1px solid var(--border);
+}
+
+.book-cart-total dt,
+.book-cart-total dd {
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.book-cart-total dd {
+    color: var(--gold-dark);
+}
+
+.book-cart .book-actions {
+    margin-top: 20px;
+}
+
+.book-cart .hero-cta {
+    width: 100%;
+
+    text-align: center;
+}
+
+.book-cart-note {
+    margin: 14px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* =========================================================
+   Choosing a therapist
+   ========================================================= */
+
+.book-people {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.book-person-button {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+
+    width: 100%;
+    padding: 18px 20px;
+
+    font-family: inherit;
+    text-align: left;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.book-person-button:hover {
+    background: rgba(176, 145, 108, 0.09);
+    border-color: var(--gold);
+}
+
+.book-person-button:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+/* The one already chosen, when coming back to change it. */
+.book-person.is-chosen .book-person-button {
+    background: rgba(176, 145, 108, 0.12);
+    border-color: var(--gold);
+}
+
+.book-person-avatar {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+}
+
+.book-person-initials,
+.book-person-any {
+    color: #fff;
+    font-size: 21px;
+    font-weight: 600;
+
+    background: var(--gold);
+}
+
+.book-person-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.book-person-name {
+    color: var(--text-primary);
+    font-size: 16.5px;
+    font-weight: 600;
+}
+
+.book-person-note {
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   The day picker
+   ========================================================= */
+
+.book-calendar {
+    margin: 0 0 30px;
+    padding: 20px 22px 22px;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+}
+
+.book-calendar-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 16px;
+}
+
+.book-calendar-week {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.book-calendar-week h2 {
+    /* Fixed, so the name does not shove the arrows about as the week
+       changes from "8 - 14 September" to "29 Sep - 5 Oct". */
+    min-width: 178px;
+    margin: 0;
+
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.4px;
+}
+
+.book-week-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    color: var(--gold-dark);
+    font-size: 16px;
+    text-decoration: none;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+}
+
+.book-week-step:hover {
+    border-color: var(--gold);
+}
+
+.book-week-step:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+/* Present but out of reach at the ends of the range, so the week name
+   keeps its place instead of sliding across. */
+.book-week-step.is-disabled {
+    color: var(--text-secondary);
+
+    border-color: transparent;
+
+    opacity: 0.4;
+}
+
+.book-jump {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.book-jump label {
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.book-jump-input {
+    padding: 7px 10px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+}
+
+.book-jump-input:focus {
+    border-color: var(--gold);
+    outline: none;
+
+    box-shadow: 0 0 0 3px rgba(176, 145, 108, 0.22);
+}
+
+.book-jump-go {
+    padding: 7px 15px;
+
+    color: var(--gold-dark);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    background: #fff;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+
+    cursor: pointer;
+}
+
+.book-jump-go:hover {
+    color: #fff;
+
+    background: var(--gold);
+}
+
+.book-calendar-days {
+    display: grid;
+    /* Seven across: one week on show, so a day keeps its place in the row
+       instead of wrapping wherever it happens to fit. */
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+/*
+ * Four weeks are on the page and one is on show. The `hidden` attribute is
+ * only `display: none` in the browser's own stylesheet, so the `display:
+ * grid` above outranks it and every week would be drawn at once - this puts
+ * it back.
+ */
+.book-calendar-days[hidden] {
+    display: none;
+}
+
+.book-date {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+
+    width: 100%;
+    padding: 9px 4px 7px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        color 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.book-date-weekday {
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.book-date-day {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* A day with something free is marked, so the closed ones are obvious at a
+   glance without having to read every button. */
+.book-date-dot {
+    width: 5px;
+    height: 5px;
+
+    background: var(--gold);
+    border-radius: 50%;
+}
+
+.book-date:hover:not(:disabled) {
+    border-color: var(--gold);
+}
+
+.book-date:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+.book-date.is-selected {
+    color: #fff;
+
+    background: var(--gold);
+    border-color: var(--gold);
+}
+
+.book-date.is-selected .book-date-weekday {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.book-date.is-selected .book-date-dot {
+    background: #fff;
+}
+
+.book-date.is-closed {
+    color: var(--text-secondary);
+
+    background: transparent;
+    border-color: transparent;
+
+    cursor: default;
+
+    opacity: 0.5;
+}
+
+.book-date.is-closed .book-date-dot {
+    background: transparent;
+}
+
+/* =========================================================
+   Choosing a time
+   ========================================================= */
+
+.book-day {
+    margin-bottom: 26px;
+}
+
+.book-day h2 {
+    margin: 0 0 12px;
+
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.book-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 9px;
+}
+
+.book-slot {
+    min-height: 44px;
+    padding: 0 12px;
+
+    color: var(--gold-dark);
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+
+    background: var(--panel);
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    transition:
+        color 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.book-slot:hover {
+    color: #fff;
+
+    background: var(--gold);
+    border-color: var(--gold);
+}
+
+.book-slot:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   Summary
+   ========================================================= */
+
+.book-summary {
+    margin: 0 0 32px;
+    padding: 22px 24px;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.book-summary h2 {
+    margin: 0 0 14px;
+
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.book-summary-items {
+    margin: 0 0 12px;
+    padding: 0;
+
+    list-style: none;
+}
+
+.book-summary-items li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding: 5px 0;
+
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+.book-summary-name {
+    color: var(--text-primary);
+}
+
+.book-summary-when {
+    margin: 0 0 12px;
+    padding: 10px 0 0;
+
+    color: var(--text-primary);
+    font-size: 15.5px;
+    font-weight: 600;
+
+    border-top: 1px solid var(--border);
+}
+
+.book-summary-line,
+.book-summary-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin: 0;
+    padding: 4px 0;
+
+    font-size: 15px;
+}
+
+.book-summary-line.is-discount {
+    color: #8f3f2c;
+}
+
+.book-summary-total {
+    margin-top: 8px;
+    padding-top: 10px;
+
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 700;
+
+    border-top: 1px solid var(--border);
+}
+
+.book-summary-note {
+    margin: 12px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    line-height: 1.55;
+}
+
+/* =========================================================
+   Details form
+   ========================================================= */
+
+.book-field {
+    margin-bottom: 20px;
+}
+
+.book-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--text-primary);
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.book-input {
+    width: 100%;
+    padding: 12px 14px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 15.5px;
+    line-height: 1.5;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    resize: vertical;
+}
+
+.book-input:focus {
+    border-color: var(--gold);
+    outline: none;
+
+    box-shadow: 0 0 0 3px rgba(176, 145, 108, 0.22);
+}
+
+.book-input:disabled {
+    background: rgba(139, 126, 116, 0.07);
+
+    cursor: not-allowed;
+}
+
+.book-help {
+    margin: 7px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.book-field .error-message {
+    margin-top: 6px;
+
+    color: #b3382c;
+    font-size: 13px;
+}
+
+.book-actions {
+    margin-top: 30px;
+}
+
+/* =========================================================
+   Confirmation
+   ========================================================= */
+
+.book-done-tick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    margin: 0 0 16px;
+
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+
+    background: #4a7c59;
+    border-radius: 50%;
+}
+
+.book-done-next {
+    margin-top: 34px;
+    padding-top: 26px;
+
+    border-top: 1px solid var(--border);
+}
+
+.book-done-next h2 {
+    margin: 0 0 12px;
+
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.book-done-next p {
+    margin: 14px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 15.5px;
+    line-height: 1.7;
+}
+
+.book-empty {
+    padding: 22px 0;
+
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.book-back {
+    margin: 28px 0 0;
+}
+
+.book-back a {
+    color: var(--text-secondary);
+    font-size: 14.5px;
+}
+
+/* =========================================================
+   My bookings
+   ========================================================= */
+
+/* A form of two fields does not need the width the menu does. */
+.book-page-narrow {
+    width: min(520px, 100%);
+}
+
+/* Six digits, spaced out enough to read back off a text message. */
+.book-code {
+    max-width: 200px;
+
+    font-size: 22px;
+    letter-spacing: 0.32em;
+}
+
+.book-secondary {
+    padding: 12px 20px;
+
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    cursor: pointer;
+}
+
+.book-secondary:hover {
+    color: var(--gold-dark);
+
+    border-color: var(--gold);
+}
+
+.book-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+
+    margin-top: 30px;
+}
+
+.mybooking {
+    display: flex;
+    gap: 26px;
+
+    padding: 22px 0;
+
+    border-bottom: 1px solid var(--border);
+}
+
+/* Fixed, so the dates line up down the page rather than each column
+   being as wide as its own longest day name. */
+.mybooking-when {
+    flex: 0 0 168px;
+}
+
+.mybooking-date {
+    margin: 0;
+
+    color: var(--text-primary);
+    font-size: 15.5px;
+    font-weight: 600;
+}
+
+.mybooking-time {
+    margin: 4px 0 0;
+
+    color: var(--gold);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.mybooking-what {
+    flex: 1 1 auto;
+}
+
+.mybooking-treatments {
+    margin: 0;
+    padding: 0;
+
+    color: var(--text-secondary);
+    font-size: 15.5px;
+    line-height: 1.8;
+
+    list-style: none;
+}
+
+.mybooking-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+
+    margin-top: 14px;
+}
+
+/* Cancelling is the one thing here that cannot be undone, so it is a
+   plain link rather than a button competing with "Change time". */
+.mybooking-cancel {
+    color: #b3382c;
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+/*
+ * Below this the cart cannot hold a column of its own. It moves under the
+ * menu and stops being sticky - a panel pinned to a short screen would eat
+ * the room the menu needs.
+ */
+@media (max-width: 900px) {
+    .book-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
+    }
+
+    .book-cart {
+        position: static;
+
+        order: 2;
+    }
+}
+
+@media (max-width: 640px) {
+    .book-page {
+        padding: 36px 20px 64px;
+    }
+
+    .book-choice {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .book-add {
+        width: 100%;
+    }
+
+    .book-calendar {
+        padding: 16px 14px 18px;
+    }
+
+    .book-calendar-head {
+        gap: 10px;
+    }
+
+    /* Both rows go full width, so neither the week name nor the date box
+       gets squeezed into a column too narrow to read. */
+    .book-calendar-week,
+    .book-jump {
+        justify-content: space-between;
+
+        width: 100%;
+    }
+
+    .book-calendar-week h2 {
+        min-width: 0;
+    }
+
+    .book-jump-input {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .book-calendar-days {
+        gap: 5px;
+    }
+
+    .book-date {
+        padding: 7px 2px 6px;
+    }
+
+    .book-date-day {
+        font-size: 15px;
+    }
+
+    .book-header h1 {
+        font-size: 29px;
+    }
+
+    .book-slots {
+        grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    }
+
+    .mybooking {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .mybooking-when {
+        flex: none;
+    }
+}

@@ -13,9 +13,10 @@
 $this->Html->css('landing', ['block' => true]);
 
 /*
- * "Book" goes to the treatment menu rather than to Square. Booking still
- * finishes on Square, but choosing what to book happens here first, so the
- * customer arrives at the calendar already knowing what they want.
+ * Booking now happens here from start to finish, so "Book" opens the flow
+ * itself. The read-only menu is still a page of its own, reached from the
+ * home page, for someone who wants to know what is on offer before they
+ * commit to choosing.
  *
  * The remaining nav entries are still inert buttons until the pages behind
  * them exist.
@@ -62,14 +63,20 @@ $showOffers = $locator->get('Offers')->current() !== []
 
             <?= $this->Html->link(
                 'Book',
-                ['controller' => 'Services', 'action' => 'index'],
+                ['controller' => 'Book', 'action' => 'index'],
                 ['class' => 'site-nav-link']
             ) ?>
 
             <?php /*
-             * "My bookings" belongs to a signed-in customer, so it has no
-             * place on a site with no accounts.
+             * No account behind this one: the customer proves the phone
+             * number they booked with, and that is the whole sign-in.
              */ ?>
+            <?= $this->Html->link(
+                'My bookings',
+                ['controller' => 'MyBookings', 'action' => 'index'],
+                ['class' => 'site-nav-link']
+            ) ?>
+
             <?php foreach ($navItems as $item) : ?>
                 <button type="button" class="site-nav-link">
                     <?= h($item) ?>

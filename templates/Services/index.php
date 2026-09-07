@@ -11,8 +11,6 @@ $this->assign('title', 'Services - ' . $this->SiteContent->raw('site.title'));
 $this->Html->css('landing', ['block' => true]);
 $this->Html->css('services', ['block' => true]);
 $this->Html->script('services', ['block' => true]);
-
-$bookingUrl = $this->SiteContent->raw('booking.url');
 ?>
 
 <?= $this->element('site_header') ?>
@@ -29,27 +27,29 @@ $bookingUrl = $this->SiteContent->raw('booking.url');
             <?php /*
              * Repeated at the top as well as the foot of the page. The menu
              * runs long enough that someone who already knows what they want
-             * should not have to scroll past all of it to reach Square.
+             * should not have to scroll past all of it to start booking.
              */ ?>
             <?php if ($menu !== []): ?>
                 <p class="services-header-action">
-                    <a
-                        class="hero-cta"
-                        href="<?= h($bookingUrl) ?>"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Book on Square
-                    </a>
+                    <?= $this->Html->link(
+                        'Book a treatment',
+                        ['controller' => 'Book', 'action' => 'index'],
+                        ['class' => 'hero-cta']
+                    ) ?>
                 </p>
             <?php endif; ?>
         </header>
 
         <?php if ($menu === []): ?>
 
+            <?php /*
+             * The menu and the booking flow read the same table, so an empty
+             * menu means booking is empty too - sending someone to the button
+             * below would only repeat the disappointment.
+             */ ?>
             <p class="services-empty">
-                The treatment list is being updated. Please use the button
-                below to see everything available and book.
+                The treatment list is being updated. Please call the studio
+                and we will book you in.
             </p>
 
         <?php else: ?>
@@ -146,20 +146,19 @@ $bookingUrl = $this->SiteContent->raw('booking.url');
 
         <?php endif; ?>
 
-        <div class="services-cta">
+        <?php if ($menu !== []): ?>
+            <div class="services-cta">
 
-            <p>Ready to book? Choose a time on our booking page.</p>
+                <p>Ready to book? Pick your treatments and we will find a time.</p>
 
-            <a
-                class="hero-cta"
-                href="<?= h($bookingUrl) ?>"
-                target="_blank"
-                rel="noopener"
-            >
-                <?= $this->SiteContent->get('hero.cta') ?>
-            </a>
+                <?= $this->Html->link(
+                    $this->SiteContent->get('hero.cta'),
+                    ['controller' => 'Book', 'action' => 'index'],
+                    ['class' => 'hero-cta', 'escape' => false]
+                ) ?>
 
-        </div>
+            </div>
+        <?php endif; ?>
 
     </section>
 
