@@ -45,6 +45,16 @@
         var totalCell = cart.querySelector('[data-cart-total]');
         var durationCell = cart.querySelector('[data-cart-duration]');
         var error = cart.querySelector('[data-cart-error]');
+        var tooLong = cart.querySelector('[data-cart-too-long]');
+        var submit = cart.querySelector('button[type="submit"], input[type="submit"]');
+
+        /*
+         * How long the studio's longest day is. Absent when Square could
+         * not be reached, and then nothing is checked here at all - the
+         * server still has the last word when the form is submitted.
+         */
+        var longestDay = parseInt(cart.dataset.longestDay, 10);
+        var longestDayLabel = cart.dataset.longestDayLabel;
 
         function chosen() {
             return rows.filter(function (row) {
@@ -94,6 +104,29 @@
             empty.hidden = picked.length > 0;
             list.hidden = picked.length === 0;
             totals.hidden = picked.length === 0;
+
+            /*
+             * Said as soon as the cart outgrows a day, not two steps later
+             * on a page with no times on it. The button goes with it: there
+             * is nothing to find, so offering to look would be a lie.
+             */
+            var over = !isNaN(longestDay) && minutes > longestDay;
+
+            if (tooLong) {
+                tooLong.hidden = !over;
+
+                if (over) {
+                    tooLong.textContent =
+                        'That is ' + duration(minutes) +
+                        " of treatments, and the studio's longest day is " +
+                        longestDayLabel +
+                        '. Take one off and book it on another day.';
+                }
+            }
+
+            if (submit) {
+                submit.disabled = over;
+            }
 
             totalCell.textContent = money(cents);
             durationCell.textContent = minutes > 0 ? duration(minutes) : '-';

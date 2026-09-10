@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Duration;
 use App\Service\SquareApiService;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
@@ -71,6 +72,13 @@ class BookController extends AppController
         $services = $this->fetchTable('Services');
 
         /*
+         * Cached, and null when Square cannot be reached - the menu is a
+         * local-database page and must not start failing because of a
+         * warning it can do without.
+         */
+        $longestDayMinutes = (new SquareApiService())->longestOpenDayMinutes();
+
+        /*
          * Carried to the view rather than flashed. What went wrong is about
          * the cart - it is empty, or nothing in it can be booked - so it
          * belongs beside the button that was pressed, not in a bar at the
@@ -100,8 +108,26 @@ class BookController extends AppController
                     fn ($service): bool => !empty($service->square_variation_id),
                 );
 
+                $chosenMinutes = array_sum(array_map(
+                    fn($service): int => (int)$service->duration_minutes,
+                    $bookable,
+                ));
+
                 if ($bookable === []) {
                     $cartError = 'Those treatments cannot be booked online yet. Please call the studio.';
+                } elseif ($longestDayMinutes !== null && $chosenMinutes > $longestDayMinutes) {
+                    /*
+                     * Caught here as well as in the script, because the
+                     * script is a convenience and this is the rule. Sending
+                     * them on would only produce a time step with nothing
+                     * on it, three clicks later.
+                     */
+                    $cartError = sprintf(
+                        'That is %s of treatments and the studio\'s longest day is %s. '
+                        . 'Take one off and book it on another day.',
+                        Duration::label($chosenMinutes),
+                        Duration::label($longestDayMinutes),
+                    );
                 } else {
                     $draft = $this->BookingDrafts->start(array_values($bookable));
 
@@ -111,7 +137,7 @@ class BookController extends AppController
         }
 
         $this->set('menu', $services->menu());
-        $this->set(compact('cartError'));
+        $this->set(compact('cartError', 'longestDayMinutes'));
     }
 
     /**
@@ -242,13 +268,51 @@ class BookController extends AppController
         $this->setCalendar($byDay, $from, $earliest, $latest);
 
         /*
+         * There are two ways to have no times, and they need different
+         * answers. A cart longer than the studio's longest opening cannot
+         * be booked on any day, ever - so looking in later months, which is
+         * what the arrows invite, would only waste the customer's time.
+         */
+        $tooLong = $byDay === [] && $this->exceedsOneDay($draft, $location);
+
+        $this->set('tooLong', $tooLong);
+        $this->set('longestDayMinutes', $location['longest_day_minutes']);
+
+        /*
          * A month with nothing in it is a dead end unless the page can say
          * where to go next, so an empty one is followed by a wider look
-         * ahead. Only then - the common case costs one call, not two.
+         * ahead. Only then - the common case costs one call, not two, and
+         * there is no point looking at all when nothing can ever fit.
          */
-        $this->set('nextAvailable', $byDay === []
+        $this->set('nextAvailable', $byDay === [] && !$tooLong
             ? $this->nextAvailableAfter($api, $draft, $from, $latest, $zone)
             : null);
+    }
+
+    /**
+     * Whether the cart is simply too long to fit in any single day.
+     *
+     * Compared against the studio's longest opening, which is the outside
+     * bound - a therapist's own hours can only be shorter. So this says
+     * "definitely impossible", never "probably fine": a cart that passes
+     * may still not fit anyone's diary, and that is left to the ordinary
+     * "nothing free" message.
+     *
+     * @param \App\Model\Entity\BookingDraft $draft
+     * @param array{longest_day_minutes: int|null} $location
+     * @return bool
+     */
+    protected function exceedsOneDay($draft, array $location): bool
+    {
+        $longestDay = $location['longest_day_minutes'];
+
+        // Square has no opening hours set, so there is nothing to compare
+        // against and nothing can honestly be concluded.
+        if ($longestDay === null) {
+            return false;
+        }
+
+        return $draft->total_minutes > $longestDay;
     }
 
     /**

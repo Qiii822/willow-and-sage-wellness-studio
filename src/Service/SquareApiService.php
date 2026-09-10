@@ -3,12 +3,14 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Text;
 use DateTimeImmutable;
 use DateTimeInterface;
 use RuntimeException;
+use Throwable;
 use Square\Bookings\Requests\CancelBookingRequest;
 use Square\Bookings\Requests\CreateBookingRequest;
 use Square\Bookings\Requests\GetBookingsRequest;
@@ -32,6 +34,7 @@ use Square\Types\CustomerFilter;
 use Square\Types\CustomerQuery;
 use Square\Types\CustomerTextFilter;
 use Square\Types\FilterValue;
+use Square\Types\Location;
 use Square\Types\SearchAvailabilityFilter;
 use Square\Types\SearchAvailabilityQuery;
 use Square\Types\SegmentFilter;
@@ -350,7 +353,7 @@ class SquareApiService
      * answer its calendar and its staff app use. Hard-coding one means
      * every booking silently shifts if the studio's setting ever differs.
      *
-     * @return array{id: string, name: string, timezone: string}
+     * @return array{id: string, name: string, timezone: string, longest_day_minutes: int|null}
      * @throws \RuntimeException When Square reports no location.
      */
     public function getPrimaryLocation(): array
@@ -364,10 +367,82 @@ class SquareApiService
                 // Falls back to the studio's own state rather than to UTC,
                 // which would be wrong by a whole working day's offset.
                 'timezone' => $location->getTimezone() ?: 'Australia/Adelaide',
+                'longest_day_minutes' => $this->longestOpenDay($location),
             ];
         }
 
         throw new RuntimeException('Square reports no location for this account.');
+    }
+
+    /**
+     * The longest open day, cached, and never a reason for a page to fail.
+     *
+     * The treatment menu needs this to warn that a cart cannot fit in one
+     * day, and that page otherwise touches nothing but the local database.
+     * So the answer is cached - opening hours change about once a year -
+     * and a Square that is slow or down gives null, which means the warning
+     * is skipped rather than the menu breaking.
+     *
+     * @return int|null
+     */
+    public function longestOpenDayMinutes(): ?int
+    {
+        return Cache::remember('square_longest_open_day', function (): ?int {
+            try {
+                return $this->getPrimaryLocation()['longest_day_minutes'];
+            } catch (Throwable $e) {
+                return null;
+            }
+        });
+    }
+
+    /**
+     * The longest single day the studio is open, in minutes.
+     *
+     * Used to tell "no times left this month" apart from "this can never
+     * fit in one day" - a booking longer than the longest opening cannot be
+     * made at all, and the customer deserves to be told that rather than to
+     * keep pressing the next-month arrow.
+     *
+     * Null when Square has no opening hours set, in which case nothing can
+     * be concluded and the caller should not guess.
+     *
+     * @param \Square\Types\Location $location
+     */
+    protected function longestOpenDay(Location $location): ?int
+    {
+        $periods = $location->getBusinessHours()?->getPeriods() ?? [];
+        $longest = null;
+
+        foreach ($periods as $period) {
+            $start = $period->getStartLocalTime();
+            $end = $period->getEndLocalTime();
+
+            if ($start === null || $end === null) {
+                continue;
+            }
+
+            $minutes = $this->minutesOfDay($end) - $this->minutesOfDay($start);
+
+            if ($minutes > 0) {
+                $longest = max($longest ?? 0, $minutes);
+            }
+        }
+
+        return $longest;
+    }
+
+    /**
+     * "09:00:00" as minutes since midnight.
+     *
+     * @param string $localTime
+     * @return int
+     */
+    protected function minutesOfDay(string $localTime): int
+    {
+        [$hours, $minutes] = array_pad(explode(':', $localTime), 2, '0');
+
+        return ((int)$hours * 60) + (int)$minutes;
     }
 
     /**

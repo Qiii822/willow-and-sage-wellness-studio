@@ -135,7 +135,21 @@ $this->Html->script('book_cart', ['block' => true]);
              * scrolled - the whole point of a cart is knowing what is in it
              * without going back to look.
              */ ?>
-            <aside class="book-cart" data-cart>
+            <?php /*
+             * The studio's longest opening, so the script can say the cart
+             * has outgrown a single day while it is still being filled -
+             * rather than letting the customer find out two steps later on
+             * a page with no times on it. Absent when Square could not be
+             * reached, and then the warning simply does not appear.
+             */ ?>
+            <aside
+                class="book-cart"
+                data-cart
+                <?= $longestDayMinutes !== null
+                    ? 'data-longest-day="' . (int)$longestDayMinutes . '"'
+                    : '' ?>
+                data-longest-day-label="<?= h($this->Book->duration($longestDayMinutes)) ?>"
+            >
 
                 <h2>Your treatments</h2>
 
@@ -155,6 +169,14 @@ $this->Html->script('book_cart', ['block' => true]);
                         <dd data-cart-total></dd>
                     </div>
                 </dl>
+
+                <?php /*
+                 * Filled in and shown by the script as treatments are
+                 * added. Empty and hidden to begin with, so a page without
+                 * scripting shows nothing here and relies on the check the
+                 * server does when the form is submitted.
+                 */ ?>
+                <p class="book-cart-warning" data-cart-too-long hidden></p>
 
                 <?php if ($cartError !== null): ?>
                     <?php /*

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Entity;
 
+use App\Model\Duration;
 use Cake\ORM\Entity;
 
 /**
@@ -65,19 +66,12 @@ class Service extends Entity
     {
         $minutes = $this->duration_minutes;
 
+        // Null rather than a dash: the menu leaves the duration out
+        // entirely when there is not one, rather than showing a gap.
         if ($minutes === null || $minutes <= 0) {
             return null;
         }
 
-        $hours = intdiv($minutes, 60);
-        $remainder = $minutes % 60;
-
-        if ($hours === 0) {
-            return $remainder . ' min';
-        }
-
-        return $remainder === 0
-            ? $hours . ' hr'
-            : $hours . ' hr ' . $remainder . ' min';
+        return Duration::label($minutes);
     }
 }

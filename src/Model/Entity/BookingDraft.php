@@ -61,6 +61,25 @@ class BookingDraft extends Entity
     ];
 
     /**
+     * How long everything in the cart takes, back to back.
+     *
+     * Square books the chosen treatments as one appointment, so this is the
+     * length of that appointment - and what has to fit inside a single day.
+     *
+     * @return int Minutes.
+     */
+    protected function _getTotalMinutes(): int
+    {
+        $minutes = 0;
+
+        foreach ((array)$this->items as $item) {
+            $minutes += (int)($item['duration_minutes'] ?? 0);
+        }
+
+        return $minutes;
+    }
+
+    /**
      * What the customer pays, after any discount.
      *
      * @return int

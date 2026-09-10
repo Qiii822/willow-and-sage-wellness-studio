@@ -79,7 +79,31 @@ foreach ($weeks as $week) {
             'openDay' => $openDay,
         ]) ?>
 
-        <?php if ($byDay === []): ?>
+        <?php if ($tooLong): ?>
+
+            <?php /*
+             * Not "nothing free": this cart is longer than the studio's
+             * longest day, so no month has room for it and inviting the
+             * customer to keep looking would be a lie. It is told apart
+             * from an ordinary empty month in the controller.
+             */ ?>
+            <p class="book-empty book-too-long">
+
+                <strong>That is more than fits in one day.</strong>
+
+                Together these come to <?= h($this->Book->duration($draft->total_minutes)) ?>,
+                and the studio's longest day is
+                <?= h($this->Book->duration($longestDayMinutes)) ?>.
+                Book some of them now and the rest on another day, or call
+                the studio and we will arrange it across two visits.
+
+            </p>
+
+            <p class="book-back">
+                <?= $this->Html->link('Change treatments', ['action' => 'index']) ?>
+            </p>
+
+        <?php elseif ($byDay === []): ?>
 
             <p class="book-empty">
 

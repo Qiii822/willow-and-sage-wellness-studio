@@ -417,6 +417,34 @@
     display: none;
 }
 
+/*
+ * Not an error - nothing has gone wrong, the cart has simply outgrown a
+ * day - so it is set apart in the studio's gold rather than in red.
+ */
+.book-cart-warning {
+    margin: 16px 0 0;
+    padding: 11px 13px;
+
+    color: var(--text-primary);
+    font-size: 13.5px;
+    line-height: 1.55;
+
+    background: rgba(176, 145, 108, 0.12);
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+}
+
+.book-cart-warning[hidden] {
+    display: none;
+}
+
+/* A button that cannot do anything should not look like it can. */
+.book-cart .hero-cta:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.45;
+}
+
 /* Not colour alone: the mark says something is wrong to a reader who
    cannot tell this red from the text around it. */
 .book-cart-error::before {
@@ -1040,6 +1068,26 @@
     color: var(--text-secondary);
     font-size: 16px;
     line-height: 1.7;
+}
+
+/* Not an error - the cart is fine, it just will not fit in one day - so it
+   is set apart without the alarm of red. */
+.book-too-long {
+    padding: 18px 20px;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 12px;
+}
+
+.book-too-long strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--text-primary);
+    font-size: 17px;
 }
 
 /*
