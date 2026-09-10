@@ -11,7 +11,6 @@ use Cake\Http\Response;
 use Cake\I18n\DateTime;
 use Cake\Log\Log;
 use Cake\ORM\Table;
-use DateTimeImmutable;
 use DateTimeZone;
 use Throwable;
 
@@ -29,6 +28,8 @@ use Throwable;
  */
 class MyBookingsController extends AppController
 {
+    use BookingCalendarTrait;
+
     /** How long a proved number stays proved. */
     protected const SESSION_MINUTES = 30;
 
@@ -37,9 +38,6 @@ class MyBookingsController extends AppController
 
     /** When that proof runs out. */
     protected const SESSION_EXPIRY_KEY = 'MyBookings.expires';
-
-    /** How far ahead to offer replacement times. */
-    protected const SEARCH_DAYS = 21;
 
     /**
      * Loaded by hand: the controller is named for the page, not for a table.
@@ -228,12 +226,13 @@ class MyBookingsController extends AppController
         try {
             $location = $api->getPrimaryLocation();
             $zone = new DateTimeZone($location['timezone']);
-            $from = new DateTimeImmutable('tomorrow', $zone);
+            [$earliest, $latest] = $this->calendarBounds($zone);
+            $from = $this->weekFrom($this->request->getQuery('from'), $zone, $earliest, $latest);
 
             $slots = $api->searchAvailability(
                 $this->BookingDraftsTable()->variationIds($draft),
                 $from,
-                $from->modify('+' . self::SEARCH_DAYS . ' days'),
+                $from->modify('+' . $this->windowDays() . ' days'),
             );
 
             /*
@@ -293,21 +292,13 @@ class MyBookingsController extends AppController
             }
         }
 
-        $byDay = [];
-
-        foreach ($slots as $slot) {
-            $local = (new DateTimeImmutable($slot['start_at']))->setTimezone($zone);
-
-            $byDay[$local->format('Y-m-d')][] = [
-                'start_at' => $slot['start_at'],
-                'label' => $local->format('g:i a'),
-            ];
-        }
+        $byDay = $this->groupByDay($slots, $zone);
 
         $this->set('booking', $booking);
         $this->set('bookingId', $bookingId);
         $this->set('timezone', $location['timezone']);
         $this->set(compact('byDay'));
+        $this->setCalendar($byDay, $from, $earliest, $latest);
     }
 
     /**

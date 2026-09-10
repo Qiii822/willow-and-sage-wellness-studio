@@ -72,130 +72,12 @@ foreach ($weeks as $week) {
 
         <?= $this->element('book/summary', ['draft' => $draft]) ?>
 
-        <?php /*
-         * The month that was fetched. The script reads it to decide whether
-         * an arrow or a chosen date can be handled here or has to be asked
-         * for, so it does not have to guess from what happens to be drawn.
-         */ ?>
-        <div
-            class="book-calendar"
-            data-window-from="<?= h($window['from']) ?>"
-            data-window-to="<?= h($window['to']) ?>"
-        >
-
-            <div class="book-calendar-head">
-
-                <div class="book-calendar-week">
-
-                    <?php /*
-                     * Links to the month either side. Inside the fetched
-                     * month the script stops them and swaps the week rows
-                     * over instead, so only stepping off the ends reloads.
-                     *
-                     * Where there is no page to link to - the far end of
-                     * what Square will book - the control is still rendered,
-                     * disabled, because the script may yet find a loaded
-                     * week that way and turn it back on.
-                     */ ?>
-                    <?= $this->element('book/week_step', [
-                        'direction' => 'back',
-                        'to' => $window['before'],
-                        'glyph' => '&#8592;',
-                        'label' => 'Previous week',
-                        'url' => $here,
-                    ]) ?>
-
-                    <?php /*
-                     * Names the whole fetched span to begin with, because
-                     * that is what a page without scripting shows: every day
-                     * of the month, listed. The script narrows it to the
-                     * week it puts on show.
-                     */ ?>
-                    <h2 class="book-week-label" data-week-title><?= h($window['label']) ?></h2>
-
-                    <?= $this->element('book/week_step', [
-                        'direction' => 'forward',
-                        'to' => $window['after'],
-                        'glyph' => '&#8594;',
-                        'label' => 'Next week',
-                        'url' => $here,
-                    ]) ?>
-
-                </div>
-
-                <?php /*
-                 * Its own GET form, separate from the one that books a slot.
-                 * The browser's own date box is used rather than a custom
-                 * one: it already knows the customer's locale, works on a
-                 * phone, and needs nothing loaded to do it. A date inside
-                 * the fetched month is handled without leaving the page.
-                 */ ?>
-                <?= $this->Form->create(null, [
-                    'type' => 'get',
-                    'url' => $here,
-                    'class' => 'book-jump',
-                    'data-jump' => 'true',
-                ]) ?>
-
-                <label for="jump-to">Jump to</label>
-
-                <?= $this->Form->date('from', [
-                    'id' => 'jump-to',
-                    'class' => 'book-jump-input',
-                    'val' => $openDay ?? $window['from'],
-                    'min' => $window['earliest'],
-                    'max' => $window['latest'],
-                ]) ?>
-
-                <?= $this->Form->button('Go', ['class' => 'book-jump-go']) ?>
-
-                <?= $this->Form->end() ?>
-
-            </div>
-
-            <?php /*
-             * Every row starts hidden: they are buttons that do nothing
-             * until the script runs, and a page without it lists all the
-             * days below anyway. The script reveals the week it opens on.
-             */ ?>
-            <?php foreach ($weeks as $week): ?>
-
-                <ol
-                    class="book-calendar-days"
-                    data-week="<?= h($week['start']) ?>"
-                    data-label="<?= h($week['label']) ?>"
-                    hidden
-                >
-
-                    <?php foreach ($week['days'] as $day): ?>
-
-                        <?php $open = $day['slots'] > 0; ?>
-
-                        <li>
-                            <button
-                                type="button"
-                                class="book-date<?= $open ? '' : ' is-closed' ?>"
-                                data-date="<?= h($day['date']) ?>"
-                                <?= $open ? '' : 'disabled' ?>
-                            >
-                                <span class="book-date-weekday"><?= h($day['weekday']) ?></span>
-                                <span class="book-date-day"><?= h($day['day']) ?></span>
-                                <span class="book-date-dot" aria-hidden="true"></span>
-                                <span class="visually-hidden">
-                                    <?= $open
-                                        ? h($day['slots']) . ' times available'
-                                        : 'no times available' ?>
-                                </span>
-                            </button>
-                        </li>
-
-                    <?php endforeach; ?>
-
-                </ol>
-
-            <?php endforeach; ?>
-
-        </div>
+        <?= $this->element('book/calendar', [
+            'weeks' => $weeks,
+            'window' => $window,
+            'url' => $here,
+            'openDay' => $openDay,
+        ]) ?>
 
         <?php if ($byDay === []): ?>
 
@@ -265,7 +147,6 @@ foreach ($weeks as $week) {
 
         <p class="book-back">
             <?= $this->Html->link('Change therapist', ['action' => 'staff', $draft->token]) ?>
-            &middot;
             <?= $this->Html->link('Change treatments', ['action' => 'index']) ?>
         </p>
 

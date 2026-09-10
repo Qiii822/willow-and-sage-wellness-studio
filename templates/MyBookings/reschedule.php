@@ -2,10 +2,16 @@
 /**
  * Pick a new time for an existing appointment.
  *
+ * The same picker as the booking flow, and for the same reason: choosing a
+ * slot is one question, so it should not be asked two different ways
+ * depending on whether the customer is booking or moving a booking.
+ *
  * @var \App\View\AppView $this
  * @var array<string, mixed> $booking
  * @var string $bookingId
  * @var array<string, array<int, array{start_at: string, label: string}>> $byDay
+ * @var array<int, array{start: string, label: string, slots: int, days: array<int, array{date: string, day: string, weekday: string, slots: int}>}> $weeks
+ * @var array{from: string, to: string, earliest: string, latest: string, label: string, before: string|null, after: string|null} $window
  * @var string $timezone
  */
 
@@ -14,10 +20,27 @@ $this->assign('title', 'Change your time - ' . $this->SiteContent->raw('site.tit
 $this->Html->css('landing', ['block' => true]);
 $this->Html->css('services', ['block' => true]);
 $this->Html->css('book', ['block' => true]);
+$this->Html->script('book_calendar', ['block' => true]);
+
+$here = ['action' => 'reschedule', $bookingId];
 
 // Converted, not relabelled: the stored value carries the server's own
 // timezone rather than the studio's.
 $current = $booking['start_at']->setTimezone(new DateTimeZone($timezone));
+
+// The first day of the month with anything on it. The script opens the
+// picker on its week; the date box starts there whether or not it runs.
+$openDay = null;
+
+foreach ($weeks as $week) {
+    foreach ($week['days'] as $day) {
+        if ($day['slots'] > 0) {
+            $openDay = $day['date'];
+
+            break 2;
+        }
+    }
+}
 ?>
 
 <?= $this->element('site_header') ?>
@@ -35,22 +58,36 @@ $current = $booking['start_at']->setTimezone(new DateTimeZone($timezone));
             </p>
         </header>
 
+        <?= $this->element('book/calendar', [
+            'weeks' => $weeks,
+            'window' => $window,
+            'url' => $here,
+            'openDay' => $openDay,
+        ]) ?>
+
         <?php if ($byDay === []): ?>
 
             <p class="book-empty">
-                There are no other free times in the next few weeks.
-                Call the studio and we will find something.
+                Nothing free in these four weeks. Try another month with the
+                arrows above, or call the studio and we will find something.
             </p>
 
         <?php else: ?>
 
-            <?= $this->Form->create(null, ['class' => 'book-form']) ?>
+            <?php /*
+             * Posts back to the month on show, so the slot is checked
+             * against the same set of times the customer was looking at.
+             */ ?>
+            <?= $this->Form->create(null, [
+                'class' => 'book-form',
+                'url' => $here + ['?' => ['from' => $window['from']]],
+            ]) ?>
 
             <?php foreach ($byDay as $day => $slots): ?>
 
                 <?php $date = new DateTimeImmutable($day); ?>
 
-                <section class="book-day">
+                <section class="book-day" data-day="<?= h($day) ?>">
 
                     <h2><?= h($date->format('l j F')) ?></h2>
 

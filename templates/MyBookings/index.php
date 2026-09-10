@@ -54,7 +54,12 @@ $this->Html->css('book', ['block' => true]);
         <?php $phone = trim($this->SiteContent->raw('footer.phone')); ?>
 
         <?php if ($phone !== ''): ?>
-            <p class="book-back">
+            <?php /*
+             * A sentence, not a way back through the flow, so it keeps a
+             * sentence's styling - the number reads as a link inside the
+             * text rather than as a button to press.
+             */ ?>
+            <p class="book-aside">
                 Booked over the phone, or changed your number? Call us on
                 <a href="tel:<?= h(preg_replace('/[^\d+]/', '', $phone)) ?>"><?= h($phone) ?></a>.
             </p>

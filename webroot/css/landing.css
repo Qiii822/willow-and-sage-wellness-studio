@@ -34,7 +34,12 @@ body {
         Arial,
         sans-serif;
 
-    background: var(--surface);
+    /*
+     * The same warm ground the staff dashboard sits on, so the two halves
+     * of the site read as one product. Sections that need to stand off it -
+     * the header, the footer, cards, panels - paint themselves white.
+     */
+    background: var(--background);
 }
 
 button {
