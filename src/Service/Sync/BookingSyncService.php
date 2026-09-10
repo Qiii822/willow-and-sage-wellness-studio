@@ -7,6 +7,7 @@ use App\Service\SquareApiService;
 use App\Service\SquareAuthService;
 use Cake\I18n\DateTime;
 use Cake\ORM\TableRegistry;
+use DateTimeImmutable;
 use Square\Types\Booking as SquareBooking;
 
 /**
@@ -19,6 +20,18 @@ use Square\Types\Booking as SquareBooking;
  */
 class BookingSyncService
 {
+    /**
+     * How far either side of today the sync reaches.
+     *
+     * Because every run replaces the table wholesale, this is not just what
+     * gets fetched - it is the whole of what the dashboard can ever show.
+     * Far enough back to look up what happened last season, and out to
+     * Square's own one-year booking horizon.
+     */
+    protected const MONTHS_OF_HISTORY = 6;
+
+    protected const MONTHS_AHEAD = 12;
+
     protected SquareAuthService $squareAuth;
     protected SquareApiService $squareApi;
     protected \Cake\ORM\Table $bookingsTable;
@@ -63,10 +76,25 @@ class BookingSyncService
         $this->importsTable->saveOrFail($import);
 
         try {
-            // Pull every booking from Square first (auto-paginated), so a Square-side
-            // failure can't leave the local table wiped with nothing to replace it.
+            /*
+             * An explicit range, not Square's default. Asked for no range,
+             * ListBookings answers from now onwards - so every appointment
+             * already past is missing, and the dashboard shows an empty
+             * Monday for a day that was fully booked.
+             *
+             * This window is also the whole of what the dashboard can ever
+             * show, because the reload below replaces the table with it.
+             */
+            $now = new DateTimeImmutable('now');
+
             $bookings = [];
-            foreach ($this->squareApi->listBookings() as $squareBooking) {
+
+            foreach (
+                $this->squareApi->listBookingsBetween(
+                    $now->modify('-' . self::MONTHS_OF_HISTORY . ' months'),
+                    $now->modify('+' . self::MONTHS_AHEAD . ' months'),
+                ) as $squareBooking
+            ) {
                 /** @var \Square\Types\Booking $squareBooking */
                 $bookings[] = $this->mapBooking($squareBooking);
             }

@@ -1,0 +1,242 @@
+/* =========================================================
+   Bookings calendar
+   =========================================================
+
+   A week of appointments laid out by time. Blocks are placed from minutes
+   rather than snapped to rows, so a 10:15 start sits at 10:15 and a 75
+   minute treatment covers an hour and a quarter.
+   ========================================================= */
+
+/*
+ * The List/Calendar toggle is not styled here. It appears on both views,
+ * and this file is only loaded by the calendar - which left the buttons on
+ * the list page as bare blue links. It lives in table.css instead, with
+ * the table header it sits in.
+ */
+
+/* =========================================================
+   Moving between weeks
+   ========================================================= */
+
+.calendar-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+
+    padding: 0 24px 16px;
+}
+
+.calendar-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    color: var(--text-primary);
+    text-decoration: none;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+}
+
+.calendar-step:hover,
+.calendar-today:hover {
+    border-color: var(--primary);
+}
+
+.calendar-today {
+    padding: 8px 16px;
+
+    color: var(--text-primary);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+}
+
+.calendar-note {
+    margin: 0 0 0 auto;
+
+    color: var(--text-secondary);
+    font-size: 12.5px;
+}
+
+/* =========================================================
+   The grid
+   ========================================================= */
+
+/* Seven columns cannot shrink indefinitely, so on a narrow screen the
+   week scrolls sideways rather than crushing each day to nothing. */
+.calendar-scroll {
+    overflow-x: auto;
+
+    padding: 0 24px 24px;
+}
+
+.calendar-grid {
+    /* One gutter for the times, then a column per day. */
+    display: grid;
+    grid-template-columns: 62px repeat(7, minmax(116px, 1fr));
+
+    --minute: 0.9px;
+}
+
+.calendar-corner,
+.calendar-head {
+    padding: 10px 6px;
+
+    text-align: center;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.calendar-head-day {
+    display: block;
+
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.calendar-head-date {
+    display: block;
+
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.calendar-head.is-today .calendar-head-date {
+    color: var(--primary);
+}
+
+.calendar-times {
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-time {
+    height: calc(60 * var(--minute));
+
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    text-align: right;
+}
+
+.calendar-time span {
+    /* Nudged up so the label sits against the rule that opens its hour
+       rather than appearing to belong to the hour above. */
+    position: relative;
+    top: -6px;
+
+    padding-right: 8px;
+}
+
+.calendar-day {
+    position: relative;
+
+    border-left: 1px solid var(--border);
+}
+
+.calendar-day.is-today {
+    background: rgba(139, 126, 116, 0.05);
+}
+
+.calendar-slot {
+    height: calc(60 * var(--minute));
+
+    border-bottom: 1px solid var(--border);
+}
+
+/* =========================================================
+   An appointment
+   ========================================================= */
+
+.calendar-booking {
+    position: absolute;
+    right: 3px;
+    left: 3px;
+
+    top: calc(var(--start) * var(--minute));
+    /* Never shorter than the text it has to hold, however short the
+       treatment is. */
+    height: calc(var(--length) * var(--minute));
+    min-height: 34px;
+
+    padding: 5px 8px;
+    overflow: hidden;
+
+    color: var(--on-primary);
+
+    background: var(--primary);
+    border-radius: 8px;
+}
+
+/* Not yet accepted, so it reads as provisional rather than settled. */
+.calendar-booking.is-pending {
+    color: var(--text-primary);
+
+    background: repeating-linear-gradient(
+        135deg,
+        rgba(139, 126, 116, 0.22),
+        rgba(139, 126, 116, 0.22) 6px,
+        rgba(139, 126, 116, 0.34) 6px,
+        rgba(139, 126, 116, 0.34) 12px
+    );
+    border: 1px solid var(--primary);
+}
+
+.calendar-booking p {
+    margin: 0;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.calendar-booking-time {
+    font-size: 11.5px;
+    opacity: 0.85;
+}
+
+.calendar-booking-name {
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.calendar-booking-treatment {
+    font-size: 11.5px;
+    opacity: 0.9;
+}
+
+.calendar-empty {
+    margin: 0;
+    padding: 0 24px 24px;
+
+    color: var(--text-secondary);
+    font-size: 14.5px;
+}
+
+@media (max-width: 900px) {
+    .calendar-toolbar {
+        padding: 0 16px 14px;
+    }
+
+    .calendar-scroll {
+        padding: 0 16px 16px;
+    }
+
+    .calendar-note {
+        margin-left: 0;
+    }
+}

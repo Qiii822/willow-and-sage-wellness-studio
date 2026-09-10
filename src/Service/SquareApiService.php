@@ -6,6 +6,7 @@ namespace App\Service;
 use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Text;
+use DateTimeImmutable;
 use DateTimeInterface;
 use RuntimeException;
 use Square\Bookings\Requests\CancelBookingRequest;
@@ -44,6 +45,12 @@ class SquareApiService
 {
     /** Catalogue items that are bookable treatments rather than stock. */
     protected const SERVICE_PRODUCT_TYPE = 'APPOINTMENTS_SERVICE';
+
+    /**
+     * The widest range ListBookings will take. Square's own limit is 31
+     * days; a day under it leaves room for the boundary arithmetic.
+     */
+    protected const BOOKING_WINDOW_DAYS = 30;
 
     protected SquareAuthService $squareAuth;
 
@@ -170,6 +177,57 @@ class SquareApiService
         // Pager::getIterator() yields Booking objects one at a time,
         // fetching additional pages from Square automatically as needed.
         return iterator_to_array($pager);
+    }
+
+    /**
+     * Every booking between two dates, however far apart they are.
+     *
+     * Two of Square's limits make this necessary rather than a convenience.
+     * Asked for no range at all, ListBookings answers from now onwards, so
+     * yesterday's appointments simply are not in the reply - which is how a
+     * fully synced calendar can still come up empty for last Monday. And a
+     * range may be at most 31 days, so a wider one has to be walked in
+     * steps rather than asked for in one go.
+     *
+     * @param \DateTimeInterface $from
+     * @param \DateTimeInterface $to
+     * @return array<\Square\Types\Booking>
+     */
+    public function listBookingsBetween(DateTimeInterface $from, DateTimeInterface $to): array
+    {
+        $bookings = [];
+        $seen = [];
+        $windowStart = DateTimeImmutable::createFromInterface($from);
+        $end = DateTimeImmutable::createFromInterface($to);
+
+        while ($windowStart < $end) {
+            $windowEnd = min($end, $windowStart->modify('+' . self::BOOKING_WINDOW_DAYS . ' days'));
+
+            foreach (
+                $this->listBookings(
+                    null,
+                    null,
+                    null,
+                    $windowStart->format(DATE_RFC3339),
+                    $windowEnd->format(DATE_RFC3339),
+                ) as $booking
+            ) {
+                $id = (string)$booking->getId();
+
+                // Windows meet at their edges, so a booking sitting exactly
+                // on a boundary can come back twice.
+                if ($id !== '' && isset($seen[$id])) {
+                    continue;
+                }
+
+                $seen[$id] = true;
+                $bookings[] = $booking;
+            }
+
+            $windowStart = $windowEnd;
+        }
+
+        return $bookings;
     }
 
     /**
