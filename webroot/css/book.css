@@ -390,6 +390,51 @@
     text-align: center;
 }
 
+/*
+ * Red, and sitting in the cart rather than in a bar at the top of the page,
+ * because it is about the cart: what the button needs before it will work.
+ */
+.book-cart-error {
+    display: flex;
+    gap: 8px;
+
+    margin: 16px 0 0;
+    padding: 11px 13px;
+
+    color: #a3342a;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+
+    background: rgba(201, 108, 108, 0.12);
+    border: 1px solid rgba(163, 52, 42, 0.28);
+    border-radius: 10px;
+}
+
+/* Same trap as the week rows: `hidden` is only `display: none` in the
+   browser's own stylesheet, so the flex above would outrank it. */
+.book-cart-error[hidden] {
+    display: none;
+}
+
+/* Not colour alone: the mark says something is wrong to a reader who
+   cannot tell this red from the text around it. */
+.book-cart-error::before {
+    content: "!";
+    flex: 0 0 auto;
+
+    width: 18px;
+    height: 18px;
+
+    color: #fff;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+
+    background: #a3342a;
+    border-radius: 50%;
+}
+
 .book-cart-note {
     margin: 14px 0 0;
 
@@ -445,12 +490,6 @@
     outline-offset: 2px;
 }
 
-/* The one already chosen, when coming back to change it. */
-.book-person.is-chosen .book-person-button {
-    background: rgba(176, 145, 108, 0.12);
-    border-color: var(--gold);
-}
-
 .book-person-avatar {
     display: flex;
     flex: 0 0 auto;
@@ -472,6 +511,14 @@
     font-weight: 600;
 
     background: var(--gold);
+}
+
+/* A word, not an initial, so it has to sit smaller inside the same circle.
+   It used to be a tick, which read as "already selected" on a page where
+   nothing is selected yet. */
+.book-person-any {
+    font-size: 13px;
+    letter-spacing: 0.01em;
 }
 
 .book-person-body {

@@ -17,6 +17,8 @@ $services = iterator_to_array($services);
 
 <div class="content-page">
 
+    <?= $this->element('website_tabs') ?>
+
     <div class="content-header">
 
         <div>

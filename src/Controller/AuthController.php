@@ -210,7 +210,10 @@ class AuthController extends AppController
         $importsTable = \Cake\ORM\TableRegistry::getTableLocator()->get('Imports');
 
         if ($importsTable->hasRunningImport()) {
-            $this->Flash->error('Cannot disconnect while a sync is running - try again shortly.');
+            $this->Flash->error(
+                'Cannot disconnect while a sync is running - try again shortly.',
+                ['key' => 'square'],
+            );
 
             return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
         }
@@ -221,7 +224,7 @@ class AuthController extends AppController
             $this->squareAuth->revokeActiveConnection();
         }
 
-        $this->Flash->success('Square connection disconnected.');
+        $this->Flash->success('Square connection disconnected.', ['key' => 'square']);
 
         return $this->redirect(['controller' => 'Users', 'action' => 'settings']);
     }
@@ -235,12 +238,18 @@ class AuthController extends AppController
     {
         $this->request->allowMethod(['post']);
 
+        /*
+         * Sent under its own key so the Settings page can show it inside the
+         * Square card, beside the button that was pressed, rather than as a
+         * line at the top of the page with nothing around it to say what it
+         * is about.
+         */
         try {
             (new SyncService())->runAll('manual');
-            $this->Flash->success('Sync completed successfully.');
+            $this->Flash->success('Sync completed successfully.', ['key' => 'square']);
         } catch (\Throwable $e) {
             \Cake\Log\Log::error('Manual sync failed: ' . $e->getMessage());
-            $this->Flash->error('Sync failed: ' . $e->getMessage());
+            $this->Flash->error('Sync failed: ' . $e->getMessage(), ['key' => 'square']);
         }
 
         return $this->redirect(['controller' => 'Users', 'action' => 'settings']);

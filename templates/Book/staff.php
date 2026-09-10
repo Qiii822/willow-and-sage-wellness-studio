@@ -17,8 +17,6 @@ $this->assign('title', 'Choose a therapist - ' . $this->SiteContent->raw('site.t
 $this->Html->css('landing', ['block' => true]);
 $this->Html->css('services', ['block' => true]);
 $this->Html->css('book', ['block' => true]);
-
-$chosen = (string)$draft->team_member_id;
 ?>
 
 <?= $this->element('site_header') ?>
@@ -43,9 +41,15 @@ $chosen = (string)$draft->team_member_id;
 
         <ul class="book-people">
 
-            <li class="book-person<?= $chosen === '' ? ' is-chosen' : '' ?>">
+            <?php /*
+             * Nothing here is drawn as already chosen. Each card is the
+             * button that moves the flow on, and there is no Continue to
+             * press afterwards - so a highlighted card would read as "this
+             * is done" and leave the customer looking for what to press.
+             */ ?>
+            <li class="book-person">
                 <button type="submit" name="team_member_id" value="" class="book-person-button">
-                    <span class="book-person-avatar book-person-any" aria-hidden="true">&#10003;</span>
+                    <span class="book-person-avatar book-person-any" aria-hidden="true">Any</span>
                     <span class="book-person-body">
                         <span class="book-person-name">No preference</span>
                         <span class="book-person-note">
@@ -57,7 +61,7 @@ $chosen = (string)$draft->team_member_id;
 
             <?php foreach ($team as $member): ?>
 
-                <li class="book-person<?= $chosen === $member['id'] ? ' is-chosen' : '' ?>">
+                <li class="book-person">
 
                     <button
                         type="submit"

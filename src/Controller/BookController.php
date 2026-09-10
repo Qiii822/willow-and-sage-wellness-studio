@@ -70,11 +70,19 @@ class BookController extends AppController
     {
         $services = $this->fetchTable('Services');
 
+        /*
+         * Carried to the view rather than flashed. What went wrong is about
+         * the cart - it is empty, or nothing in it can be booked - so it
+         * belongs beside the button that was pressed, not in a bar at the
+         * top of the page above the studio's name.
+         */
+        $cartError = null;
+
         if ($this->request->is('post')) {
             $chosen = array_filter((array)$this->request->getData('service_ids'));
 
             if ($chosen === []) {
-                $this->Flash->error('Choose at least one treatment to continue.');
+                $cartError = 'Add at least one treatment to continue.';
             } else {
                 $selected = $services->find()
                     ->where(['id IN' => $chosen, 'visible' => true])
@@ -93,9 +101,7 @@ class BookController extends AppController
                 );
 
                 if ($bookable === []) {
-                    $this->Flash->error(
-                        'Those treatments cannot be booked online yet. Please call the studio.',
-                    );
+                    $cartError = 'Those treatments cannot be booked online yet. Please call the studio.';
                 } else {
                     $draft = $this->BookingDrafts->start(array_values($bookable));
 
@@ -105,6 +111,7 @@ class BookController extends AppController
         }
 
         $this->set('menu', $services->menu());
+        $this->set(compact('cartError'));
     }
 
     /**
@@ -361,6 +368,34 @@ class BookController extends AppController
     }
 
     /**
+     * What to tell the customer when Square refuses the booking.
+     *
+     * This used to say "that time may have just been taken" whatever went
+     * wrong, which sent people hunting for a clash that was not there - a
+     * mistyped phone number is rejected while Square is creating the
+     * customer, long before the calendar is involved, and the error names
+     * the field. So the ones that name a field are answered honestly, and
+     * only the rest fall back to the clash, which is what the rest usually
+     * are.
+     *
+     * @param string $error Square's own message.
+     * @return string
+     */
+    protected function confirmationError(string $error): string
+    {
+        if (str_contains($error, 'INVALID_PHONE_NUMBER')) {
+            return 'That phone number was not accepted. Please check it and try again.';
+        }
+
+        if (str_contains($error, 'INVALID_EMAIL_ADDRESS')) {
+            return 'That email address was not accepted. Please check it and try again.';
+        }
+
+        return 'We could not confirm that time - it may have just been taken. '
+            . 'Please choose another.';
+    }
+
+    /**
      * Writes the draft into Square.
      *
      * The customer is created first: without one Square will not take the
@@ -395,15 +430,7 @@ class BookController extends AppController
             $draft->failure_reason = substr($e->getMessage(), 0, 500);
             $this->BookingDrafts->save($draft);
 
-            /*
-             * The most likely cause by far is the slot going while the form
-             * was being filled in, so the customer is sent back to pick
-             * again rather than shown the API's own wording.
-             */
-            $this->Flash->error(
-                'We could not confirm that time - it may have just been taken. '
-                . 'Please choose another.',
-            );
+            $this->Flash->error($this->confirmationError($e->getMessage()));
 
             return false;
         }

@@ -17,6 +17,8 @@ $offers = iterator_to_array($offers);
 
 <div class="content-page">
 
+    <?= $this->element('website_tabs') ?>
+
     <div class="content-header">
 
         <div>

@@ -46,6 +46,145 @@ button {
     font: inherit;
 }
 
+/*
+ * Links written into a sentence rather than built as a control - a phone
+ * number to call, a "next free day" to jump to. Matched on having no class
+ * of their own, so nothing that already has a look can be disturbed, and
+ * none of them fall back to the browser's default blue.
+ */
+.site-main a:not([class]) {
+    color: var(--gold-dark);
+
+    text-decoration-color: rgba(154, 123, 82, 0.45);
+    text-underline-offset: 2px;
+}
+
+.site-main a:not([class]):hover {
+    color: var(--text-primary);
+}
+
+/* =========================================================
+   Flash messages
+   =========================================================
+
+   The public layout deliberately leaves cake.css out, so the `.message`
+   classes CakePHP's flash elements emit arrive with no styling of their
+   own - which is why these have to be written here rather than inherited.
+   ========================================================= */
+
+/*
+ * Held to the width the booking pages use rather than the full page, so
+ * the message sits over its own content instead of stretching past it on
+ * the narrow pages - the sign-in form is only 520px wide.
+ */
+.site-flash {
+    width: min(880px, 100%);
+
+    margin: 0 auto;
+    padding: 22px 40px 0;
+}
+
+.message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+
+    padding: 13px 16px;
+
+    color: var(--text-primary);
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.5;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    cursor: pointer;
+}
+
+.message + .message {
+    margin-top: 10px;
+}
+
+/* Clicking dismisses it - that is what the elements' own onclick does. */
+.message.hidden {
+    display: none;
+}
+
+/*
+ * A mark as well as a colour. Someone who cannot separate this red from
+ * this green still needs to know whether their booking was made or lost.
+ */
+.message::before {
+    content: "i";
+    flex: 0 0 auto;
+
+    width: 19px;
+    height: 19px;
+
+    color: #fff;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: 700;
+    line-height: 19px;
+    text-align: center;
+
+    background: var(--text-secondary);
+    border-radius: 50%;
+}
+
+.message.success {
+    color: #2f5d3f;
+
+    background: rgba(109, 139, 116, 0.14);
+    border-color: rgba(47, 93, 63, 0.26);
+}
+
+.message.success::before {
+    content: "\2713";
+
+    font-style: normal;
+
+    background: #3f7a55;
+}
+
+.message.error {
+    color: #a3342a;
+
+    background: rgba(201, 108, 108, 0.12);
+    border-color: rgba(163, 52, 42, 0.28);
+}
+
+.message.error::before {
+    content: "!";
+
+    font-style: normal;
+
+    background: #a3342a;
+}
+
+.message.warning {
+    color: #7a5410;
+
+    background: rgba(154, 123, 82, 0.14);
+    border-color: rgba(122, 84, 16, 0.26);
+}
+
+.message.warning::before {
+    content: "!";
+
+    font-style: normal;
+
+    background: #7a5410;
+}
+
+@media (max-width: 640px) {
+    .site-flash {
+        padding: 16px 20px 0;
+    }
+}
+
 /* =========================================================
    Header
    ========================================================= */

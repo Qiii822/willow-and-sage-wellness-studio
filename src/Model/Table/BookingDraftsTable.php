@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Model\AustralianMobile;
 use App\Model\Entity\BookingDraft;
+use ArrayObject;
+use Cake\Event\EventInterface;
 use Cake\ORM\Table;
 use Cake\Utility\Security;
 use Cake\Validation\Validator;
@@ -45,6 +48,36 @@ class BookingDraftsTable extends Table
     }
 
     /**
+     * Stores the mobile in the one form Square and an SMS gateway agree on.
+     *
+     * Done before validation runs, so the rule below checks the same value
+     * that will be saved, and so the number leaves here as +61... however
+     * the customer chose to type it.
+     *
+     * @param \Cake\Event\EventInterface $event
+     * @param \ArrayObject $data
+     * @param \ArrayObject $options
+     * @return void
+     */
+    public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options): void
+    {
+        if (!isset($data['customer_phone'])) {
+            return;
+        }
+
+        $normalised = AustralianMobile::normalise((string)$data['customer_phone']);
+
+        /*
+         * Left alone when it is not a mobile: the validator has to see what
+         * was actually typed so it can say so, and the customer has to see
+         * their own number back in the field rather than a blank.
+         */
+        if ($normalised !== null) {
+            $data['customer_phone'] = $normalised;
+        }
+    }
+
+    /**
      * @param \Cake\Validation\Validator $validator
      * @return \Cake\Validation\Validator
      */
@@ -61,18 +94,20 @@ class BookingDraftsTable extends Table
             ->notEmptyString('customer_email', 'We need an email to send your confirmation.');
 
         /*
-         * Deliberately loose: people write numbers with spaces, brackets,
-         * +61 or a leading 0, and rejecting any of those is more likely to
-         * turn away a real customer than to catch a wrong number. It is
-         * normalised before use rather than refused here.
+         * Every way of writing the same mobile is accepted - spaces,
+         * brackets, +61, a leading zero - but the number itself has to be a
+         * real Australian mobile. Square refuses the booking otherwise, and
+         * it refuses it while creating the customer, so the error that comes
+         * back says nothing about the number unless you dig for it. Better
+         * to say "check this" under the field than to fail at the last step.
          */
         $validator
             ->scalar('customer_phone')
-            ->add('customer_phone', 'enoughDigits', [
-                'rule' => fn ($value): bool => strlen(preg_replace('/\D/', '', (string)$value)) >= 8,
-                'message' => 'That phone number looks too short.',
+            ->add('customer_phone', 'australianMobile', [
+                'rule' => fn($value): bool => AustralianMobile::isValid((string)$value),
+                'message' => 'Enter an Australian mobile, like 0412 345 678 or +61 412 345 678.',
             ])
-            ->notEmptyString('customer_phone', 'We need a phone number in case we have to reach you.');
+            ->notEmptyString('customer_phone', 'We need a mobile number in case we have to reach you.');
 
         $validator
             ->scalar('customer_note')

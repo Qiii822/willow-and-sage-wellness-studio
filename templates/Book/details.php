@@ -57,16 +57,19 @@ $this->Html->css('book', ['block' => true]);
         </div>
 
         <div class="book-field">
-            <label for="customer-phone">Phone</label>
+            <label for="customer-phone">Mobile</label>
             <?= $this->Form->tel('customer_phone', [
                 'id' => 'customer-phone',
                 'class' => 'book-input',
                 'required' => true,
                 'maxlength' => 30,
                 'autocomplete' => 'tel',
+                'placeholder' => '0412 345 678',
             ]) ?>
             <p class="book-help">
-                Used to reach you about this appointment, and to look it up later.
+                An Australian mobile - 0412 345 678 or +61 412 345 678. We use it
+                to reach you about this appointment, and it is how you look the
+                booking up later.
             </p>
             <?= $this->Form->error('customer_phone') ?>
         </div>

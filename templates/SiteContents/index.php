@@ -17,6 +17,8 @@ $this->Html->script('site_contents', ['block' => true]);
 
 <div class="content-page">
 
+    <?= $this->element('website_tabs') ?>
+
     <div class="content-header">
 
         <div>

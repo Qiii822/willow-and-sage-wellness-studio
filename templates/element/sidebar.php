@@ -25,11 +25,13 @@ $isSettings =
     $controller === 'Users' &&
     $action === 'settings';
 
-$isSiteContent = $controller === 'SiteContents';
-
-$isServices = $controller === 'Services';
-
-$isOffers = $controller === 'Offers';
+/*
+ * Page content, services and offers were three entries in their own right,
+ * which read as three unrelated places when they are one job - editing the
+ * public site - split by what is being edited. One entry now leads to all
+ * three, and the split is made on the page itself.
+ */
+$isWebsite = in_array($controller, ['SiteContents', 'Services', 'Offers'], true);
 ?>
 
 <aside class="sidebar">
@@ -133,37 +135,9 @@ $isOffers = $controller === 'Offers';
             true
         )): ?>
 
-            <li class="<?= $isServices ? 'active' : '' ?>">
+            <li class="<?= $isWebsite ? 'active' : '' ?>">
                 <?= $this->Html->link(
-                    '<i data-lucide="list"></i><span>Services</span>',
-                    [
-                        'controller' => 'Services',
-                        'action' => 'manage'
-                    ],
-                    [
-                        'escape' => false,
-                        'class' => 'sidebar-link'
-                    ]
-                ) ?>
-            </li>
-
-            <li class="<?= $isOffers ? 'active' : '' ?>">
-                <?= $this->Html->link(
-                    '<i data-lucide="tag"></i><span>Offers</span>',
-                    [
-                        'controller' => 'Offers',
-                        'action' => 'manage'
-                    ],
-                    [
-                        'escape' => false,
-                        'class' => 'sidebar-link'
-                    ]
-                ) ?>
-            </li>
-
-            <li class="<?= $isSiteContent ? 'active' : '' ?>">
-                <?= $this->Html->link(
-                    '<i data-lucide="pencil"></i><span>Website content</span>',
+                    '<i data-lucide="globe"></i><span>Website</span>',
                     [
                         'controller' => 'SiteContents',
                         'action' => 'index'

@@ -44,6 +44,7 @@
         var totals = cart.querySelector('[data-cart-totals]');
         var totalCell = cart.querySelector('[data-cart-total]');
         var durationCell = cart.querySelector('[data-cart-duration]');
+        var error = cart.querySelector('[data-cart-error]');
 
         function chosen() {
             return rows.filter(function (row) {
@@ -102,7 +103,21 @@
             var input = row.querySelector('.book-choice-input');
 
             if (input) {
-                input.addEventListener('change', render);
+                input.addEventListener('change', function () {
+                    /*
+                     * Cleared on any change, not once the cart is non-empty:
+                     * the message described the cart as it stood when the
+                     * button was pressed, and that is just as stale whether
+                     * it said "add a treatment" or "those cannot be booked".
+                     * Only the server can say whether the new pick is any
+                     * better, so nothing takes its place until it answers.
+                     */
+                    if (error) {
+                        error.hidden = true;
+                    }
+
+                    render();
+                });
             }
         });
 

@@ -99,3 +99,16 @@ $showOffers = $locator->get('Offers')->current() !== []
     </div>
 
 </header>
+
+<?php /*
+ * Directly under the header rather than above it, and held to the same
+ * width as the page it belongs to. A message about what just happened
+ * belongs with the page, not stranded over the studio's name.
+ */ ?>
+<?php $flash = $this->Flash->render(); ?>
+
+<?php if ($flash !== null && trim($flash) !== ''): ?>
+    <div class="site-flash">
+        <?= $flash ?>
+    </div>
+<?php endif; ?>

@@ -11,6 +11,85 @@
     padding: 32px 36px 60px;
 }
 
+/* =========================================================
+   Website sections
+   =========================================================
+
+   One sidebar entry leads to three screens; this is where they are told
+   apart. Each carries a line saying what it edits, because "Services" and
+   "Offers" and "Page content" are not self-evidently different jobs to
+   someone who only comes here once a month.
+   ========================================================= */
+
+.website-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-bottom: 26px;
+    padding-bottom: 18px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.website-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    padding: 10px 16px;
+
+    color: var(--text-secondary);
+    text-decoration: none;
+
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    transition:
+        color 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.website-tab:hover {
+    color: var(--text-primary);
+
+    background: var(--panel);
+    border-color: var(--border);
+}
+
+.website-tab.is-current {
+    color: var(--on-primary);
+
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.website-tab-label {
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.website-tab-hint {
+    font-size: 12.5px;
+}
+
+.website-tab.is-current .website-tab-hint {
+    /* Legible on the filled chip without matching the label's weight. */
+    color: rgba(255, 255, 255, 0.82);
+}
+
+@media (max-width: 640px) {
+    .website-tabs {
+        flex-direction: column;
+    }
+
+    .website-tab {
+        padding: 9px 14px;
+    }
+}
+
 .content-header {
     display: flex;
     flex-wrap: wrap;

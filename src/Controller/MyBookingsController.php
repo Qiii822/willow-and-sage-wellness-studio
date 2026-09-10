@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\AustralianMobile;
 use App\Service\BookingNotifier;
 use App\Service\CustomerBookingLookup;
 use App\Service\SquareApiService;
@@ -93,8 +94,12 @@ class MyBookingsController extends AppController
         if ($this->request->is('post')) {
             $entered = trim((string)$this->request->getData('phone'));
 
-            if (strlen(preg_replace('/\D/', '', $entered) ?? '') < 8) {
-                $this->Flash->error('Please enter the mobile number you booked with.');
+            // The same rule the booking form uses, so a number that could
+            // never have made a booking is not sent a code either.
+            if (!AustralianMobile::isValid($entered)) {
+                $this->Flash->error(
+                    'Enter an Australian mobile, like 0412 345 678 or +61 412 345 678.',
+                );
             } else {
                 return $this->sendCode($entered);
             }

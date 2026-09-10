@@ -156,6 +156,20 @@ $this->Html->script('book_cart', ['block' => true]);
                     </div>
                 </dl>
 
+                <?php if ($cartError !== null): ?>
+                    <?php /*
+                     * Above the button rather than below it: it explains why
+                     * pressing the button did nothing, and it is read on the
+                     * way to pressing it again.
+                     *
+                     * role="alert" so it is announced when the page comes
+                     * back, which is the only thing that visibly changed.
+                     */ ?>
+                    <p class="book-cart-error" role="alert" data-cart-error>
+                        <?= h($cartError) ?>
+                    </p>
+                <?php endif; ?>
+
                 <div class="book-actions">
                     <?= $this->Form->button('Find a time', ['class' => 'hero-cta']) ?>
                 </div>
