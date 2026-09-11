@@ -1066,30 +1066,77 @@ class DashboardController extends AppController
 
 
         /*
-         * Development safety:
-         * Never send to a real customer.
-         */
+ * Decide whether to send to a test email
+ * or the real customer email.
+ */
+
+        $customerEmail =
+            $customer->email_address
+            ?? $customer->email
+            ?? null;
+
+
         $testEmail =
             env(
                 'REBOOKING_TEST_EMAIL'
             );
 
 
-        if (empty($testEmail)) {
+        $sendToRealCustomer =
+            filter_var(
+                env(
+                    'REBOOKING_SEND_REAL',
+                    false
+                ),
+                FILTER_VALIDATE_BOOLEAN
+            );
 
-            $this->Flash
-                ->error(
-                    'Rebooking test email is not configured.'
-                );
+
+        if ($sendToRealCustomer) {
+
+            if (empty($customerEmail)) {
+
+                $this->Flash
+                    ->error(
+                        'This customer does not have an email address.'
+                    );
 
 
-            return $this->redirect([
-                'controller' =>
-                    'Dashboard',
+                return $this->redirect([
+                    'controller' =>
+                        'Dashboard',
 
-                'action' =>
-                    'index',
-            ]);
+                    'action' =>
+                        'index',
+                ]);
+            }
+
+
+            $recipientEmail =
+                $customerEmail;
+
+        } else {
+
+            if (empty($testEmail)) {
+
+                $this->Flash
+                    ->error(
+                        'Rebooking test email is not configured.'
+                    );
+
+
+                return $this->redirect([
+                    'controller' =>
+                        'Dashboard',
+
+                    'action' =>
+                        'index',
+                ]);
+            }
+
+
+            $recipientEmail =
+                $testEmail;
         }
 
 
@@ -1106,7 +1153,7 @@ class DashboardController extends AppController
                     'html'
                 )
                 ->setTo(
-                    $testEmail
+                    $recipientEmail
                 )
                 ->setSubject(
                     'We’d love to see you again'
@@ -1133,8 +1180,9 @@ class DashboardController extends AppController
 
             $this->Flash
                 ->success(
-                    'Test rebooking reminder sent successfully.'
-                );
+                    $sendToRealCustomer
+                        ? 'Rebooking reminder sent successfully.'
+                        : 'Test rebooking reminder sent successfully.'                );
 
         } catch (\Throwable $e) {
 
