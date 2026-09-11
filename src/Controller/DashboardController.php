@@ -64,20 +64,24 @@ class DashboardController extends AppController
          * Find years that actually contain
          * customer data.
          */
-        $availableYears = $customersTable
-            ->find()
-            ->select(['square_created_at'])
-            ->where([
-                'square_created_at IS NOT' => null,
-            ])
-            ->all()
-            ->map(function ($customer) {
-                return (int)$customer
-                    ->square_created_at
-                    ->format('Y');
-            })
-            ->unique()
-            ->toList();
+        $availableYears =
+            $customersTable
+                ->find()
+                ->select([
+                    'square_created_at',
+                ])
+                ->where([
+                    'square_created_at IS NOT' =>
+                        null,
+                ])
+                ->all()
+                ->map(function ($customer) {
+                    return (int)$customer
+                        ->square_created_at
+                        ->format('Y');
+                })
+                ->unique()
+                ->toList();
 
         rsort($availableYears);
 
@@ -452,7 +456,8 @@ class DashboardController extends AppController
                                 ->sum('amount'),
                     ])
                     ->where([
-                        'status' => 'completed',
+                        'status' =>
+                            'completed',
 
                         'square_created_at <' =>
                             $periodEnd,
@@ -476,7 +481,8 @@ class DashboardController extends AppController
             $customersTable
                 ->find()
                 ->where([
-                    'square_customer_id IS NOT' => null,
+                    'square_customer_id IS NOT' =>
+                        null,
                 ])
                 ->all();
 
@@ -484,14 +490,18 @@ class DashboardController extends AppController
         $rebookingCustomers = [];
 
 
-        foreach ($customersForRebooking as $customer) {
+        foreach (
+            $customersForRebooking
+            as $customer
+        ) {
 
             $lastBooking =
                 $bookingsTable
                     ->find()
                     ->where([
                         'square_customer_id' =>
-                            $customer->square_customer_id,
+                            $customer
+                                ->square_customer_id,
 
                         'status' =>
                             'accepted',
@@ -516,7 +526,8 @@ class DashboardController extends AppController
 
             $lastBookingTime =
                 new FrozenTime(
-                    $lastBooking->start_at
+                    $lastBooking
+                        ->start_at
                 );
 
 
@@ -537,7 +548,6 @@ class DashboardController extends AppController
                 $daysSinceLastBooking >=
                 $inactiveThresholdDays
             ) {
-
                 $rebookingCustomers[] = [
                     'customer' =>
                         $customer,
@@ -563,11 +573,122 @@ class DashboardController extends AppController
             ): int {
 
                 return
-                    $customerB['daysSinceLastBooking']
+                    $customerB[
+                    'daysSinceLastBooking'
+                    ]
                     <=>
-                    $customerA['daysSinceLastBooking'];
+                    $customerA[
+                    'daysSinceLastBooking'
+                    ];
             }
         );
+
+
+        /*
+         * -------------------------------------------------
+         * CUSTOMER GROWTH CHART
+         * -------------------------------------------------
+         */
+
+        /*
+         * Start each month at zero.
+         */
+        $customerGrowthData = [
+            1 => 0,
+            2 => 0,
+            3 => 0,
+            4 => 0,
+            5 => 0,
+            6 => 0,
+            7 => 0,
+            8 => 0,
+            9 => 0,
+            10 => 0,
+            11 => 0,
+            12 => 0,
+        ];
+
+
+        /*
+         * Get customers created during
+         * the selected year.
+         */
+        $customersForGrowth =
+            $customersTable
+                ->find()
+                ->where([
+                    'square_created_at >=' =>
+                        new FrozenTime(
+                            $selectedYear .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'square_created_at <' =>
+                        new FrozenTime(
+                            ($selectedYear + 1) .
+                            '-01-01 00:00:00'
+                        ),
+                ])
+                ->all();
+
+
+        /*
+         * Count customers by month.
+         */
+        foreach (
+            $customersForGrowth
+            as $customer
+        ) {
+
+            if (
+                empty(
+                $customer
+                    ->square_created_at
+                )
+            ) {
+                continue;
+            }
+
+
+            $month =
+                (int)$customer
+                    ->square_created_at
+                    ->format('n');
+
+
+            $customerGrowthData[
+            $month
+            ]++;
+        }
+
+
+        /*
+         * Chart labels.
+         */
+        $customerGrowthLabels = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+        ];
+
+
+        /*
+         * Convert month counts
+         * into a simple array.
+         */
+        $customerGrowthValues =
+            array_values(
+                $customerGrowthData
+            );
 
 
         /*
@@ -594,7 +715,9 @@ class DashboardController extends AppController
             'totalIncomeCents',
             'availableYears',
             'rebookingCustomers',
-            'inactiveThresholdDays'
+            'inactiveThresholdDays',
+            'customerGrowthLabels',
+            'customerGrowthValues'
         ));
 
 
@@ -602,25 +725,41 @@ class DashboardController extends AppController
     }
 
 
-    public function sendRebookingReminder(string $customerId): Response
-    {
-        $this->request->allowMethod(['post']);
+    public function sendRebookingReminder(
+        string $customerId
+    ): Response {
+        $this->request
+            ->allowMethod([
+                'post',
+            ]);
+
 
         $customersTable =
-            $this->fetchTable('Customers');
+            $this->fetchTable(
+                'Customers'
+            );
+
 
         $customer =
-            $customersTable->get($customerId);
+            $customersTable
+                ->get(
+                    $customerId
+                );
+
 
         $bookingsTable =
-            $this->fetchTable('Bookings');
+            $this->fetchTable(
+                'Bookings'
+            );
+
 
         $lastBooking =
             $bookingsTable
                 ->find()
                 ->where([
                     'square_customer_id' =>
-                        $customer->square_customer_id,
+                        $customer
+                            ->square_customer_id,
 
                     'status' =>
                         'accepted',
@@ -640,9 +779,11 @@ class DashboardController extends AppController
 
         if ($lastBooking === null) {
 
-            $this->Flash->error(
-                'No previous accepted booking was found for this customer.'
-            );
+            $this->Flash
+                ->error(
+                    'No previous accepted booking was found for this customer.'
+                );
+
 
             return $this->redirect([
                 'controller' =>
@@ -656,7 +797,8 @@ class DashboardController extends AppController
 
         $lastBookingTime =
             new FrozenTime(
-                $lastBooking->start_at
+                $lastBooking
+                    ->start_at
             );
 
 
@@ -675,20 +817,33 @@ class DashboardController extends AppController
 
         $customerName =
             trim(
-                ($customer->given_name
-                    ?? $customer->first_name
-                    ?? '')
+                (
+                    $customer
+                        ->given_name
+                    ??
+                    $customer
+                        ->first_name
+                    ??
+                    ''
+                )
                 .
                 ' '
                 .
-                ($customer->family_name
-                    ?? $customer->last_name
-                    ?? '')
+                (
+                    $customer
+                        ->family_name
+                    ??
+                    $customer
+                        ->last_name
+                    ??
+                    ''
+                )
             );
 
 
         if ($customerName === '') {
-            $customerName = 'Customer';
+            $customerName =
+                'Customer';
         }
 
 
@@ -697,14 +852,18 @@ class DashboardController extends AppController
          * Never send to a real customer.
          */
         $testEmail =
-            env('REBOOKING_TEST_EMAIL');
+            env(
+                'REBOOKING_TEST_EMAIL'
+            );
 
 
         if (empty($testEmail)) {
 
-            $this->Flash->error(
-                'Rebooking test email is not configured.'
-            );
+            $this->Flash
+                ->error(
+                    'Rebooking test email is not configured.'
+                );
+
 
             return $this->redirect([
                 'controller' =>
@@ -723,9 +882,14 @@ class DashboardController extends AppController
                     'rebooking_test'
                 );
 
+
             $mailer
-                ->setEmailFormat('html')
-                ->setTo($testEmail)
+                ->setEmailFormat(
+                    'html'
+                )
+                ->setTo(
+                    $testEmail
+                )
                 ->setSubject(
                     'We’d love to see you again'
                 )
@@ -745,24 +909,28 @@ class DashboardController extends AppController
                 );
 
 
-            $mailer->deliver();
+            $mailer
+                ->deliver();
 
 
-            $this->Flash->success(
-                'Test rebooking reminder sent successfully.'
-            );
+            $this->Flash
+                ->success(
+                    'Test rebooking reminder sent successfully.'
+                );
 
         } catch (\Throwable $e) {
 
             \Cake\Log\Log::error(
                 'Rebooking reminder failed: '
-                . $e->getMessage()
+                .
+                $e->getMessage()
             );
 
 
-            $this->Flash->error(
-                'Unable to send the test rebooking reminder.'
-            );
+            $this->Flash
+                ->error(
+                    'Unable to send the test rebooking reminder.'
+                );
         }
 
 

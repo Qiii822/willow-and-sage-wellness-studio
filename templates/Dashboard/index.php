@@ -12,6 +12,8 @@
  * @var array $availableYears
  * @var array $rebookingCustomers
  * @var int $inactiveThresholdDays
+ * @var array $customerGrowthLabels
+ * @var array $customerGrowthValues
  */
 
 $this->assign('title', 'Dashboard');
@@ -43,6 +45,8 @@ $months = [
     12 => 'December',
 ];
 ?>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container-fluid p-0">
 
@@ -498,6 +502,66 @@ $months = [
                 </div>
 
 
+                <!-- Customer Growth -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="customer-growth"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+
+                    <div class="customer-growth-widget">
+
+                        <div class="customer-growth-header">
+
+                            <div>
+
+                                <h2>
+                                    Customer Growth
+                                </h2>
+
+                                <p>
+                                    New customers added during
+                                    <?= h($selectedYear) ?>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="customer-growth-chart">
+
+                            <canvas
+                                id="customerGrowthChart"
+                            ></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
                 <!-- Recent Customers -->
                 <div
                     class="dashboard-widget widget-wide"
@@ -528,6 +592,7 @@ $months = [
 
                 </div>
 
+
                 <!-- Customer Rebooking -->
                 <div
                     class="dashboard-widget widget-wide"
@@ -557,7 +622,6 @@ $months = [
 
                     <div class="rebooking-widget">
 
-                        <!-- Header -->
                         <div class="rebooking-widget-header">
 
                             <div>
@@ -576,20 +640,24 @@ $months = [
 
 
                             <span class="rebooking-count">
-                <?= count($rebookingCustomers) ?>
-                customer<?= count($rebookingCustomers) === 1 ? '' : 's' ?>
-            </span>
+
+                                <?= count($rebookingCustomers) ?>
+
+                                customer<?= count($rebookingCustomers) === 1 ? '' : 's' ?>
+
+                            </span>
 
                         </div>
 
 
                         <?php if (empty($rebookingCustomers)): ?>
 
-                            <!-- Empty state -->
                             <div class="rebooking-empty">
 
                                 <div class="rebooking-empty-icon">
+
                                     <i data-lucide="calendar-check"></i>
+
                                 </div>
 
                                 <h3>
@@ -607,7 +675,6 @@ $months = [
 
                         <?php else: ?>
 
-                            <!-- Customer table -->
                             <div class="rebooking-table-wrapper">
 
                                 <table class="rebooking-table">
@@ -631,24 +698,36 @@ $months = [
                                     <?php foreach ($rebookingCustomers as $item): ?>
 
                                         <?php
-                                        $customer = $item['customer'];
-                                        $lastBooking = $item['lastBooking'];
-                                        $daysSinceLastBooking = $item['daysSinceLastBooking'];
+                                        $customer =
+                                            $item['customer'];
 
-                                        $customerName = trim(
-                                            ($customer->given_name ?? $customer->first_name ?? '')
-                                            . ' '
-                                            . ($customer->family_name ?? $customer->last_name ?? '')
-                                        );
+                                        $lastBooking =
+                                            $item['lastBooking'];
+
+                                        $daysSinceLastBooking =
+                                            $item['daysSinceLastBooking'];
+
+                                        $customerName =
+                                            trim(
+                                                ($customer->given_name
+                                                    ?? $customer->first_name
+                                                    ?? '')
+                                                .
+                                                ' '
+                                                .
+                                                ($customer->family_name
+                                                    ?? $customer->last_name
+                                                    ?? '')
+                                            );
 
                                         if ($customerName === '') {
-                                            $customerName = 'Unknown Customer';
+                                            $customerName =
+                                                'Unknown Customer';
                                         }
                                         ?>
 
                                         <tr>
 
-                                            <!-- Customer -->
                                             <td>
 
                                                 <div class="rebooking-customer">
@@ -676,23 +755,21 @@ $months = [
                                             </td>
 
 
-                                            <!-- Email -->
                                             <td>
 
-                                <span class="rebooking-email">
+                                                <span class="rebooking-email">
 
-                                    <?= h(
-                                        $customer->email_address
-                                        ?? $customer->email
-                                        ?? 'No email'
-                                    ) ?>
+                                                    <?= h(
+                                                        $customer->email_address
+                                                        ?? $customer->email
+                                                        ?? 'No email'
+                                                    ) ?>
 
-                                </span>
+                                                </span>
 
                                             </td>
 
 
-                                            <!-- Last booking -->
                                             <td>
 
                                                 <?php if (!empty($lastBooking->start_at)): ?>
@@ -712,7 +789,6 @@ $months = [
                                             </td>
 
 
-                                            <!-- Inactive -->
                                             <td>
 
                                                 <strong class="rebooking-days">
@@ -725,21 +801,19 @@ $months = [
                                             </td>
 
 
-                                            <!-- Status -->
                                             <td>
 
-                                <span class="rebooking-status">
+                                                <span class="rebooking-status">
 
-                                    <i data-lucide="clock"></i>
+                                                    <i data-lucide="clock"></i>
 
-                                    Needs Rebooking
+                                                    Needs Rebooking
 
-                                </span>
+                                                </span>
 
                                             </td>
 
 
-                                            <!-- Action -->
                                             <td>
 
                                                 <?= $this->Form->postLink(
@@ -820,6 +894,7 @@ $months = [
 
                     <div class="widget-library-grid">
 
+                        <!-- Total Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -841,6 +916,7 @@ $months = [
                         </button>
 
 
+                        <!-- New Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -860,6 +936,7 @@ $months = [
                             </p>
 
                         </button>
+
 
                         <!-- Total Bookings -->
                         <button
@@ -905,6 +982,28 @@ $months = [
                         </button>
 
 
+                        <!-- Customer Growth -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="customer-growth"
+                        >
+
+                            <div class="widget-library-icon">
+                                <i data-lucide="chart-line"></i>
+                            </div>
+
+                            <h3>
+                                Customer Growth
+                            </h3>
+
+                            <p>
+                                View new customer growth throughout the year.
+                            </p>
+
+                        </button>
+
+
                         <!-- Recent Customers -->
                         <button
                             type="button"
@@ -926,26 +1025,8 @@ $months = [
 
                         </button>
 
-                        <button
-                            type="button"
-                            class="widget-library-item"
-                            data-widget="recent-customers"
-                        >
 
-                            <div class="widget-library-icon">
-                                <i data-lucide="list"></i>
-                            </div>
-
-                            <h3>
-                                Recent Customers
-                            </h3>
-
-                            <p>
-                                View the latest customers imported from Square.
-                            </p>
-
-                        </button>
-
+                        <!-- Customer Rebooking -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -978,3 +1059,99 @@ $months = [
     </div>
 
 </div>
+
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            const canvas =
+                document.getElementById(
+                    'customerGrowthChart'
+                );
+
+
+            if (!canvas) {
+                return;
+            }
+
+
+            const labels =
+                <?= json_encode(
+                    $customerGrowthLabels
+                ) ?>;
+
+
+            const values =
+                <?= json_encode(
+                    $customerGrowthValues
+                ) ?>;
+
+
+            new Chart(
+                canvas,
+                {
+                    type: 'line',
+
+                    data: {
+                        labels: labels,
+
+                        datasets: [
+                            {
+                                label:
+                                    'New Customers',
+
+                                data:
+                                values,
+
+                                borderWidth:
+                                    2,
+
+                                tension:
+                                    0.35,
+
+                                fill:
+                                    false,
+
+                                pointRadius:
+                                    4,
+
+                                pointHoverRadius:
+                                    6
+                            }
+                        ]
+                    },
+
+                    options: {
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        plugins: {
+                            legend: {
+                                display:
+                                    false
+                            }
+                        },
+
+                        scales: {
+                            y: {
+                                beginAtZero:
+                                    true,
+
+                                ticks: {
+                                    precision:
+                                        0
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+        }
+    );
+</script>
