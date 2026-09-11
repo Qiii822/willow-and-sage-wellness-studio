@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use Cake\Http\Response;
 use Cake\I18n\FrozenTime;
+use Cake\Mailer\Mailer;
 
 class DashboardController extends AppController
 {
@@ -24,16 +25,29 @@ class DashboardController extends AppController
 
 
         /*
-         * Selected range
+         * Selected range.
          */
         $range =
             $this->request->getQuery('range')
-            ?? 'day';
+            ?? 'today';
 
 
         /*
-         * Custom dates
+         * Filter values.
          */
+        $selectedDay =
+            $this->request->getQuery('day');
+
+        $selectedWeek =
+            $this->request->getQuery('week');
+
+        $selectedYear =
+            $this->request->getQuery('selected_year')
+            ?? $this->request->getQuery('month_year');
+
+        $selectedMonth =
+            $this->request->getQuery('month');
+
         $startDate =
             $this->request->getQuery('start_date');
 
@@ -41,30 +55,150 @@ class DashboardController extends AppController
             $this->request->getQuery('end_date');
 
 
-        /*
-         * Today's date is used for
-         * Daily / Weekly / Monthly / Yearly.
-         */
         $today =
             FrozenTime::now()
                 ->startOfDay();
 
 
         /*
-         * Work out the selected period.
+         * Find years that actually contain
+         * customer data.
+         */
+        $availableYears = $customersTable
+            ->find()
+            ->select(['square_created_at'])
+            ->where([
+                'square_created_at IS NOT' => null,
+            ])
+            ->all()
+            ->map(function ($customer) {
+                return (int)$customer
+                    ->square_created_at
+                    ->format('Y');
+            })
+            ->unique()
+            ->toList();
+
+        rsort($availableYears);
+
+
+        /*
+         * Default to the newest year
+         * that actually has data.
+         */
+        $defaultYear =
+            $availableYears[0]
+            ?? (int)$today->format('Y');
+
+
+        if (
+            empty($selectedYear) ||
+            !in_array(
+                (int)$selectedYear,
+                $availableYears,
+                true
+            )
+        ) {
+            $selectedYear =
+                $defaultYear;
+        } else {
+            $selectedYear =
+                (int)$selectedYear;
+        }
+
+
+        /*
+         * Work out current and previous periods.
          */
         switch ($range) {
 
-            case 'week':
+            case 'today':
 
                 $periodStart =
-                    $today->startOfWeek();
+                    $today;
 
                 $periodEnd =
-                    $periodStart->addWeeks(1);
+                    $today->addDays(1);
 
                 $previousPeriodStart =
-                    $periodStart->subWeeks(1);
+                    $today->subDays(1);
+
+                $previousPeriodEnd =
+                    $today;
+
+                break;
+
+
+            case 'day':
+
+                if (empty($selectedDay)) {
+                    $selectedDay =
+                        $today->format('Y-m-d');
+                }
+
+                $periodStart =
+                    new FrozenTime(
+                        $selectedDay .
+                        ' 00:00:00'
+                    );
+
+                $periodEnd =
+                    $periodStart
+                        ->addDays(1);
+
+                $previousPeriodStart =
+                    $periodStart
+                        ->subDays(1);
+
+                $previousPeriodEnd =
+                    $periodStart;
+
+                break;
+
+
+            case 'week':
+
+                if (empty($selectedWeek)) {
+                    $selectedWeek =
+                        $today->format(
+                            'o-\WW'
+                        );
+                }
+
+                if (
+                    preg_match(
+                        '/^(\d{4})-W(\d{2})$/',
+                        $selectedWeek,
+                        $matches
+                    )
+                ) {
+                    $weekYear =
+                        (int)$matches[1];
+
+                    $weekNumber =
+                        (int)$matches[2];
+
+                    $periodStart =
+                        FrozenTime::now()
+                            ->setISODate(
+                                $weekYear,
+                                $weekNumber,
+                                1
+                            )
+                            ->startOfDay();
+                } else {
+                    $periodStart =
+                        $today
+                            ->startOfWeek();
+                }
+
+                $periodEnd =
+                    $periodStart
+                        ->addWeeks(1);
+
+                $previousPeriodStart =
+                    $periodStart
+                        ->subWeeks(1);
 
                 $previousPeriodEnd =
                     $periodStart;
@@ -74,14 +208,36 @@ class DashboardController extends AppController
 
             case 'month':
 
+                $selectedMonth =
+                    (int)(
+                    $selectedMonth
+                        ?: $today->format('n')
+                    );
+
+                if (
+                    $selectedMonth < 1 ||
+                    $selectedMonth > 12
+                ) {
+                    $selectedMonth =
+                        (int)$today->format('n');
+                }
+
                 $periodStart =
-                    $today->startOfMonth();
+                    new FrozenTime(
+                        sprintf(
+                            '%04d-%02d-01 00:00:00',
+                            $selectedYear,
+                            $selectedMonth
+                        )
+                    );
 
                 $periodEnd =
-                    $periodStart->addMonths(1);
+                    $periodStart
+                        ->addMonths(1);
 
                 $previousPeriodStart =
-                    $periodStart->subMonths(1);
+                    $periodStart
+                        ->subMonths(1);
 
                 $previousPeriodEnd =
                     $periodStart;
@@ -92,13 +248,18 @@ class DashboardController extends AppController
             case 'year':
 
                 $periodStart =
-                    $today->startOfYear();
+                    new FrozenTime(
+                        $selectedYear .
+                        '-01-01 00:00:00'
+                    );
 
                 $periodEnd =
-                    $periodStart->addYears(1);
+                    $periodStart
+                        ->addYears(1);
 
                 $previousPeriodStart =
-                    $periodStart->subYears(1);
+                    $periodStart
+                        ->subYears(1);
 
                 $previousPeriodEnd =
                     $periodStart;
@@ -108,14 +269,20 @@ class DashboardController extends AppController
 
             case 'custom':
 
-                /*
-                 * If both dates are provided,
-                 * use the user's custom range.
-                 */
                 if (
                     !empty($startDate) &&
                     !empty($endDate)
                 ) {
+
+                    if ($startDate > $endDate) {
+                        [
+                            $startDate,
+                            $endDate
+                        ] = [
+                            $endDate,
+                            $startDate
+                        ];
+                    }
 
                     $periodStart =
                         new FrozenTime(
@@ -123,10 +290,6 @@ class DashboardController extends AppController
                             ' 00:00:00'
                         );
 
-                    /*
-                     * Add one day so the selected
-                     * end date is included.
-                     */
                     $periodEnd =
                         (
                         new FrozenTime(
@@ -136,35 +299,24 @@ class DashboardController extends AppController
                         )
                             ->addDays(1);
 
-
-                    /*
-                     * Length of custom period.
-                     */
                     $periodSeconds =
-                        $periodEnd->getTimestamp()
+                        $periodEnd
+                            ->getTimestamp()
                         -
-                        $periodStart->getTimestamp();
+                        $periodStart
+                            ->getTimestamp();
 
-
-                    /*
-                     * Previous range uses the same
-                     * number of seconds immediately
-                     * before the selected range.
-                     */
                     $previousPeriodEnd =
                         $periodStart;
 
                     $previousPeriodStart =
-                        $periodStart->subSeconds(
-                            $periodSeconds
-                        );
+                        $periodStart
+                            ->subSeconds(
+                                $periodSeconds
+                            );
 
                 } else {
 
-                    /*
-                     * No custom dates selected yet.
-                     * Default to today.
-                     */
                     $periodStart =
                         $today;
 
@@ -176,16 +328,15 @@ class DashboardController extends AppController
 
                     $previousPeriodEnd =
                         $today;
-
                 }
 
                 break;
 
 
-            case 'day':
             default:
 
-                $range = 'day';
+                $range =
+                    'today';
 
                 $periodStart =
                     $today;
@@ -205,7 +356,7 @@ class DashboardController extends AppController
 
         /*
          * Total customers that existed
-         * by the end of the selected range.
+         * by the end of the selected period.
          */
         $totalCustomers =
             $customersTable
@@ -219,7 +370,7 @@ class DashboardController extends AppController
 
         /*
          * Customers created inside
-         * the selected range.
+         * the selected period.
          */
         $customersSelectedDate =
             $customersTable
@@ -235,7 +386,7 @@ class DashboardController extends AppController
 
 
         /*
-         * Previous period customer count.
+         * Customers in previous period.
          */
         $previousCustomers =
             $customersTable
@@ -251,13 +402,16 @@ class DashboardController extends AppController
 
 
         /*
-         * Recent customers up to the
-         * selected period end.
+         * Recent customers from the
+         * selected period only.
          */
         $recentCustomers =
             $customersTable
                 ->find()
                 ->where([
+                    'square_created_at >=' =>
+                        $periodStart,
+
                     'square_created_at <' =>
                         $periodEnd,
                 ])
@@ -284,11 +438,7 @@ class DashboardController extends AppController
 
 
         /*
-         * Total income (sum of completed
-         * payments) by the end of the
-         * selected range. Stored in the
-         * smallest denomination (e.g. cents) -
-         * currency is always AUD.
+         * Total income from completed payments.
          */
         $totalIncomeCents =
             (int)(
@@ -313,9 +463,123 @@ class DashboardController extends AppController
             );
 
 
+        /*
+         * -------------------------------------------------
+         * CUSTOMER REBOOKING / BOOKING HISTORY
+         * -------------------------------------------------
+         */
+
+        $inactiveThresholdDays = 7;
+
+
+        $customersForRebooking =
+            $customersTable
+                ->find()
+                ->where([
+                    'square_customer_id IS NOT' => null,
+                ])
+                ->all();
+
+
+        $rebookingCustomers = [];
+
+
+        foreach ($customersForRebooking as $customer) {
+
+            $lastBooking =
+                $bookingsTable
+                    ->find()
+                    ->where([
+                        'square_customer_id' =>
+                            $customer->square_customer_id,
+
+                        'status' =>
+                            'accepted',
+
+                        'start_at IS NOT' =>
+                            null,
+
+                        'start_at <=' =>
+                            FrozenTime::now(),
+                    ])
+                    ->orderBy([
+                        'start_at' =>
+                            'DESC',
+                    ])
+                    ->first();
+
+
+            if ($lastBooking === null) {
+                continue;
+            }
+
+
+            $lastBookingTime =
+                new FrozenTime(
+                    $lastBooking->start_at
+                );
+
+
+            $daysSinceLastBooking =
+                (int)floor(
+                    (
+                        FrozenTime::now()
+                            ->getTimestamp()
+                        -
+                        $lastBookingTime
+                            ->getTimestamp()
+                    )
+                    / 86400
+                );
+
+
+            if (
+                $daysSinceLastBooking >=
+                $inactiveThresholdDays
+            ) {
+
+                $rebookingCustomers[] = [
+                    'customer' =>
+                        $customer,
+
+                    'lastBooking' =>
+                        $lastBooking,
+
+                    'daysSinceLastBooking' =>
+                        $daysSinceLastBooking,
+                ];
+            }
+        }
+
+
+        /*
+         * Longest inactive customers first.
+         */
+        usort(
+            $rebookingCustomers,
+            function (
+                array $customerA,
+                array $customerB
+            ): int {
+
+                return
+                    $customerB['daysSinceLastBooking']
+                    <=>
+                    $customerA['daysSinceLastBooking'];
+            }
+        );
+
+
+        /*
+         * Send data to view.
+         */
         $this->set(compact(
             'identity',
             'range',
+            'selectedDay',
+            'selectedWeek',
+            'selectedYear',
+            'selectedMonth',
             'startDate',
             'endDate',
             'periodStart',
@@ -327,11 +591,187 @@ class DashboardController extends AppController
             'previousCustomers',
             'recentCustomers',
             'totalBookings',
-            'totalIncomeCents'
+            'totalIncomeCents',
+            'availableYears',
+            'rebookingCustomers',
+            'inactiveThresholdDays'
         ));
 
 
         return $this->render();
     }
 
+
+    public function sendRebookingReminder(string $customerId): Response
+    {
+        $this->request->allowMethod(['post']);
+
+        $customersTable =
+            $this->fetchTable('Customers');
+
+        $customer =
+            $customersTable->get($customerId);
+
+        $bookingsTable =
+            $this->fetchTable('Bookings');
+
+        $lastBooking =
+            $bookingsTable
+                ->find()
+                ->where([
+                    'square_customer_id' =>
+                        $customer->square_customer_id,
+
+                    'status' =>
+                        'accepted',
+
+                    'start_at IS NOT' =>
+                        null,
+
+                    'start_at <=' =>
+                        FrozenTime::now(),
+                ])
+                ->orderBy([
+                    'start_at' =>
+                        'DESC',
+                ])
+                ->first();
+
+
+        if ($lastBooking === null) {
+
+            $this->Flash->error(
+                'No previous accepted booking was found for this customer.'
+            );
+
+            return $this->redirect([
+                'controller' =>
+                    'Dashboard',
+
+                'action' =>
+                    'index',
+            ]);
+        }
+
+
+        $lastBookingTime =
+            new FrozenTime(
+                $lastBooking->start_at
+            );
+
+
+        $daysSinceLastBooking =
+            (int)floor(
+                (
+                    FrozenTime::now()
+                        ->getTimestamp()
+                    -
+                    $lastBookingTime
+                        ->getTimestamp()
+                )
+                / 86400
+            );
+
+
+        $customerName =
+            trim(
+                ($customer->given_name
+                    ?? $customer->first_name
+                    ?? '')
+                .
+                ' '
+                .
+                ($customer->family_name
+                    ?? $customer->last_name
+                    ?? '')
+            );
+
+
+        if ($customerName === '') {
+            $customerName = 'Customer';
+        }
+
+
+        /*
+         * Development safety:
+         * Never send to a real customer.
+         */
+        $testEmail =
+            env('REBOOKING_TEST_EMAIL');
+
+
+        if (empty($testEmail)) {
+
+            $this->Flash->error(
+                'Rebooking test email is not configured.'
+            );
+
+            return $this->redirect([
+                'controller' =>
+                    'Dashboard',
+
+                'action' =>
+                    'index',
+            ]);
+        }
+
+
+        try {
+
+            $mailer =
+                new Mailer(
+                    'rebooking_test'
+                );
+
+            $mailer
+                ->setEmailFormat('html')
+                ->setTo($testEmail)
+                ->setSubject(
+                    'We’d love to see you again'
+                )
+                ->setViewVars([
+                    'customerName' =>
+                        $customerName,
+
+                    'daysSinceLastBooking' =>
+                        $daysSinceLastBooking,
+                ]);
+
+
+            $mailer
+                ->viewBuilder()
+                ->setTemplate(
+                    'rebooking_reminder'
+                );
+
+
+            $mailer->deliver();
+
+
+            $this->Flash->success(
+                'Test rebooking reminder sent successfully.'
+            );
+
+        } catch (\Throwable $e) {
+
+            \Cake\Log\Log::error(
+                'Rebooking reminder failed: '
+                . $e->getMessage()
+            );
+
+
+            $this->Flash->error(
+                'Unable to send the test rebooking reminder.'
+            );
+        }
+
+
+        return $this->redirect([
+            'controller' =>
+                'Dashboard',
+
+            'action' =>
+                'index',
+        ]);
+    }
 }
