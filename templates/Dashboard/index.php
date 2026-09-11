@@ -14,6 +14,10 @@
  * @var int $inactiveThresholdDays
  * @var array $customerGrowthLabels
  * @var array $customerGrowthValues
+ * @var array $bookingTrendLabels
+ * @var array $bookingTrendValues
+ * @var array $bookingStatusLabels
+ * @var array $bookingStatusValues
  */
 
 $this->assign('title', 'Dashboard');
@@ -48,11 +52,13 @@ $months = [
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
 <div class="container-fluid p-0">
 
     <div class="dashboard-container">
 
         <?= $this->element('sidebar') ?>
+
 
         <main class="main-content">
 
@@ -62,7 +68,8 @@ $months = [
                 <div class="dashboard-heading-text">
 
                     <h1>
-                        Welcome back, <?= h($identity->first_name ?? '') ?>
+                        Welcome back,
+                        <?= h($identity->first_name ?? '') ?>
                     </h1>
 
                     <p>
@@ -562,6 +569,125 @@ $months = [
                 </div>
 
 
+                <!-- Booking Trends -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="booking-trends"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+
+                    <div class="booking-trends-widget">
+
+                        <div class="booking-trends-header">
+
+                            <div>
+
+                                <h2>
+                                    Booking Trends
+                                </h2>
+
+                                <p>
+                                    Bookings during
+                                    <?= h($selectedYear) ?>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="booking-trends-chart">
+
+                            <canvas
+                                id="bookingTrendsChart"
+                            ></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Booking Status -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="booking-status"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+
+                    <div class="booking-status-widget">
+
+                        <div class="booking-status-header">
+
+                            <div>
+
+                                <h2>
+                                    Booking Status
+                                </h2>
+
+                                <p>
+                                    Booking status breakdown during
+                                    <?= h($selectedYear) ?>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="booking-status-chart">
+
+                            <canvas
+                                id="bookingStatusChart"
+                            ></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
                 <!-- Recent Customers -->
                 <div
                     class="dashboard-widget widget-wide"
@@ -655,9 +781,7 @@ $months = [
                             <div class="rebooking-empty">
 
                                 <div class="rebooking-empty-icon">
-
                                     <i data-lucide="calendar-check"></i>
-
                                 </div>
 
                                 <h3>
@@ -819,14 +943,25 @@ $months = [
                                                 <?= $this->Form->postLink(
                                                     '<i data-lucide="mail"></i> Send Reminder',
                                                     [
-                                                        'controller' => 'Dashboard',
-                                                        'action' => 'sendRebookingReminder',
+                                                        'controller' =>
+                                                            'Dashboard',
+
+                                                        'action' =>
+                                                            'sendRebookingReminder',
+
                                                         $customer->id,
                                                     ],
                                                     [
-                                                        'escape' => false,
-                                                        'class' => 'rebooking-reminder-btn',
-                                                        'confirm' => 'Send a TEST reminder email for ' . $customerName . '?',
+                                                        'escape' =>
+                                                            false,
+
+                                                        'class' =>
+                                                            'rebooking-reminder-btn',
+
+                                                        'confirm' =>
+                                                            'Send a TEST reminder email for '
+                                                            . $customerName
+                                                            . '?',
                                                     ]
                                                 ) ?>
 
@@ -893,6 +1028,7 @@ $months = [
 
 
                     <div class="widget-library-grid">
+
 
                         <!-- Total Customers -->
                         <button
@@ -1004,6 +1140,50 @@ $months = [
                         </button>
 
 
+                        <!-- Booking Trends -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="booking-trends"
+                        >
+
+                            <div class="widget-library-icon">
+                                <i data-lucide="chart-column"></i>
+                            </div>
+
+                            <h3>
+                                Booking Trends
+                            </h3>
+
+                            <p>
+                                View monthly booking activity throughout the year.
+                            </p>
+
+                        </button>
+
+
+                        <!-- Booking Status -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="booking-status"
+                        >
+
+                            <div class="widget-library-icon">
+                                <i data-lucide="pie-chart"></i>
+                            </div>
+
+                            <h3>
+                                Booking Status
+                            </h3>
+
+                            <p>
+                                View accepted, cancelled and other bookings.
+                            </p>
+
+                        </button>
+
+
                         <!-- Recent Customers -->
                         <button
                             type="button"
@@ -1048,6 +1228,7 @@ $months = [
 
                         </button>
 
+
                     </div>
 
                 </div>
@@ -1066,92 +1247,241 @@ $months = [
         'DOMContentLoaded',
         function () {
 
-            const canvas =
+            /*
+             * Customer Growth Chart
+             */
+            const customerCanvas =
                 document.getElementById(
                     'customerGrowthChart'
                 );
 
 
-            if (!canvas) {
-                return;
-            }
+            if (customerCanvas) {
+
+                const customerLabels =
+                    <?= json_encode(
+                        $customerGrowthLabels
+                    ) ?>;
 
 
-            const labels =
-                <?= json_encode(
-                    $customerGrowthLabels
-                ) ?>;
+                const customerValues =
+                    <?= json_encode(
+                        $customerGrowthValues
+                    ) ?>;
 
 
-            const values =
-                <?= json_encode(
-                    $customerGrowthValues
-                ) ?>;
+                new Chart(
+                    customerCanvas,
+                    {
+                        type: 'line',
 
+                        data: {
+                            labels:
+                            customerLabels,
 
-            new Chart(
-                canvas,
-                {
-                    type: 'line',
+                            datasets: [
+                                {
+                                    label:
+                                        'New Customers',
 
-                    data: {
-                        labels: labels,
+                                    data:
+                                    customerValues,
 
-                        datasets: [
-                            {
-                                label:
-                                    'New Customers',
+                                    borderWidth:
+                                        2,
 
-                                data:
-                                values,
+                                    tension:
+                                        0.35,
 
-                                borderWidth:
-                                    2,
+                                    fill:
+                                        false,
 
-                                tension:
-                                    0.35,
+                                    pointRadius:
+                                        4,
 
-                                fill:
-                                    false,
-
-                                pointRadius:
-                                    4,
-
-                                pointHoverRadius:
-                                    6
-                            }
-                        ]
-                    },
-
-                    options: {
-                        responsive:
-                            true,
-
-                        maintainAspectRatio:
-                            false,
-
-                        plugins: {
-                            legend: {
-                                display:
-                                    false
-                            }
+                                    pointHoverRadius:
+                                        6
+                                }
+                            ]
                         },
 
-                        scales: {
-                            y: {
-                                beginAtZero:
-                                    true,
+                        options: {
+                            responsive:
+                                true,
 
-                                ticks: {
-                                    precision:
-                                        0
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+                                legend: {
+                                    display:
+                                        false
+                                }
+                            },
+
+                            scales: {
+                                y: {
+                                    beginAtZero:
+                                        true,
+
+                                    ticks: {
+                                        precision:
+                                            0
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            );
+                );
 
+            }
+
+
+            /*
+ * Booking Trends Chart
+ */
+            const bookingCanvas =
+                document.getElementById(
+                    'bookingTrendsChart'
+                );
+
+
+            if (bookingCanvas) {
+
+                const bookingLabels =
+                    <?= json_encode(
+                        $bookingTrendLabels
+                    ) ?>;
+
+
+                const bookingValues =
+                    <?= json_encode(
+                        $bookingTrendValues
+                    ) ?>;
+
+
+                new Chart(
+                    bookingCanvas,
+                    {
+                        type: 'bar',
+
+                        data: {
+                            labels:
+                            bookingLabels,
+
+                            datasets: [
+                                {
+                                    label:
+                                        'Bookings',
+
+                                    data:
+                                    bookingValues,
+
+                                    borderWidth:
+                                        1,
+
+                                    borderRadius:
+                                        6
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+                                legend: {
+                                    display:
+                                        false
+                                }
+                            },
+
+                            scales: {
+                                y: {
+                                    beginAtZero:
+                                        true,
+
+                                    ticks: {
+                                        precision:
+                                            0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+
+            }
+
+
+            /*
+             * Booking Status Chart
+             */
+            const bookingStatusCanvas =
+                document.getElementById(
+                    'bookingStatusChart'
+                );
+
+
+            if (bookingStatusCanvas) {
+
+                const bookingStatusLabels =
+                    <?= json_encode(
+                        $bookingStatusLabels
+                    ) ?>;
+
+
+                const bookingStatusValues =
+                    <?= json_encode(
+                        $bookingStatusValues
+                    ) ?>;
+
+
+                new Chart(
+                    bookingStatusCanvas,
+                    {
+                        type: 'doughnut',
+
+                        data: {
+                            labels:
+                            bookingStatusLabels,
+
+                            datasets: [
+                                {
+                                    data:
+                                    bookingStatusValues,
+
+                                    borderWidth:
+                                        2
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            cutout:
+                                '65%',
+
+                            plugins: {
+                                legend: {
+                                    position:
+                                        'bottom'
+                                }
+                            }
+                        }
+                    }
+                );
+
+            }
         }
     );
 </script>

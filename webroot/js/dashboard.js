@@ -96,10 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
 
-        /*
-         * Today requires no additional
-         * filter controls.
-         */
         if (filterApplyButton) {
 
             filterApplyButton.style.display =
@@ -118,10 +114,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             updateRangeFilter();
 
-            /*
-             * Today immediately reloads
-             * the dashboard.
-             */
             if (rangeSelect.value === 'today') {
 
                 rangeSelect.form.submit();
@@ -178,7 +170,9 @@ document.addEventListener('DOMContentLoaded', function () {
         function (event) {
 
             if (event.key === 'Escape') {
+
                 closeWidgetLibrary();
+
             }
 
         }
@@ -209,9 +203,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
+
                 widget.classList.remove(
                     'widget-hidden'
                 );
+
 
                 saveLayout();
 
@@ -234,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function () {
 
             editing = !editing;
+
 
             dashboard?.classList.toggle(
                 'editing',
@@ -262,6 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 dashboard?.querySelectorAll(
                     '.dashboard-widget'
                 );
+
 
             widgets?.forEach(
                 function (widget) {
@@ -297,6 +295,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
+
                     const widget =
                         button.closest(
                             '.dashboard-widget'
@@ -306,9 +305,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
+
                     widget.classList.add(
                         'widget-hidden'
                     );
+
 
                     saveLayout();
 
@@ -333,22 +334,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.preventDefault();
 
                 return;
+
             }
+
 
             const widget =
                 event.target.closest(
                     '.dashboard-widget'
                 );
 
+
             if (!widget) {
                 return;
             }
 
-            draggedWidget = widget;
+
+            draggedWidget =
+                widget;
+
 
             draggedWidget.classList.add(
                 'dragging'
             );
+
 
             event.dataTransfer.effectAllowed =
                 'move';
@@ -372,30 +380,79 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            event.preventDefault();
 
-            const slot =
-                event.target.closest(
-                    '.dashboard-drop-slot'
+            const isSmall =
+                draggedWidget.classList.contains(
+                    'widget-small'
+                );
+
+            const isWide =
+                draggedWidget.classList.contains(
+                    'widget-wide'
                 );
 
 
-            document
-                .querySelectorAll(
-                    '.dashboard-drop-slot'
-                )
-                .forEach(function (item) {
+            /*
+             * Small widgets
+             */
+            if (isSmall) {
 
-                    item.classList.remove(
-                        'drag-over'
+                const targetWidget =
+                    event.target.closest(
+                        '.dashboard-widget.widget-small'
                     );
 
-                });
+
+                if (
+                    !targetWidget ||
+                    targetWidget === draggedWidget
+                ) {
+                    return;
+                }
 
 
-            if (slot) {
+                event.preventDefault();
 
-                slot.classList.add(
+
+                clearDropHighlights();
+
+
+                targetWidget.classList.add(
+                    'drag-over'
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * Wide widgets
+             */
+            if (isWide) {
+
+                const targetWidget =
+                    event.target.closest(
+                        '.dashboard-widget.widget-wide'
+                    );
+
+
+                if (
+                    !targetWidget ||
+                    targetWidget === draggedWidget
+                ) {
+                    return;
+                }
+
+
+                event.preventDefault();
+
+
+                clearDropHighlights();
+
+
+                targetWidget.classList.add(
                     'drag-over'
                 );
 
@@ -420,64 +477,129 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            event.preventDefault();
 
-
-            const slot =
-                event.target.closest(
-                    '.dashboard-drop-slot'
-                );
-
-            if (!slot) {
-                return;
-            }
-
-
-            if (
-                !draggedWidget.classList.contains(
+            const isSmall =
+                draggedWidget.classList.contains(
                     'widget-small'
-                )
-            ) {
-                return;
-            }
+                );
 
-
-            const newSlot =
-                slot.dataset.slot;
-
-            const oldSlot =
-                draggedWidget.dataset.slot;
-
-
-            const existingWidget =
-                dashboard.querySelector(
-                    '.dashboard-widget.widget-small' +
-                    '[data-slot="' +
-                    newSlot +
-                    '"]'
+            const isWide =
+                draggedWidget.classList.contains(
+                    'widget-wide'
                 );
 
 
-            if (
-                existingWidget &&
-                existingWidget !== draggedWidget
-            ) {
+            /*
+             * Small widget swap
+             */
+            if (isSmall) {
 
-                existingWidget.dataset.slot =
-                    oldSlot;
+                const targetWidget =
+                    event.target.closest(
+                        '.dashboard-widget.widget-small'
+                    );
+
+
+                if (
+                    !targetWidget ||
+                    targetWidget === draggedWidget
+                ) {
+                    return;
+                }
+
+
+                event.preventDefault();
+
+
+                const draggedSlot =
+                    draggedWidget.dataset.slot;
+
+                const targetSlot =
+                    targetWidget.dataset.slot;
+
+
+                draggedWidget.dataset.slot =
+                    targetSlot;
+
+
+                targetWidget.dataset.slot =
+                    draggedSlot;
+
+
+                updateWidgetPositions();
+
+                saveLayout();
+
+                clearDropHighlights();
+
+
+                return;
 
             }
 
 
-            draggedWidget.dataset.slot =
-                newSlot;
+            /*
+             * Wide widget reorder
+             */
+            if (isWide) {
+
+                const targetWidget =
+                    event.target.closest(
+                        '.dashboard-widget.widget-wide'
+                    );
 
 
-            updateWidgetPositions();
+                if (
+                    !targetWidget ||
+                    targetWidget === draggedWidget
+                ) {
+                    return;
+                }
 
-            saveLayout();
 
-            clearDropHighlights();
+                event.preventDefault();
+
+
+                const targetRect =
+                    targetWidget
+                        .getBoundingClientRect();
+
+
+                const targetMiddle =
+                    targetRect.top +
+                    (
+                        targetRect.height /
+                        2
+                    );
+
+
+                if (
+                    event.clientY <
+                    targetMiddle
+                ) {
+
+                    dashboard.insertBefore(
+                        draggedWidget,
+                        targetWidget
+                    );
+
+                } else {
+
+                    dashboard.insertBefore(
+                        draggedWidget,
+                        targetWidget.nextSibling
+                    );
+
+                }
+
+
+                updateWidgetPositions();
+
+                saveLayout();
+
+                clearDropHighlights();
+
+            }
 
         }
     );
@@ -499,7 +621,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
-            draggedWidget = null;
+
+            draggedWidget =
+                null;
+
 
             clearDropHighlights();
 
@@ -527,6 +652,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             });
 
+
+        document
+            .querySelectorAll(
+                '.dashboard-widget'
+            )
+            .forEach(function (widget) {
+
+                widget.classList.remove(
+                    'drag-over'
+                );
+
+            });
+
     }
 
 
@@ -541,6 +679,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
+        /*
+         * Small widgets
+         */
         const smallWidgets =
             dashboard.querySelectorAll(
                 '.dashboard-widget.widget-small'
@@ -553,12 +694,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 const slot =
                     widget.dataset.slot;
 
+
                 if (!slot) {
                     return;
                 }
 
+
                 widget.style.gridColumn =
                     slot + ' / span 1';
+
 
                 widget.style.gridRow =
                     '1';
@@ -567,6 +711,9 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
 
+        /*
+         * Drop slots
+         */
         const slots =
             dashboard.querySelectorAll(
                 '.dashboard-drop-slot'
@@ -579,8 +726,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const slotNumber =
                     slot.dataset.slot;
 
+
                 slot.style.gridColumn =
-                    slotNumber + ' / span 1';
+                    slotNumber +
+                    ' / span 1';
+
 
                 slot.style.gridRow =
                     '1';
@@ -589,21 +739,27 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
 
-        const recentCustomers =
-            dashboard.querySelector(
-                '[data-widget="recent-customers"]'
+        /*
+         * Wide widgets
+         */
+        const wideWidgets =
+            dashboard.querySelectorAll(
+                '.dashboard-widget.widget-wide'
             );
 
 
-        if (recentCustomers) {
+        wideWidgets.forEach(
+            function (widget) {
 
-            recentCustomers.style.gridColumn =
-                '1 / -1';
+                widget.style.gridColumn =
+                    '1 / -1';
 
-            recentCustomers.style.gridRow =
-                '2';
 
-        }
+                widget.style.gridRow =
+                    'auto';
+
+            }
+        );
 
     }
 
@@ -628,27 +784,39 @@ document.addEventListener('DOMContentLoaded', function () {
         const layout =
             Array
                 .from(widgets)
-                .map(function (widget) {
+                .map(
+                    function (
+                        widget,
+                        index
+                    ) {
 
-                    return {
+                        return {
 
-                        name:
-                        widget.dataset.widget,
+                            name:
+                            widget
+                                .dataset
+                                .widget,
 
-                        visible:
-                            !widget
-                                .classList
-                                .contains(
-                                    'widget-hidden'
-                                ),
+                            visible:
+                                !widget
+                                    .classList
+                                    .contains(
+                                        'widget-hidden'
+                                    ),
 
-                        slot:
-                            widget.dataset.slot ||
-                            null
+                            slot:
+                                widget
+                                    .dataset
+                                    .slot ||
+                                null,
 
-                    };
+                            order:
+                            index
 
-                });
+                        };
+
+                    }
+                );
 
 
         localStorage.setItem(
@@ -675,12 +843,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 STORAGE_KEY
             );
 
+
         if (!saved) {
             return;
         }
 
 
         let layout;
+
 
         try {
 
@@ -694,6 +864,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
+        /*
+         * Restore visibility
+         * and small widget slots.
+         */
         layout.forEach(
             function (savedWidget) {
 
@@ -703,6 +877,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         savedWidget.name +
                         '"]'
                     );
+
 
                 if (!widget) {
                     return;
@@ -719,6 +894,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     widget.dataset.slot =
                         savedWidget.slot;
+
+                }
+
+            }
+        );
+
+
+        /*
+         * Restore wide widget order.
+         */
+        const savedWideWidgets =
+            layout
+                .filter(
+                    function (savedWidget) {
+
+                        const widget =
+                            dashboard.querySelector(
+                                '[data-widget="' +
+                                savedWidget.name +
+                                '"]'
+                            );
+
+
+                        return (
+                            widget &&
+                            widget.classList.contains(
+                                'widget-wide'
+                            )
+                        );
+
+                    }
+                )
+                .sort(
+                    function (a, b) {
+
+                        return (
+                            (a.order ?? 0) -
+                            (b.order ?? 0)
+                        );
+
+                    }
+                );
+
+
+        savedWideWidgets.forEach(
+            function (savedWidget) {
+
+                const widget =
+                    dashboard.querySelector(
+                        '[data-widget="' +
+                        savedWidget.name +
+                        '"]'
+                    );
+
+
+                if (widget) {
+
+                    dashboard.appendChild(
+                        widget
+                    );
 
                 }
 

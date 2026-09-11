@@ -590,9 +590,6 @@ class DashboardController extends AppController
          * -------------------------------------------------
          */
 
-        /*
-         * Start each month at zero.
-         */
         $customerGrowthData = [
             1 => 0,
             2 => 0,
@@ -609,10 +606,6 @@ class DashboardController extends AppController
         ];
 
 
-        /*
-         * Get customers created during
-         * the selected year.
-         */
         $customersForGrowth =
             $customersTable
                 ->find()
@@ -632,9 +625,6 @@ class DashboardController extends AppController
                 ->all();
 
 
-        /*
-         * Count customers by month.
-         */
         foreach (
             $customersForGrowth
             as $customer
@@ -662,9 +652,6 @@ class DashboardController extends AppController
         }
 
 
-        /*
-         * Chart labels.
-         */
         $customerGrowthLabels = [
             'Jan',
             'Feb',
@@ -681,14 +668,241 @@ class DashboardController extends AppController
         ];
 
 
-        /*
-         * Convert month counts
-         * into a simple array.
-         */
         $customerGrowthValues =
             array_values(
                 $customerGrowthData
             );
+
+
+        /*
+         * -------------------------------------------------
+         * BOOKING TRENDS CHART
+         * -------------------------------------------------
+         */
+
+        $bookingTrendData = [
+            1 => 0,
+            2 => 0,
+            3 => 0,
+            4 => 0,
+            5 => 0,
+            6 => 0,
+            7 => 0,
+            8 => 0,
+            9 => 0,
+            10 => 0,
+            11 => 0,
+            12 => 0,
+        ];
+
+
+        $bookingsForTrend =
+            $bookingsTable
+                ->find()
+                ->where([
+                    'start_at >=' =>
+                        new FrozenTime(
+                            $selectedYear .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at <' =>
+                        new FrozenTime(
+                            ($selectedYear + 1) .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at IS NOT' =>
+                        null,
+                ])
+                ->all();
+
+
+        foreach (
+            $bookingsForTrend
+            as $booking
+        ) {
+
+            if (empty($booking->start_at)) {
+                continue;
+            }
+
+
+            $bookingMonth =
+                (int)$booking
+                    ->start_at
+                    ->format('n');
+
+
+            $bookingTrendData[
+            $bookingMonth
+            ]++;
+        }
+
+
+        $bookingTrendLabels = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+        ];
+
+
+        $bookingTrendValues =
+            array_values(
+                $bookingTrendData
+            );
+
+
+        /*
+         * -------------------------------------------------
+         * BOOKING STATUS CHART
+         * -------------------------------------------------
+         */
+
+        $bookingStatusData = [
+            'pending' => 0,
+            'cancelled_by_customer' => 0,
+            'cancelled_by_seller' => 0,
+            'declined' => 0,
+            'accepted' => 0,
+            'no_show' => 0,
+        ];
+
+
+        $bookingsForStatus =
+            $bookingsTable
+                ->find()
+                ->where([
+                    'start_at >=' =>
+                        new FrozenTime(
+                            $selectedYear .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at <' =>
+                        new FrozenTime(
+                            ($selectedYear + 1) .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at IS NOT' =>
+                        null,
+                ])
+                ->all();
+
+
+        foreach (
+            $bookingsForStatus
+            as $booking
+        ) {
+
+            $status =
+                strtolower(
+                    trim(
+                        (string)$booking->status
+                    )
+                );
+
+
+            if ($status === 'pending') {
+
+                $bookingStatusData[
+                'pending'
+                ]++;
+
+            } elseif (
+                $status ===
+                'cancelled by customer'
+            ) {
+
+                $bookingStatusData[
+                'cancelled_by_customer'
+                ]++;
+
+            } elseif (
+                $status ===
+                'cancelled by seller'
+            ) {
+
+                $bookingStatusData[
+                'cancelled_by_seller'
+                ]++;
+
+            } elseif (
+                $status ===
+                'declined'
+            ) {
+
+                $bookingStatusData[
+                'declined'
+                ]++;
+
+            } elseif (
+                $status ===
+                'accepted'
+            ) {
+
+                $bookingStatusData[
+                'accepted'
+                ]++;
+
+            } elseif (
+                $status ===
+                'no show'
+            ) {
+
+                $bookingStatusData[
+                'no_show'
+                ]++;
+
+            }
+        }
+
+
+        $bookingStatusLabels = [
+            'Pending',
+            'Cancelled By Customer',
+            'Cancelled By Seller',
+            'Declined',
+            'Accepted',
+            'No Show',
+        ];
+
+
+        $bookingStatusValues = [
+            $bookingStatusData[
+            'pending'
+            ],
+
+            $bookingStatusData[
+            'cancelled_by_customer'
+            ],
+
+            $bookingStatusData[
+            'cancelled_by_seller'
+            ],
+
+            $bookingStatusData[
+            'declined'
+            ],
+
+            $bookingStatusData[
+            'accepted'
+            ],
+
+            $bookingStatusData[
+            'no_show'
+            ],
+        ];
 
 
         /*
@@ -717,7 +931,11 @@ class DashboardController extends AppController
             'rebookingCustomers',
             'inactiveThresholdDays',
             'customerGrowthLabels',
-            'customerGrowthValues'
+            'customerGrowthValues',
+            'bookingTrendLabels',
+            'bookingTrendValues',
+            'bookingStatusLabels',
+            'bookingStatusValues'
         ));
 
 
