@@ -41,14 +41,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const STORAGE_KEY =
         'wendy-dashboard-layout';
 
-    const SIZE_CLASSES =
-        ['widget-small', 'widget-medium', 'widget-large', 'widget-wide'];
+    const SIZE_CLASSES = [
+        'widget-small',
+        'widget-medium',
+        'widget-large',
+        'widget-wide'
+    ];
 
-    const SIZE_NAMES =
-        ['small', 'medium', 'large', 'wide'];
+    const SIZE_NAMES = [
+        'small',
+        'medium',
+        'large',
+        'wide'
+    ];
 
     const GRID_COLUMNS = 4;
-
     const GRID_GAP = 24;
 
     let editing = false;
@@ -188,7 +195,9 @@ document.addEventListener('DOMContentLoaded', function () {
         function (event) {
 
             if (event.key === 'Escape') {
+
                 closeWidgetLibrary();
+
             }
 
         }
@@ -219,9 +228,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
+
                 widget.classList.remove(
                     'widget-hidden'
                 );
+
 
                 saveLayout();
 
@@ -244,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function () {
 
             editing = !editing;
+
 
             dashboard?.classList.toggle(
                 'editing',
@@ -272,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 dashboard?.querySelectorAll(
                     '.dashboard-widget'
                 );
+
 
             widgets?.forEach(
                 function (widget) {
@@ -307,6 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
+
                     const widget =
                         button.closest(
                             '.dashboard-widget'
@@ -316,9 +330,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
+
                     widget.classList.add(
                         'widget-hidden'
                     );
+
 
                     saveLayout();
 
@@ -331,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =====================================================
-       Drag Start (reorder)
+       Drag Start
        ===================================================== */
 
     dashboard?.addEventListener(
@@ -348,22 +364,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.preventDefault();
 
                 return;
+
             }
+
 
             const widget =
                 event.target.closest(
                     '.dashboard-widget'
                 );
 
+
             if (!widget) {
                 return;
             }
 
-            draggedWidget = widget;
+
+            draggedWidget =
+                widget;
+
 
             draggedWidget.classList.add(
                 'dragging'
             );
+
 
             event.dataTransfer.effectAllowed =
                 'move';
@@ -373,10 +396,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =====================================================
-       Drag Over (reorder) - moves the dragged widget to
-       wherever the pointer currently is, live, based on
-       DOM order rather than fixed slots. This lets widgets
-       of any size be reordered next to one another.
+       Drag Over
        ===================================================== */
 
     dashboard?.addEventListener(
@@ -390,13 +410,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+
             event.preventDefault();
+
 
             const target =
                 findDropTarget(
                     event.clientX,
                     event.clientY
                 );
+
 
             if (!target.element) {
 
@@ -405,11 +428,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
                 return;
+
             }
 
-            if (target.element === draggedWidget) {
+
+            if (
+                target.element ===
+                draggedWidget
+            ) {
                 return;
             }
+
 
             if (target.after) {
 
@@ -444,6 +473,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+
             event.preventDefault();
 
             saveLayout();
@@ -468,6 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
+
             draggedWidget = null;
 
             saveLayout();
@@ -482,6 +513,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function findDropTarget(x, y) {
 
+        if (!dashboard) {
+
+            return {
+                distance: Infinity,
+                element: null,
+                after: false
+            };
+
+        }
+
+
         const candidates =
             Array.from(
                 dashboard.querySelectorAll(
@@ -493,11 +535,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             });
 
+
         let closest = {
             distance: Infinity,
             element: null,
             after: false
         };
+
 
         candidates.forEach(function (widget) {
 
@@ -505,10 +549,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 widget.getBoundingClientRect();
 
             const centerX =
-                box.left + box.width / 2;
+                box.left +
+                box.width / 2;
 
             const centerY =
-                box.top + box.height / 2;
+                box.top +
+                box.height / 2;
 
             const distance =
                 Math.hypot(
@@ -516,11 +562,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     y - centerY
                 );
 
+
             if (distance < closest.distance) {
 
                 const sameRow =
-                    Math.abs(y - centerY) <
+                    Math.abs(
+                        y - centerY
+                    ) <
                     box.height / 2;
+
 
                 closest = {
                     distance: distance,
@@ -534,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         });
 
+
         return closest;
 
     }
@@ -545,13 +596,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function sizeIndexOf(widget) {
 
-        for (let i = 0; i < SIZE_CLASSES.length; i++) {
+        for (
+            let i = 0;
+            i < SIZE_CLASSES.length;
+            i++
+        ) {
 
-            if (widget.classList.contains(SIZE_CLASSES[i])) {
+            if (
+                widget.classList.contains(
+                    SIZE_CLASSES[i]
+                )
+            ) {
+
                 return i;
+
             }
 
         }
+
 
         return 0;
 
@@ -566,11 +628,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 Math.max(0, index)
             );
 
-        SIZE_CLASSES.forEach(function (className) {
 
-            widget.classList.remove(className);
+        SIZE_CLASSES.forEach(
+            function (className) {
 
-        });
+                widget.classList.remove(
+                    className
+                );
+
+            }
+        );
+
 
         widget.classList.add(
             SIZE_CLASSES[clamped]
@@ -581,12 +649,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function columnWidth() {
 
+        if (!dashboard) {
+            return 0;
+        }
+
+
         const containerWidth =
-            dashboard.getBoundingClientRect().width;
+            dashboard
+                .getBoundingClientRect()
+                .width;
+
 
         return (
             containerWidth -
-            GRID_GAP * (GRID_COLUMNS - 1)
+            GRID_GAP *
+            (GRID_COLUMNS - 1)
         ) / GRID_COLUMNS;
 
     }
@@ -606,26 +683,38 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
+
                     event.preventDefault();
                     event.stopPropagation();
+
 
                     const widget =
                         handle.closest(
                             '.dashboard-widget'
                         );
 
+
                     if (!widget) {
                         return;
                     }
+
 
                     const startX =
                         event.clientX;
 
                     const startWidth =
-                        widget.getBoundingClientRect().width;
+                        widget
+                            .getBoundingClientRect()
+                            .width;
 
                     const colWidth =
                         columnWidth();
+
+
+                    if (colWidth <= 0) {
+                        return;
+                    }
+
 
                     widget.classList.add(
                         'resizing'
@@ -639,19 +728,32 @@ document.addEventListener('DOMContentLoaded', function () {
                             startX;
 
                         const newWidth =
-                            startWidth + deltaX;
+                            startWidth +
+                            deltaX;
+
 
                         let span =
                             Math.round(
-                                (newWidth + GRID_GAP) /
-                                (colWidth + GRID_GAP)
+                                (
+                                    newWidth +
+                                    GRID_GAP
+                                ) /
+                                (
+                                    colWidth +
+                                    GRID_GAP
+                                )
                             );
+
 
                         span =
                             Math.min(
                                 GRID_COLUMNS,
-                                Math.max(1, span)
+                                Math.max(
+                                    1,
+                                    span
+                                )
                             );
+
 
                         applySizeIndex(
                             widget,
@@ -673,9 +775,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             onUp
                         );
 
+
                         widget.classList.remove(
                             'resizing'
                         );
+
 
                         saveLayout();
 
@@ -718,28 +822,40 @@ document.addEventListener('DOMContentLoaded', function () {
         const layout =
             Array
                 .from(widgets)
-                .map(function (widget) {
+                .map(
+                    function (
+                        widget,
+                        index
+                    ) {
 
-                    return {
+                        return {
 
-                        name:
-                        widget.dataset.widget,
+                            name:
+                            widget
+                                .dataset
+                                .widget,
 
-                        visible:
-                            !widget
-                                .classList
-                                .contains(
-                                    'widget-hidden'
-                                ),
+                            visible:
+                                !widget
+                                    .classList
+                                    .contains(
+                                        'widget-hidden'
+                                    ),
 
-                        size:
-                            SIZE_NAMES[
-                                sizeIndexOf(widget)
-                            ]
+                            size:
+                                SIZE_NAMES[
+                                    sizeIndexOf(
+                                        widget
+                                    )
+                                    ],
 
-                    };
+                            order:
+                            index
 
-                });
+                        };
+
+                    }
+                );
 
 
         localStorage.setItem(
@@ -766,12 +882,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 STORAGE_KEY
             );
 
+
         if (!saved) {
             return;
         }
 
 
         let layout;
+
 
         try {
 
@@ -785,6 +903,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
+        if (!Array.isArray(layout)) {
+            return;
+        }
+
+
+        /*
+         * Sort using the saved widget order.
+         */
+        layout.sort(
+            function (a, b) {
+
+                return (
+                    (a.order ?? 0) -
+                    (b.order ?? 0)
+                );
+
+            }
+        );
+
+
         layout.forEach(
             function (savedWidget) {
 
@@ -794,6 +932,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         savedWidget.name +
                         '"]'
                     );
+
 
                 if (!widget) {
                     return;
@@ -811,6 +950,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         savedWidget.size
                     );
 
+
                 if (sizeIndex !== -1) {
 
                     applySizeIndex(
@@ -822,11 +962,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                 /*
-                 * Re-appending in saved order restores
-                 * the widget positions, since layout is
-                 * driven by DOM order rather than slots.
+                 * DOM order controls the
+                 * dashboard position.
                  */
-                dashboard.appendChild(widget);
+                dashboard.appendChild(
+                    widget
+                );
 
             }
         );
