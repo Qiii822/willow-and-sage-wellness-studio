@@ -10,6 +10,14 @@
  * @var string|null $startDate
  * @var string|null $endDate
  * @var array $availableYears
+ * @var array $rebookingCustomers
+ * @var int $inactiveThresholdDays
+ * @var array $customerGrowthLabels
+ * @var array $customerGrowthValues
+ * @var array $bookingTrendLabels
+ * @var array $bookingTrendValues
+ * @var array $bookingStatusLabels
+ * @var array $bookingStatusValues
  */
 
 $this->assign('title', 'Dashboard');
@@ -17,14 +25,11 @@ $this->setLayout('dashboard');
 
 $today = \Cake\I18n\FrozenDate::today();
 
-$todayString =
-    $today->format('Y-m-d');
+$todayString = $today->format('Y-m-d');
 
-$currentMonth =
-    (int)$today->format('n');
+$currentMonth = (int)$today->format('n');
 
-$currentWeek =
-    $today->format('o-\WW');
+$currentWeek = $today->format('o-\WW');
 
 $months = [
     1 => 'January',
@@ -41,6 +46,8 @@ $months = [
     12 => 'December',
 ];
 ?>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container-fluid p-0">
 
@@ -65,7 +72,6 @@ $months = [
 
                 </div>
 
-
                 <div class="dashboard-toolbar">
 
                     <form
@@ -82,38 +88,30 @@ $months = [
                             class="filter-extra"
                             data-filter-panel="day"
                         >
-
                             <input
                                 type="date"
                                 name="day"
                                 max="<?= h($todayString) ?>"
                                 value="<?= h(
-                                    $selectedDay
-                                    ?? $todayString
+                                    $selectedDay ?? $todayString
                                 ) ?>"
                             >
-
                         </div>
-
 
                         <!-- Weekly -->
                         <div
                             class="filter-extra"
                             data-filter-panel="week"
                         >
-
                             <input
                                 type="week"
                                 name="week"
                                 max="<?= h($currentWeek) ?>"
                                 value="<?= h(
-                                    $selectedWeek
-                                    ?? $currentWeek
+                                    $selectedWeek ?? $currentWeek
                                 ) ?>"
                             >
-
                         </div>
-
 
                         <!-- Monthly -->
                         <div
@@ -141,7 +139,6 @@ $months = [
 
                             </select>
 
-
                             <select
                                 name="month"
                                 class="dashboard-filter-select"
@@ -152,8 +149,7 @@ $months = [
                                     <option
                                         value="<?= h($number) ?>"
                                         <?= (int)(
-                                            $selectedMonth
-                                            ?? $currentMonth
+                                            $selectedMonth ?? $currentMonth
                                         ) === $number
                                             ? 'selected'
                                             : '' ?>
@@ -166,7 +162,6 @@ $months = [
                             </select>
 
                         </div>
-
 
                         <!-- Yearly -->
                         <div
@@ -196,7 +191,6 @@ $months = [
 
                         </div>
 
-
                         <!-- Custom -->
                         <div
                             class="custom-date-range"
@@ -220,7 +214,6 @@ $months = [
 
                             </div>
 
-
                             <div class="custom-date-field">
 
                                 <label for="end-date">
@@ -238,7 +231,6 @@ $months = [
                             </div>
 
                         </div>
-
 
                         <!-- Main range selector -->
                         <select
@@ -303,7 +295,6 @@ $months = [
 
                         </select>
 
-
                         <button
                             type="submit"
                             class="custom-date-apply"
@@ -314,7 +305,6 @@ $months = [
 
                     </form>
 
-
                     <!-- Add widget -->
                     <button
                         type="button"
@@ -324,7 +314,6 @@ $months = [
                         <i data-lucide="plus"></i>
                         Add widget
                     </button>
-
 
                     <!-- Edit layout -->
                     <button
@@ -340,13 +329,13 @@ $months = [
 
             </div>
 
-
             <!-- Dashboard Grid -->
             <div
                 id="dashboard-widgets"
                 class="dashboard-widget-grid"
             >
 
+                <!-- Drop Slots -->
                 <div
                     class="dashboard-drop-slot"
                     data-slot="1"
@@ -367,12 +356,10 @@ $months = [
                     data-slot="4"
                 ></div>
 
-
                 <!-- Total Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-customers"
-                    data-slot="1"
                 >
 
                     <div class="widget-edit-controls">
@@ -397,14 +384,21 @@ $months = [
 
                     <?= $this->element('total_customers') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- New Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="new-customers"
-                    data-slot="2"
                 >
 
                     <div class="widget-edit-controls">
@@ -429,14 +423,21 @@ $months = [
 
                     <?= $this->element('new_customers') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- Total Bookings -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-bookings"
-                    data-slot="3"
                 >
 
                     <div class="widget-edit-controls">
@@ -461,14 +462,21 @@ $months = [
 
                     <?= $this->element('total_bookings') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- Total Income -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-income"
-                    data-slot="4"
                 >
 
                     <div class="widget-edit-controls">
@@ -493,8 +501,187 @@ $months = [
 
                     <?= $this->element('total_income') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
+                <!-- Customer Growth -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="customer-growth"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="customer-growth-widget">
+
+                        <div class="customer-growth-header">
+
+                            <div>
+
+                                <h2>
+                                    Customer Growth
+                                </h2>
+
+                                <p>
+                                    New customers added during
+                                    <?= h($selectedYear) ?>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="customer-growth-chart">
+
+                            <canvas
+                                id="customerGrowthChart"
+                            ></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Booking Trends -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="booking-trends"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="booking-trends-widget">
+
+                        <div class="booking-trends-header">
+
+                            <div>
+
+                                <h2>
+                                    Booking Trends
+                                </h2>
+
+                                <p>
+                                    Bookings during
+                                    <?= h($selectedYear) ?>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="booking-trends-chart">
+
+                            <canvas
+                                id="bookingTrendsChart"
+                            ></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Booking Status -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="booking-status"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="booking-status-widget">
+
+                        <div class="booking-status-header">
+
+                            <div>
+
+                                <h2>
+                                    Booking Status
+                                </h2>
+
+                                <p>
+                                    Booking status breakdown during
+                                    <?= h($selectedYear) ?>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="booking-status-chart">
+
+                            <canvas
+                                id="bookingStatusChart"
+                            ></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
                 <!-- Recent Customers -->
                 <div
@@ -524,10 +711,267 @@ $months = [
 
                     <?= $this->element('recent_customers') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
+                </div>
+
+                <!-- Customer Rebooking -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="customer-rebooking"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="rebooking-widget">
+
+                        <div class="rebooking-widget-header">
+
+                            <div>
+
+                                <h2>
+                                    Customer Rebooking
+                                </h2>
+
+                                <p>
+                                    Customers who have not booked for
+                                    <?= h($inactiveThresholdDays) ?>
+                                    days or more.
+                                </p>
+
+                            </div>
+
+                            <span class="rebooking-count">
+                                <?= count($rebookingCustomers) ?>
+                                customer<?= count($rebookingCustomers) === 1 ? '' : 's' ?>
+                            </span>
+
+                        </div>
+
+                        <?php if (empty($rebookingCustomers)): ?>
+
+                            <div class="rebooking-empty">
+
+                                <div class="rebooking-empty-icon">
+                                    <i data-lucide="calendar-check"></i>
+                                </div>
+
+                                <h3>
+                                    No inactive customers
+                                </h3>
+
+                                <p>
+                                    All customers with previous bookings
+                                    have booked within the last
+                                    <?= h($inactiveThresholdDays) ?>
+                                    days.
+                                </p>
+
+                            </div>
+
+                        <?php else: ?>
+
+                            <div class="rebooking-table-wrapper">
+
+                                <table class="rebooking-table">
+
+                                    <thead>
+
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Email</th>
+                                        <th>Last Booking</th>
+                                        <th>Inactive For</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                    <?php foreach ($rebookingCustomers as $item): ?>
+
+                                        <?php
+                                        $customer = $item['customer'];
+                                        $lastBooking = $item['lastBooking'];
+                                        $daysSinceLastBooking =
+                                            $item['daysSinceLastBooking'];
+
+                                        $customerName = trim(
+                                            ($customer->given_name
+                                                ?? $customer->first_name
+                                                ?? '')
+                                            . ' '
+                                            . ($customer->family_name
+                                                ?? $customer->last_name
+                                                ?? '')
+                                        );
+
+                                        if ($customerName === '') {
+                                            $customerName =
+                                                'Unknown Customer';
+                                        }
+                                        ?>
+
+                                        <tr>
+
+                                            <td>
+
+                                                <div class="rebooking-customer">
+
+                                                    <div class="rebooking-avatar">
+
+                                                        <?= h(
+                                                            strtoupper(
+                                                                substr(
+                                                                    $customerName,
+                                                                    0,
+                                                                    1
+                                                                )
+                                                            )
+                                                        ) ?>
+
+                                                    </div>
+
+                                                    <strong>
+                                                        <?= h($customerName) ?>
+                                                    </strong>
+
+                                                </div>
+
+                                            </td>
+
+                                            <td>
+
+                                                <span class="rebooking-email">
+
+                                                    <?= h(
+                                                        $customer->email_address
+                                                        ?? $customer->email
+                                                        ?? 'No email'
+                                                    ) ?>
+
+                                                </span>
+
+                                            </td>
+
+                                            <td>
+
+                                                <?php if (!empty($lastBooking->start_at)): ?>
+
+                                                    <?= h(
+                                                        $lastBooking
+                                                            ->start_at
+                                                            ->format('d M Y')
+                                                    ) ?>
+
+                                                <?php else: ?>
+
+                                                    —
+
+                                                <?php endif; ?>
+
+                                            </td>
+
+                                            <td>
+
+                                                <strong class="rebooking-days">
+
+                                                    <?= h($daysSinceLastBooking) ?>
+                                                    days
+
+                                                </strong>
+
+                                            </td>
+
+                                            <td>
+
+                                                <span class="rebooking-status">
+
+                                                    <i data-lucide="clock"></i>
+
+                                                    Needs Rebooking
+
+                                                </span>
+
+                                            </td>
+
+                                            <td>
+
+                                                <?= $this->Form->postLink(
+                                                    '<i data-lucide="mail"></i> Send Reminder',
+                                                    [
+                                                        'controller' =>
+                                                            'Dashboard',
+                                                        'action' =>
+                                                            'sendRebookingReminder',
+                                                        $customer->id,
+                                                    ],
+                                                    [
+                                                        'escape' => false,
+                                                        'class' =>
+                                                            'rebooking-reminder-btn',
+                                                        'confirm' =>
+                                                            'Send a TEST reminder email for '
+                                                            . $customerName
+                                                            . '?',
+                                                    ]
+                                                ) ?>
+
+                                            </td>
+
+                                        </tr>
+
+                                    <?php endforeach; ?>
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
             </div>
-
 
             <!-- Widget Library -->
             <div
@@ -539,7 +983,6 @@ $months = [
                     class="widget-modal-overlay"
                     id="widget-modal-overlay"
                 ></div>
-
 
                 <div class="widget-modal-content">
 
@@ -557,7 +1000,6 @@ $months = [
 
                         </div>
 
-
                         <button
                             type="button"
                             class="widget-modal-close"
@@ -569,9 +1011,9 @@ $months = [
 
                     </div>
 
-
                     <div class="widget-library-grid">
 
+                        <!-- Total Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -592,7 +1034,7 @@ $months = [
 
                         </button>
 
-
+                        <!-- New Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -613,7 +1055,6 @@ $months = [
 
                         </button>
 
-
                         <!-- Total Bookings -->
                         <button
                             type="button"
@@ -622,9 +1063,7 @@ $months = [
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="calendar-check"></i>
-
                             </div>
 
                             <h3>
@@ -637,7 +1076,6 @@ $months = [
 
                         </button>
 
-
                         <!-- Total Income -->
                         <button
                             type="button"
@@ -646,9 +1084,7 @@ $months = [
                         >
 
                             <div class="widget-library-icon">
-
                                 <i data-lucide="dollar-sign"></i>
-
                             </div>
 
                             <h3>
@@ -661,7 +1097,70 @@ $months = [
 
                         </button>
 
+                        <!-- Customer Growth -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="customer-growth"
+                        >
 
+                            <div class="widget-library-icon">
+                                <i data-lucide="chart-line"></i>
+                            </div>
+
+                            <h3>
+                                Customer Growth
+                            </h3>
+
+                            <p>
+                                View new customer growth throughout the year.
+                            </p>
+
+                        </button>
+
+                        <!-- Booking Trends -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="booking-trends"
+                        >
+
+                            <div class="widget-library-icon">
+                                <i data-lucide="chart-column"></i>
+                            </div>
+
+                            <h3>
+                                Booking Trends
+                            </h3>
+
+                            <p>
+                                View monthly booking activity throughout the year.
+                            </p>
+
+                        </button>
+
+                        <!-- Booking Status -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="booking-status"
+                        >
+
+                            <div class="widget-library-icon">
+                                <i data-lucide="pie-chart"></i>
+                            </div>
+
+                            <h3>
+                                Booking Status
+                            </h3>
+
+                            <p>
+                                View accepted, cancelled and other bookings.
+                            </p>
+
+                        </button>
+
+                        <!-- Recent Customers -->
                         <button
                             type="button"
                             class="widget-library-item"
@@ -682,6 +1181,28 @@ $months = [
 
                         </button>
 
+                        <!-- Customer Rebooking -->
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="customer-rebooking"
+                        >
+
+                            <div class="widget-library-icon">
+                                <i data-lucide="calendar-clock"></i>
+                            </div>
+
+                            <h3>
+                                Customer Rebooking
+                            </h3>
+
+                            <p>
+                                Find customers who have not booked recently
+                                and send rebooking reminders.
+                            </p>
+
+                        </button>
+
                     </div>
 
                 </div>
@@ -693,3 +1214,206 @@ $months = [
     </div>
 
 </div>
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            /*
+             * Customer Growth Chart
+             */
+            const customerCanvas =
+                document.getElementById(
+                    'customerGrowthChart'
+                );
+
+            if (customerCanvas) {
+
+                const customerLabels =
+                    <?= json_encode(
+                        $customerGrowthLabels
+                    ) ?>;
+
+                const customerValues =
+                    <?= json_encode(
+                        $customerGrowthValues
+                    ) ?>;
+
+                new Chart(
+                    customerCanvas,
+                    {
+                        type: 'line',
+
+                        data: {
+                            labels: customerLabels,
+
+                            datasets: [
+                                {
+                                    label: 'New Customers',
+
+                                    data: customerValues,
+
+                                    borderWidth: 2,
+
+                                    tension: 0.35,
+
+                                    fill: false,
+
+                                    pointRadius: 4,
+
+                                    pointHoverRadius: 6
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive: true,
+
+                            maintainAspectRatio: false,
+
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+
+            }
+
+            /*
+             * Booking Trends Chart
+             */
+            const bookingCanvas =
+                document.getElementById(
+                    'bookingTrendsChart'
+                );
+
+            if (bookingCanvas) {
+
+                const bookingLabels =
+                    <?= json_encode(
+                        $bookingTrendLabels
+                    ) ?>;
+
+                const bookingValues =
+                    <?= json_encode(
+                        $bookingTrendValues
+                    ) ?>;
+
+                new Chart(
+                    bookingCanvas,
+                    {
+                        type: 'bar',
+
+                        data: {
+                            labels: bookingLabels,
+
+                            datasets: [
+                                {
+                                    label: 'Bookings',
+
+                                    data: bookingValues,
+
+                                    borderWidth: 1,
+
+                                    borderRadius: 6
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive: true,
+
+                            maintainAspectRatio: false,
+
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+
+            }
+
+            /*
+             * Booking Status Chart
+             */
+            const bookingStatusCanvas =
+                document.getElementById(
+                    'bookingStatusChart'
+                );
+
+            if (bookingStatusCanvas) {
+
+                const bookingStatusLabels =
+                    <?= json_encode(
+                        $bookingStatusLabels
+                    ) ?>;
+
+                const bookingStatusValues =
+                    <?= json_encode(
+                        $bookingStatusValues
+                    ) ?>;
+
+                new Chart(
+                    bookingStatusCanvas,
+                    {
+                        type: 'doughnut',
+
+                        data: {
+                            labels: bookingStatusLabels,
+
+                            datasets: [
+                                {
+                                    data: bookingStatusValues,
+
+                                    borderWidth: 2
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive: true,
+
+                            maintainAspectRatio: false,
+
+                            cutout: '65%',
+
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    }
+                );
+
+            }
+        }
+    );
+</script>

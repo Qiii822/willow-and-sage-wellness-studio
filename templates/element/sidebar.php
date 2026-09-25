@@ -105,7 +105,6 @@ $isWebsite = in_array($controller, ['SiteContents', 'Services', 'Offers'], true)
 
         <?php endif; ?>
 
-
         <?php if (in_array(
             $role,
             ['admin', 'superadmin'],
@@ -127,7 +126,6 @@ $isWebsite = in_array($controller, ['SiteContents', 'Services', 'Offers'], true)
             </li>
 
         <?php endif; ?>
-
 
         <?php if (in_array(
             $role,
@@ -173,7 +171,7 @@ $isWebsite = in_array($controller, ['SiteContents', 'Services', 'Offers'], true)
             </li>
 
         <?php endif; ?>
-        
+
     </ul>
 
     <div class="logout-section">

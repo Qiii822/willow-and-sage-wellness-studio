@@ -43,25 +43,26 @@ $statusClass = fn (string $status): string => str_replace('_', '-', $status);
                 </div>
 
                 <form
-                        class="bookings-filter-form"
-                        method="get"
-                        action="<?= $this->Url->build([
-                            'controller' => 'Bookings',
-                            'action' => 'index',
-                        ]) ?>"
+                    class="bookings-filter-form"
+                    method="get"
+                    action="<?= $this->Url->build([
+                        'controller' => 'Bookings',
+                        'action' => 'index',
+                    ]) ?>"
                 >
                     <div class="filter-field">
                         <label for="booking-status">Status</label>
                         <select
-                                name="status"
-                                id="booking-status"
-                                onchange="this.form.submit()"
+                            name="status"
+                            id="booking-status"
+                            onchange="this.form.submit()"
                         >
                             <option value="">All statuses</option>
+
                             <?php foreach ($statuses as $value => $label): ?>
                                 <option
-                                        value="<?= h($value) ?>"
-                                        <?= $status === $value ? 'selected' : '' ?>
+                                    value="<?= h($value) ?>"
+                                    <?= $status === $value ? 'selected' : '' ?>
                                 >
                                     <?= h($label) ?>
                                 </option>
@@ -72,32 +73,34 @@ $statusClass = fn (string $status): string => str_replace('_', '-', $status);
                     <div class="filter-field">
                         <label for="booking-start-date">From</label>
                         <input
-                                type="date"
-                                name="start_date"
-                                id="booking-start-date"
-                                value="<?= h($startDate ?? '') ?>"
+                            type="date"
+                            name="start_date"
+                            id="booking-start-date"
+                            value="<?= h($startDate ?? '') ?>"
                         >
                     </div>
 
                     <div class="filter-field">
                         <label for="booking-end-date">To</label>
                         <input
-                                type="date"
-                                name="end_date"
-                                id="booking-end-date"
-                                value="<?= h($endDate ?? '') ?>"
+                            type="date"
+                            name="end_date"
+                            id="booking-end-date"
+                            value="<?= h($endDate ?? '') ?>"
                         >
                     </div>
 
-                    <button class="table-action" type="submit">Filter</button>
+                    <button class="table-action" type="submit">
+                        Filter
+                    </button>
 
                     <?php if ($hasActiveFilters): ?>
                         <a
-                                class="filter-clear"
-                                href="<?= $this->Url->build([
-                                    'controller' => 'Bookings',
-                                    'action' => 'index',
-                                ]) ?>"
+                            class="filter-clear"
+                            href="<?= $this->Url->build([
+                                'controller' => 'Bookings',
+                                'action' => 'index',
+                            ]) ?>"
                         >
                             Clear filters
                         </a>
@@ -123,6 +126,7 @@ $statusClass = fn (string $status): string => str_replace('_', '-', $status);
                                 </td>
                             </tr>
                         <?php endif; ?>
+
                         <?php foreach ($bookings as $booking): ?>
                             <tr>
                                 <td>
@@ -135,6 +139,7 @@ $statusClass = fn (string $status): string => str_replace('_', '-', $status);
                                         —
                                     <?php endif; ?>
                                 </td>
+
                                 <td>
                                     <?php if ($booking->start_at): ?>
                                         <?= h($booking->start_at->format('d/m/Y H:i:s')) ?>
@@ -142,12 +147,16 @@ $statusClass = fn (string $status): string => str_replace('_', '-', $status);
                                         -
                                     <?php endif; ?>
                                 </td>
+
                                 <td>
                                     <span class="status-badge <?= h($statusClass($booking->status)) ?>">
                                         <?= h($statusLabel($booking->status)) ?>
                                     </span>
                                 </td>
-                                <td><?= h($booking->location_id ?? '-') ?></td>
+
+                                <td>
+                                    <?= h($booking->location_id ?? '-') ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>

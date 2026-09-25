@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use Cake\Http\Response;
 use Cake\I18n\FrozenTime;
+use Cake\Mailer\Mailer;
 
 class DashboardController extends AppController
 {
@@ -63,30 +64,27 @@ class DashboardController extends AppController
          * Find years that actually contain
          * customer data.
          */
-        $availableYears = $customersTable
-            ->find()
-            ->select(['square_created_at'])
-            ->where([
-                'square_created_at IS NOT' => null,
-            ])
-            ->all()
-            ->map(function ($customer) {
-                return (int)$customer
-                    ->square_created_at
-                    ->format('Y');
-            })
-            ->unique()
-            ->toList();
+        $availableYears =
+            $customersTable
+                ->find()
+                ->select([
+                    'square_created_at',
+                ])
+                ->where([
+                    'square_created_at IS NOT' =>
+                        null,
+                ])
+                ->all()
+                ->map(function ($customer) {
+                    return (int)$customer
+                        ->square_created_at
+                        ->format('Y');
+                })
+                ->unique()
+                ->toList();
+
 
         rsort($availableYears);
-
-        /*
-         * Show newest year first.
-         */
-        $availableYears =
-            array_reverse(
-                $availableYears
-            );
 
 
         /*
@@ -123,9 +121,6 @@ class DashboardController extends AppController
          */
         switch ($range) {
 
-            /*
-             * Today
-             */
             case 'today':
 
                 $periodStart =
@@ -143,9 +138,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Daily
-             */
             case 'day':
 
                 if (empty($selectedDay)) {
@@ -155,18 +147,15 @@ class DashboardController extends AppController
 
                 }
 
-
                 $periodStart =
                     new FrozenTime(
                         $selectedDay .
                         ' 00:00:00'
                     );
 
-
                 $periodEnd =
                     $periodStart
                         ->addDays(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -178,9 +167,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Weekly
-             */
             case 'week':
 
                 if (empty($selectedWeek)) {
@@ -192,11 +178,6 @@ class DashboardController extends AppController
 
                 }
 
-
-                /*
-                 * Expected format:
-                 * 2026-W35
-                 */
                 if (
                     preg_match(
                         '/^(\d{4})-W(\d{2})$/',
@@ -210,7 +191,6 @@ class DashboardController extends AppController
 
                     $weekNumber =
                         (int)$matches[2];
-
 
                     $periodStart =
                         FrozenTime::now()
@@ -229,11 +209,9 @@ class DashboardController extends AppController
 
                 }
 
-
                 $periodEnd =
                     $periodStart
                         ->addWeeks(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -245,10 +223,13 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Monthly
-             */
             case 'month':
+
+                $selectedYear =
+                    (int)(
+                    $selectedYear
+                        ?: $today->format('Y')
+                    );
 
                 $selectedMonth =
                     (int)(
@@ -256,10 +237,6 @@ class DashboardController extends AppController
                         ?: $today->format('n')
                     );
 
-
-                /*
-                 * Prevent invalid month values.
-                 */
                 if (
                     $selectedMonth < 1 ||
                     $selectedMonth > 12
@@ -270,7 +247,6 @@ class DashboardController extends AppController
 
                 }
 
-
                 $periodStart =
                     new FrozenTime(
                         sprintf(
@@ -280,11 +256,9 @@ class DashboardController extends AppController
                         )
                     );
 
-
                 $periodEnd =
                     $periodStart
                         ->addMonths(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -296,9 +270,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Yearly
-             */
             case 'year':
 
                 $periodStart =
@@ -307,11 +278,9 @@ class DashboardController extends AppController
                         '-01-01 00:00:00'
                     );
 
-
                 $periodEnd =
                     $periodStart
                         ->addYears(1);
-
 
                 $previousPeriodStart =
                     $periodStart
@@ -323,9 +292,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Custom range
-             */
             case 'custom':
 
                 if (
@@ -333,10 +299,6 @@ class DashboardController extends AppController
                     !empty($endDate)
                 ) {
 
-                    /*
-                     * If dates are reversed,
-                     * swap them.
-                     */
                     if ($startDate > $endDate) {
 
                         [
@@ -349,18 +311,12 @@ class DashboardController extends AppController
 
                     }
 
-
                     $periodStart =
                         new FrozenTime(
                             $startDate .
                             ' 00:00:00'
                         );
 
-
-                    /*
-                     * Add one day so the selected
-                     * end date is inclusive.
-                     */
                     $periodEnd =
                         (
                         new FrozenTime(
@@ -370,11 +326,6 @@ class DashboardController extends AppController
                         )
                             ->addDays(1);
 
-
-                    /*
-                     * Previous period uses
-                     * the same duration.
-                     */
                     $periodSeconds =
                         $periodEnd
                             ->getTimestamp()
@@ -382,10 +333,8 @@ class DashboardController extends AppController
                         $periodStart
                             ->getTimestamp();
 
-
                     $previousPeriodEnd =
                         $periodStart;
-
 
                     $previousPeriodStart =
                         $periodStart
@@ -395,10 +344,6 @@ class DashboardController extends AppController
 
                 } else {
 
-                    /*
-                     * Custom selected but dates
-                     * have not been entered yet.
-                     */
                     $periodStart =
                         $today;
 
@@ -416,9 +361,6 @@ class DashboardController extends AppController
                 break;
 
 
-            /*
-             * Invalid range falls back to Today.
-             */
             default:
 
                 $range =
@@ -524,11 +466,7 @@ class DashboardController extends AppController
 
 
         /*
-         * Total income (sum of completed
-         * payments) by the end of the
-         * selected range. Stored in the
-         * smallest denomination (e.g. cents) -
-         * currency is always AUD.
+         * Total income from completed payments.
          */
         $totalIncomeCents =
             (int)(
@@ -542,7 +480,8 @@ class DashboardController extends AppController
                                 ->sum('amount'),
                     ])
                     ->where([
-                        'status' => 'completed',
+                        'status' =>
+                            'completed',
 
                         'square_created_at <' =>
                             $periodEnd,
@@ -553,9 +492,464 @@ class DashboardController extends AppController
             );
 
 
-    /*
-     * Send data to view.
-     */
+        /*
+         * -------------------------------------------------
+         * CUSTOMER REBOOKING
+         * -------------------------------------------------
+         */
+
+        /*
+         * For now, a customer is considered
+         * inactive after 7 days without
+         * an accepted booking.
+         */
+        $inactiveThresholdDays = 7;
+
+
+        $customersForRebooking =
+            $customersTable
+                ->find()
+                ->where([
+                    'square_customer_id IS NOT' =>
+                        null,
+                ])
+                ->all();
+
+
+        $rebookingCustomers = [];
+
+
+        foreach (
+            $customersForRebooking
+            as $customer
+        ) {
+
+            /*
+             * Find the customer's most recent
+             * accepted booking.
+             */
+            $lastBooking =
+                $bookingsTable
+                    ->find()
+                    ->where([
+                        'square_customer_id' =>
+                            $customer
+                                ->square_customer_id,
+
+                        'status' =>
+                            'accepted',
+
+                        'start_at IS NOT' =>
+                            null,
+
+                        /*
+                         * Future appointments should not
+                         * count as previous visits.
+                         */
+                        'start_at <=' =>
+                            FrozenTime::now(),
+                    ])
+                    ->orderBy([
+                        'start_at' =>
+                            'DESC',
+                    ])
+                    ->first();
+
+
+            if ($lastBooking === null) {
+                continue;
+            }
+
+
+            $lastBookingTime =
+                new FrozenTime(
+                    $lastBooking
+                        ->start_at
+                );
+
+
+            $daysSinceLastBooking =
+                (int)floor(
+                    (
+                        FrozenTime::now()
+                            ->getTimestamp()
+                        -
+                        $lastBookingTime
+                            ->getTimestamp()
+                    )
+                    / 86400
+                );
+
+
+            if (
+                $daysSinceLastBooking >=
+                $inactiveThresholdDays
+            ) {
+
+                $rebookingCustomers[] = [
+                    'customer' =>
+                        $customer,
+
+                    'lastBooking' =>
+                        $lastBooking,
+
+                    'daysSinceLastBooking' =>
+                        $daysSinceLastBooking,
+                ];
+
+            }
+        }
+
+
+        /*
+         * Longest inactive customers first.
+         */
+        usort(
+            $rebookingCustomers,
+            function (
+                array $customerA,
+                array $customerB
+            ): int {
+
+                return
+                    $customerB[
+                    'daysSinceLastBooking'
+                    ]
+                    <=>
+                    $customerA[
+                    'daysSinceLastBooking'
+                    ];
+
+            }
+        );
+
+
+        /*
+         * -------------------------------------------------
+         * CUSTOMER GROWTH CHART
+         * -------------------------------------------------
+         */
+
+        $customerGrowthData = [
+            1 => 0,
+            2 => 0,
+            3 => 0,
+            4 => 0,
+            5 => 0,
+            6 => 0,
+            7 => 0,
+            8 => 0,
+            9 => 0,
+            10 => 0,
+            11 => 0,
+            12 => 0,
+        ];
+
+
+        $customersForGrowth =
+            $customersTable
+                ->find()
+                ->where([
+                    'square_created_at >=' =>
+                        new FrozenTime(
+                            $selectedYear .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'square_created_at <' =>
+                        new FrozenTime(
+                            ($selectedYear + 1) .
+                            '-01-01 00:00:00'
+                        ),
+                ])
+                ->all();
+
+
+        foreach (
+            $customersForGrowth
+            as $customer
+        ) {
+
+            if (
+                empty(
+                $customer
+                    ->square_created_at
+                )
+            ) {
+                continue;
+            }
+
+
+            $month =
+                (int)$customer
+                    ->square_created_at
+                    ->format('n');
+
+
+            $customerGrowthData[
+            $month
+            ]++;
+
+        }
+
+
+        $customerGrowthLabels = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+        ];
+
+
+        $customerGrowthValues =
+            array_values(
+                $customerGrowthData
+            );
+
+
+        /*
+         * -------------------------------------------------
+         * BOOKING TRENDS CHART
+         * -------------------------------------------------
+         */
+
+        $bookingTrendData = [
+            1 => 0,
+            2 => 0,
+            3 => 0,
+            4 => 0,
+            5 => 0,
+            6 => 0,
+            7 => 0,
+            8 => 0,
+            9 => 0,
+            10 => 0,
+            11 => 0,
+            12 => 0,
+        ];
+
+
+        $bookingsForTrend =
+            $bookingsTable
+                ->find()
+                ->where([
+                    'start_at >=' =>
+                        new FrozenTime(
+                            $selectedYear .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at <' =>
+                        new FrozenTime(
+                            ($selectedYear + 1) .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at IS NOT' =>
+                        null,
+                ])
+                ->all();
+
+
+        foreach (
+            $bookingsForTrend
+            as $booking
+        ) {
+
+            if (empty($booking->start_at)) {
+                continue;
+            }
+
+
+            $bookingMonth =
+                (int)$booking
+                    ->start_at
+                    ->format('n');
+
+
+            $bookingTrendData[
+            $bookingMonth
+            ]++;
+
+        }
+
+
+        $bookingTrendLabels = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+        ];
+
+
+        $bookingTrendValues =
+            array_values(
+                $bookingTrendData
+            );
+
+
+        /*
+         * -------------------------------------------------
+         * BOOKING STATUS CHART
+         * -------------------------------------------------
+         */
+
+        $bookingStatusData = [
+            'pending' => 0,
+            'cancelled_by_customer' => 0,
+            'cancelled_by_seller' => 0,
+            'declined' => 0,
+            'accepted' => 0,
+            'no_show' => 0,
+        ];
+
+
+        $bookingsForStatus =
+            $bookingsTable
+                ->find()
+                ->where([
+                    'start_at >=' =>
+                        new FrozenTime(
+                            $selectedYear .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at <' =>
+                        new FrozenTime(
+                            ($selectedYear + 1) .
+                            '-01-01 00:00:00'
+                        ),
+
+                    'start_at IS NOT' =>
+                        null,
+                ])
+                ->all();
+
+
+        foreach (
+            $bookingsForStatus
+            as $booking
+        ) {
+
+            $status =
+                strtolower(
+                    trim(
+                        (string)$booking->status
+                    )
+                );
+
+
+            if ($status === 'pending') {
+
+                $bookingStatusData[
+                'pending'
+                ]++;
+
+            } elseif (
+                $status ===
+                'cancelled by customer'
+            ) {
+
+                $bookingStatusData[
+                'cancelled_by_customer'
+                ]++;
+
+            } elseif (
+                $status ===
+                'cancelled by seller'
+            ) {
+
+                $bookingStatusData[
+                'cancelled_by_seller'
+                ]++;
+
+            } elseif (
+                $status ===
+                'declined'
+            ) {
+
+                $bookingStatusData[
+                'declined'
+                ]++;
+
+            } elseif (
+                $status ===
+                'accepted'
+            ) {
+
+                $bookingStatusData[
+                'accepted'
+                ]++;
+
+            } elseif (
+                $status ===
+                'no show'
+            ) {
+
+                $bookingStatusData[
+                'no_show'
+                ]++;
+
+            }
+        }
+
+
+        $bookingStatusLabels = [
+            'Pending',
+            'Cancelled By Customer',
+            'Cancelled By Seller',
+            'Declined',
+            'Accepted',
+            'No Show',
+        ];
+
+
+        $bookingStatusValues = [
+            $bookingStatusData[
+            'pending'
+            ],
+
+            $bookingStatusData[
+            'cancelled_by_customer'
+            ],
+
+            $bookingStatusData[
+            'cancelled_by_seller'
+            ],
+
+            $bookingStatusData[
+            'declined'
+            ],
+
+            $bookingStatusData[
+            'accepted'
+            ],
+
+            $bookingStatusData[
+            'no_show'
+            ],
+        ];
+
+
+        /*
+         * Send data to view.
+         */
         $this->set(compact(
             'identity',
             'range',
@@ -575,10 +969,244 @@ class DashboardController extends AppController
             'recentCustomers',
             'totalBookings',
             'totalIncomeCents',
-            'availableYears'
+            'availableYears',
+            'rebookingCustomers',
+            'inactiveThresholdDays',
+            'customerGrowthLabels',
+            'customerGrowthValues',
+            'bookingTrendLabels',
+            'bookingTrendValues',
+            'bookingStatusLabels',
+            'bookingStatusValues'
         ));
 
 
         return $this->render();
+    }
+
+
+    public function sendRebookingReminder(
+        string $customerId
+    ): Response {
+
+        $this->request
+            ->allowMethod([
+                'post',
+            ]);
+
+
+        $customersTable =
+            $this->fetchTable(
+                'Customers'
+            );
+
+
+        $customer =
+            $customersTable
+                ->get(
+                    $customerId
+                );
+
+
+        $bookingsTable =
+            $this->fetchTable(
+                'Bookings'
+            );
+
+
+        $lastBooking =
+            $bookingsTable
+                ->find()
+                ->where([
+                    'square_customer_id' =>
+                        $customer
+                            ->square_customer_id,
+
+                    'status' =>
+                        'accepted',
+
+                    'start_at IS NOT' =>
+                        null,
+
+                    'start_at <=' =>
+                        FrozenTime::now(),
+                ])
+                ->orderBy([
+                    'start_at' =>
+                        'DESC',
+                ])
+                ->first();
+
+
+        if ($lastBooking === null) {
+
+            $this->Flash
+                ->error(
+                    'No previous accepted booking was found for this customer.'
+                );
+
+
+            return $this->redirect([
+                'controller' =>
+                    'Dashboard',
+
+                'action' =>
+                    'index',
+            ]);
+
+        }
+
+
+        $lastBookingTime =
+            new FrozenTime(
+                $lastBooking
+                    ->start_at
+            );
+
+
+        $daysSinceLastBooking =
+            (int)floor(
+                (
+                    FrozenTime::now()
+                        ->getTimestamp()
+                    -
+                    $lastBookingTime
+                        ->getTimestamp()
+                )
+                / 86400
+            );
+
+
+        $customerName =
+            trim(
+                (
+                    $customer
+                        ->given_name
+                    ??
+                    $customer
+                        ->first_name
+                    ??
+                    ''
+                )
+                .
+                ' '
+                .
+                (
+                    $customer
+                        ->family_name
+                    ??
+                    $customer
+                        ->last_name
+                    ??
+                    ''
+                )
+            );
+
+
+        if ($customerName === '') {
+
+            $customerName =
+                'Customer';
+
+        }
+
+
+        /*
+         * Development safety:
+         * never send the reminder to a real
+         * customer while testing.
+         */
+        $testEmail =
+            env(
+                'REBOOKING_TEST_EMAIL'
+            );
+
+
+        if (empty($testEmail)) {
+
+            $this->Flash
+                ->error(
+                    'Rebooking test email is not configured.'
+                );
+
+
+            return $this->redirect([
+                'controller' =>
+                    'Dashboard',
+
+                'action' =>
+                    'index',
+            ]);
+
+        }
+
+
+        try {
+
+            $mailer =
+                new Mailer(
+                    'rebooking_test'
+                );
+
+
+            $mailer
+                ->setEmailFormat(
+                    'html'
+                )
+                ->setTo(
+                    $testEmail
+                )
+                ->setSubject(
+                    'We’d love to see you again'
+                )
+                ->setViewVars([
+                    'customerName' =>
+                        $customerName,
+
+                    'daysSinceLastBooking' =>
+                        $daysSinceLastBooking,
+                ]);
+
+
+            $mailer
+                ->viewBuilder()
+                ->setTemplate(
+                    'rebooking_reminder'
+                );
+
+
+            $mailer
+                ->deliver();
+
+
+            $this->Flash
+                ->success(
+                    'Test rebooking reminder sent successfully.'
+                );
+
+        } catch (\Throwable $e) {
+
+            \Cake\Log\Log::error(
+                'Rebooking reminder failed: '
+                .
+                $e->getMessage()
+            );
+
+
+            $this->Flash
+                ->error(
+                    'Unable to send the test rebooking reminder.'
+                );
+
+        }
+
+
+        return $this->redirect([
+            'controller' =>
+                'Dashboard',
+
+            'action' =>
+                'index',
+        ]);
     }
 }
