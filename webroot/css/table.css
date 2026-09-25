@@ -38,7 +38,6 @@
     font-size: 13px;
     font-weight: 700;
 
-
     background: var(--primary);
     border: none;
     border-radius: 10px;
@@ -165,6 +164,7 @@
 .dashboard-table tbody tr:hover {
     background: rgba(139, 126, 116, 0.04);
 }
+
 /* Status badges */
 
 .status-badge {

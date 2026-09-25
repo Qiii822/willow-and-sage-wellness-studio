@@ -97,7 +97,6 @@ $isSettings =
 
         <?php endif; ?>
 
-
         <?php if (in_array(
             $role,
             ['admin', 'superadmin'],
@@ -120,7 +119,6 @@ $isSettings =
 
         <?php endif; ?>
 
-
         <?php if (in_array(
             $role,
             ['admin', 'superadmin'],
@@ -142,7 +140,7 @@ $isSettings =
             </li>
 
         <?php endif; ?>
-        
+
     </ul>
 
     <div class="logout-section">
