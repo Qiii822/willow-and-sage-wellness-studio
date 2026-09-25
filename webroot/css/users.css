@@ -860,3 +860,48 @@ body {
         justify-content: space-between;
     }
 }
+
+/* =========================================================
+   Keep the whole filter bar on one line at desktop widths
+   ========================================================= */
+
+@media (min-width: 900px) {
+    .users-search {
+        flex-wrap: nowrap;
+    }
+
+    /* The search box is the only elastic item — everything else keeps its
+       natural width so the controls never get squashed unreadably. */
+    .users-search-field {
+        flex: 1 1 180px;
+        min-width: 150px;
+        max-width: 320px;
+    }
+
+    .users-filter-select,
+    .users-date-range,
+    .users-search-button,
+    .users-search-clear {
+        flex-shrink: 0;
+    }
+
+    .users-filter-select {
+        padding-right: 30px;
+    }
+
+    .users-date-range {
+        gap: 4px;
+        padding: 0 10px;
+    }
+}
+
+/* Calendar icon replacing the "Created" label */
+
+.users-date-range svg {
+    width: 16px;
+    height: 16px;
+
+    flex-shrink: 0;
+
+    color: var(--text-secondary);
+}

@@ -85,13 +85,19 @@ return function (RouteBuilder $routes): void {
 
         // Offers live on the home page, so there is only a management screen.
         $builder->connect('/manage/offers', ['controller' => 'Offers', 'action' => 'manage']);
+        $builder->connect('/', ['controller' => 'Dashboard', 'action' => 'index']);
+
+        // Customer facing landing page. Non-admin users land here after login.
+        $builder->connect('/home', ['controller' => 'Home', 'action' => 'index']);
 
         $builder->connect('/account', ['controller' => 'Users', 'action' => 'profile']);
+        $builder->connect('/account/settings', ['controller' => 'Users', 'action' => 'accountSettings']);
         $builder->connect('/account/change-password', ['controller' => 'Users', 'action' => 'changePassword']);
 
         $builder->connect('/settings', ['controller' => 'Users', 'action' => 'settings']);
 
         $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
+        $builder->connect('/register', ['controller' => 'Users', 'action' => 'register']);
         $builder->connect('/auth', ['controller' => 'Auth', 'action' => 'beginAuth']);
         $builder->connect('/auth/callback', ['controller' => 'Auth', 'action' => 'callback']);
 

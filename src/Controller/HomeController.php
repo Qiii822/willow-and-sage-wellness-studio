@@ -8,9 +8,8 @@ use Cake\Http\Response;
 /**
  * Home Controller
  *
- * The studio's public landing page, and on this branch the site root. It
- * needs no identity: nothing on the page changes according to who is
- * looking, because there is no signing in here.
+ * Customer-facing public landing page. Visitors can browse it without
+ * signing in, while signed-in users can still be identified by the view.
  */
 class HomeController extends AppController
 {
@@ -25,10 +24,11 @@ class HomeController extends AppController
 
     public function index(): Response
     {
-        $this->set(
-            'sections',
-            $this->fetchTable('SiteSections')->visibleLayout()
-        );
+        $identity = $this->request->getAttribute('identity');
+
+        $sections = $this->fetchTable('SiteSections')->visibleLayout();
+
+        $this->set(compact('identity', 'sections'));
 
         return $this->render();
     }

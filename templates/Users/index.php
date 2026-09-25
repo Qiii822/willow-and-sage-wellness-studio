@@ -10,7 +10,7 @@
  * @var bool $hasFilters
  */
 
-$this->assign('title', 'Users');
+$this->assign('title', 'Admins');
 
 $this->Html->css(
     'users',
@@ -29,10 +29,14 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
     <div class="users-header">
 
         <div>
-            <h1>Users</h1>
+            <h1>Admins</h1>
 
             <p>
-                Manage local users and administrator accounts.
+                Manage staff accounts. Customers are listed under
+                <?= $this->Html->link(
+                    'Customers',
+                    ['controller' => 'Customers', 'action' => 'index']
+                ) ?>.
             </p>
         </div>
 
@@ -79,8 +83,8 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
         >
             <option value="">All roles</option>
 
+            <?php /* Customers are not listed here, so `user` is not offered. */ ?>
             <?php foreach ([
-                'user' => 'User',
                 'admin' => 'Admin',
                 'superadmin' => 'Superadmin',
             ] as $value => $label): ?>
@@ -121,7 +125,7 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
 
         <div class="users-date-range">
 
-            <span class="users-date-label">Created</span>
+            <i data-lucide="calendar" aria-hidden="true"></i>
 
             <input
                 type="date"
@@ -304,9 +308,9 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
                     <tr>
                         <td colspan="6" class="users-empty">
                             <?php if (!empty($hasFilters)): ?>
-                                No users match the current search and filters.
+                                No admins match the current search and filters.
                             <?php else: ?>
-                                No users yet.
+                                No admins yet.
                             <?php endif; ?>
                         </td>
                     </tr>
