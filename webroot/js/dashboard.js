@@ -41,6 +41,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const STORAGE_KEY =
         'wendy-dashboard-layout';
 
+    const SIZE_CLASSES = [
+        'widget-small',
+        'widget-medium',
+        'widget-large',
+        'widget-wide'
+    ];
+
+    const SIZE_NAMES = [
+        'small',
+        'medium',
+        'large',
+        'wide'
+    ];
+
+    const GRID_COLUMNS = 4;
+    const GRID_GAP = 24;
+
     let editing = false;
     let draggedWidget = null;
 
@@ -96,6 +113,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
 
+        /*
+         * Today requires no additional
+         * filter controls.
+         */
         if (filterApplyButton) {
 
             filterApplyButton.style.display =
@@ -114,6 +135,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             updateRangeFilter();
 
+            /*
+             * Today immediately reloads
+             * the dashboard.
+             */
             if (rangeSelect.value === 'today') {
 
                 rangeSelect.form.submit();
@@ -329,7 +354,12 @@ document.addEventListener('DOMContentLoaded', function () {
         'dragstart',
         function (event) {
 
-            if (!editing) {
+            if (
+                !editing ||
+                event.target.closest(
+                    '.widget-resize-handle'
+                )
+            ) {
 
                 event.preventDefault();
 
@@ -381,79 +411,45 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
 
-            const isSmall =
-                draggedWidget.classList.contains(
-                    'widget-small'
+            event.preventDefault();
+
+
+            const target =
+                findDropTarget(
+                    event.clientX,
+                    event.clientY
                 );
 
-            const isWide =
-                draggedWidget.classList.contains(
-                    'widget-wide'
+
+            if (!target.element) {
+
+                dashboard.appendChild(
+                    draggedWidget
                 );
-
-
-            /*
-             * Small widgets
-             */
-            if (isSmall) {
-
-                const targetWidget =
-                    event.target.closest(
-                        '.dashboard-widget.widget-small'
-                    );
-
-
-                if (
-                    !targetWidget ||
-                    targetWidget === draggedWidget
-                ) {
-                    return;
-                }
-
-
-                event.preventDefault();
-
-
-                clearDropHighlights();
-
-
-                targetWidget.classList.add(
-                    'drag-over'
-                );
-
 
                 return;
 
             }
 
 
-            /*
-             * Wide widgets
-             */
-            if (isWide) {
-
-                const targetWidget =
-                    event.target.closest(
-                        '.dashboard-widget.widget-wide'
-                    );
+            if (
+                target.element ===
+                draggedWidget
+            ) {
+                return;
+            }
 
 
-                if (
-                    !targetWidget ||
-                    targetWidget === draggedWidget
-                ) {
-                    return;
-                }
+            if (target.after) {
 
+                target.element.after(
+                    draggedWidget
+                );
 
-                event.preventDefault();
+            } else {
 
-
-                clearDropHighlights();
-
-
-                targetWidget.classList.add(
-                    'drag-over'
+                target.element.before(
+                    draggedWidget
                 );
 
             }
@@ -478,128 +474,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
 
-            const isSmall =
-                draggedWidget.classList.contains(
-                    'widget-small'
-                );
+            event.preventDefault();
 
-            const isWide =
-                draggedWidget.classList.contains(
-                    'widget-wide'
-                );
-
-
-            /*
-             * Small widget swap
-             */
-            if (isSmall) {
-
-                const targetWidget =
-                    event.target.closest(
-                        '.dashboard-widget.widget-small'
-                    );
-
-
-                if (
-                    !targetWidget ||
-                    targetWidget === draggedWidget
-                ) {
-                    return;
-                }
-
-
-                event.preventDefault();
-
-
-                const draggedSlot =
-                    draggedWidget.dataset.slot;
-
-                const targetSlot =
-                    targetWidget.dataset.slot;
-
-
-                draggedWidget.dataset.slot =
-                    targetSlot;
-
-
-                targetWidget.dataset.slot =
-                    draggedSlot;
-
-
-                updateWidgetPositions();
-
-                saveLayout();
-
-                clearDropHighlights();
-
-
-                return;
-
-            }
-
-
-            /*
-             * Wide widget reorder
-             */
-            if (isWide) {
-
-                const targetWidget =
-                    event.target.closest(
-                        '.dashboard-widget.widget-wide'
-                    );
-
-
-                if (
-                    !targetWidget ||
-                    targetWidget === draggedWidget
-                ) {
-                    return;
-                }
-
-
-                event.preventDefault();
-
-
-                const targetRect =
-                    targetWidget
-                        .getBoundingClientRect();
-
-
-                const targetMiddle =
-                    targetRect.top +
-                    (
-                        targetRect.height /
-                        2
-                    );
-
-
-                if (
-                    event.clientY <
-                    targetMiddle
-                ) {
-
-                    dashboard.insertBefore(
-                        draggedWidget,
-                        targetWidget
-                    );
-
-                } else {
-
-                    dashboard.insertBefore(
-                        draggedWidget,
-                        targetWidget.nextSibling
-                    );
-
-                }
-
-
-                updateWidgetPositions();
-
-                saveLayout();
-
-                clearDropHighlights();
-
-            }
+            saveLayout();
 
         }
     );
@@ -622,11 +499,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
 
-            draggedWidget =
-                null;
-
-
-            clearDropHighlights();
+            draggedWidget = null;
 
             saveLayout();
 
@@ -635,133 +508,298 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =====================================================
-       Clear Drop Highlights
+       Find Drop Target
        ===================================================== */
 
-    function clearDropHighlights() {
+    function findDropTarget(x, y) {
 
-        document
-            .querySelectorAll(
-                '.dashboard-drop-slot'
-            )
-            .forEach(function (slot) {
+        if (!dashboard) {
 
-                slot.classList.remove(
-                    'drag-over'
-                );
+            return {
+                distance: Infinity,
+                element: null,
+                after: false
+            };
 
-            });
+        }
 
 
-        document
-            .querySelectorAll(
-                '.dashboard-widget'
-            )
-            .forEach(function (widget) {
+        const candidates =
+            Array.from(
+                dashboard.querySelectorAll(
+                    '.dashboard-widget:not(.widget-hidden)'
+                )
+            ).filter(function (widget) {
 
-                widget.classList.remove(
-                    'drag-over'
-                );
+                return widget !== draggedWidget;
 
             });
+
+
+        let closest = {
+            distance: Infinity,
+            element: null,
+            after: false
+        };
+
+
+        candidates.forEach(function (widget) {
+
+            const box =
+                widget.getBoundingClientRect();
+
+            const centerX =
+                box.left +
+                box.width / 2;
+
+            const centerY =
+                box.top +
+                box.height / 2;
+
+            const distance =
+                Math.hypot(
+                    x - centerX,
+                    y - centerY
+                );
+
+
+            if (distance < closest.distance) {
+
+                const sameRow =
+                    Math.abs(
+                        y - centerY
+                    ) <
+                    box.height / 2;
+
+
+                closest = {
+                    distance: distance,
+                    element: widget,
+                    after: sameRow
+                        ? x > centerX
+                        : y > centerY
+                };
+
+            }
+
+        });
+
+
+        return closest;
 
     }
 
 
     /* =====================================================
-       Widget Positions
+       Widget Resize
        ===================================================== */
 
-    function updateWidgetPositions() {
+    function sizeIndexOf(widget) {
 
-        if (!dashboard) {
-            return;
+        for (
+            let i = 0;
+            i < SIZE_CLASSES.length;
+            i++
+        ) {
+
+            if (
+                widget.classList.contains(
+                    SIZE_CLASSES[i]
+                )
+            ) {
+
+                return i;
+
+            }
+
         }
 
 
-        /*
-         * Small widgets
-         */
-        const smallWidgets =
-            dashboard.querySelectorAll(
-                '.dashboard-widget.widget-small'
+        return 0;
+
+    }
+
+
+    function applySizeIndex(widget, index) {
+
+        const clamped =
+            Math.min(
+                SIZE_CLASSES.length - 1,
+                Math.max(0, index)
             );
 
 
-        smallWidgets.forEach(
-            function (widget) {
+        SIZE_CLASSES.forEach(
+            function (className) {
 
-                const slot =
-                    widget.dataset.slot;
-
-
-                if (!slot) {
-                    return;
-                }
-
-
-                widget.style.gridColumn =
-                    slot + ' / span 1';
-
-
-                widget.style.gridRow =
-                    '1';
+                widget.classList.remove(
+                    className
+                );
 
             }
         );
 
 
-        /*
-         * Drop slots
-         */
-        const slots =
-            dashboard.querySelectorAll(
-                '.dashboard-drop-slot'
-            );
-
-
-        slots.forEach(
-            function (slot) {
-
-                const slotNumber =
-                    slot.dataset.slot;
-
-
-                slot.style.gridColumn =
-                    slotNumber +
-                    ' / span 1';
-
-
-                slot.style.gridRow =
-                    '1';
-
-            }
-        );
-
-
-        /*
-         * Wide widgets
-         */
-        const wideWidgets =
-            dashboard.querySelectorAll(
-                '.dashboard-widget.widget-wide'
-            );
-
-
-        wideWidgets.forEach(
-            function (widget) {
-
-                widget.style.gridColumn =
-                    '1 / -1';
-
-
-                widget.style.gridRow =
-                    'auto';
-
-            }
+        widget.classList.add(
+            SIZE_CLASSES[clamped]
         );
 
     }
+
+
+    function columnWidth() {
+
+        if (!dashboard) {
+            return 0;
+        }
+
+
+        const containerWidth =
+            dashboard
+                .getBoundingClientRect()
+                .width;
+
+
+        return (
+            containerWidth -
+            GRID_GAP *
+            (GRID_COLUMNS - 1)
+        ) / GRID_COLUMNS;
+
+    }
+
+
+    document
+        .querySelectorAll(
+            '.widget-resize-handle'
+        )
+        .forEach(function (handle) {
+
+            handle.addEventListener(
+                'mousedown',
+                function (event) {
+
+                    if (!editing) {
+                        return;
+                    }
+
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+
+                    const widget =
+                        handle.closest(
+                            '.dashboard-widget'
+                        );
+
+
+                    if (!widget) {
+                        return;
+                    }
+
+
+                    const startX =
+                        event.clientX;
+
+                    const startWidth =
+                        widget
+                            .getBoundingClientRect()
+                            .width;
+
+                    const colWidth =
+                        columnWidth();
+
+
+                    if (colWidth <= 0) {
+                        return;
+                    }
+
+
+                    widget.classList.add(
+                        'resizing'
+                    );
+
+
+                    function onMove(moveEvent) {
+
+                        const deltaX =
+                            moveEvent.clientX -
+                            startX;
+
+                        const newWidth =
+                            startWidth +
+                            deltaX;
+
+
+                        let span =
+                            Math.round(
+                                (
+                                    newWidth +
+                                    GRID_GAP
+                                ) /
+                                (
+                                    colWidth +
+                                    GRID_GAP
+                                )
+                            );
+
+
+                        span =
+                            Math.min(
+                                GRID_COLUMNS,
+                                Math.max(
+                                    1,
+                                    span
+                                )
+                            );
+
+
+                        applySizeIndex(
+                            widget,
+                            span - 1
+                        );
+
+                    }
+
+
+                    function onUp() {
+
+                        document.removeEventListener(
+                            'mousemove',
+                            onMove
+                        );
+
+                        document.removeEventListener(
+                            'mouseup',
+                            onUp
+                        );
+
+
+                        widget.classList.remove(
+                            'resizing'
+                        );
+
+
+                        saveLayout();
+
+                    }
+
+
+                    document.addEventListener(
+                        'mousemove',
+                        onMove
+                    );
+
+                    document.addEventListener(
+                        'mouseup',
+                        onUp
+                    );
+
+                }
+            );
+
+        });
 
 
     /* =====================================================
@@ -804,11 +842,12 @@ document.addEventListener('DOMContentLoaded', function () {
                                         'widget-hidden'
                                     ),
 
-                            slot:
-                                widget
-                                    .dataset
-                                    .slot ||
-                                null,
+                            size:
+                                SIZE_NAMES[
+                                    sizeIndexOf(
+                                        widget
+                                    )
+                                    ],
 
                             order:
                             index
@@ -864,10 +903,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
+        if (!Array.isArray(layout)) {
+            return;
+        }
+
+
         /*
-         * Restore visibility
-         * and small widget slots.
+         * Sort using the saved widget order.
          */
+        layout.sort(
+            function (a, b) {
+
+                return (
+                    (a.order ?? 0) -
+                    (b.order ?? 0)
+                );
+
+            }
+        );
+
+
         layout.forEach(
             function (savedWidget) {
 
@@ -890,72 +945,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
 
-                if (savedWidget.slot) {
+                const sizeIndex =
+                    SIZE_NAMES.indexOf(
+                        savedWidget.size
+                    );
 
-                    widget.dataset.slot =
-                        savedWidget.slot;
+
+                if (sizeIndex !== -1) {
+
+                    applySizeIndex(
+                        widget,
+                        sizeIndex
+                    );
 
                 }
 
-            }
-        );
 
-
-        /*
-         * Restore wide widget order.
-         */
-        const savedWideWidgets =
-            layout
-                .filter(
-                    function (savedWidget) {
-
-                        const widget =
-                            dashboard.querySelector(
-                                '[data-widget="' +
-                                savedWidget.name +
-                                '"]'
-                            );
-
-
-                        return (
-                            widget &&
-                            widget.classList.contains(
-                                'widget-wide'
-                            )
-                        );
-
-                    }
-                )
-                .sort(
-                    function (a, b) {
-
-                        return (
-                            (a.order ?? 0) -
-                            (b.order ?? 0)
-                        );
-
-                    }
+                /*
+                 * DOM order controls the
+                 * dashboard position.
+                 */
+                dashboard.appendChild(
+                    widget
                 );
-
-
-        savedWideWidgets.forEach(
-            function (savedWidget) {
-
-                const widget =
-                    dashboard.querySelector(
-                        '[data-widget="' +
-                        savedWidget.name +
-                        '"]'
-                    );
-
-
-                if (widget) {
-
-                    dashboard.appendChild(
-                        widget
-                    );
-
-                }
 
             }
         );
@@ -1013,8 +1025,6 @@ document.addEventListener('DOMContentLoaded', function () {
        ===================================================== */
 
     loadLayout();
-
-    updateWidgetPositions();
 
     updateWidgetLibrary();
 

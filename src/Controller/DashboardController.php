@@ -83,6 +83,7 @@ class DashboardController extends AppController
                 ->unique()
                 ->toList();
 
+
         rsort($availableYears);
 
 
@@ -103,11 +104,15 @@ class DashboardController extends AppController
                 true
             )
         ) {
+
             $selectedYear =
                 $defaultYear;
+
         } else {
+
             $selectedYear =
                 (int)$selectedYear;
+
         }
 
 
@@ -136,8 +141,10 @@ class DashboardController extends AppController
             case 'day':
 
                 if (empty($selectedDay)) {
+
                     $selectedDay =
                         $today->format('Y-m-d');
+
                 }
 
                 $periodStart =
@@ -163,10 +170,12 @@ class DashboardController extends AppController
             case 'week':
 
                 if (empty($selectedWeek)) {
+
                     $selectedWeek =
                         $today->format(
                             'o-\WW'
                         );
+
                 }
 
                 if (
@@ -176,6 +185,7 @@ class DashboardController extends AppController
                         $matches
                     )
                 ) {
+
                     $weekYear =
                         (int)$matches[1];
 
@@ -190,10 +200,13 @@ class DashboardController extends AppController
                                 1
                             )
                             ->startOfDay();
+
                 } else {
+
                     $periodStart =
                         $today
                             ->startOfWeek();
+
                 }
 
                 $periodEnd =
@@ -212,6 +225,12 @@ class DashboardController extends AppController
 
             case 'month':
 
+                $selectedYear =
+                    (int)(
+                    $selectedYear
+                        ?: $today->format('Y')
+                    );
+
                 $selectedMonth =
                     (int)(
                     $selectedMonth
@@ -222,8 +241,10 @@ class DashboardController extends AppController
                     $selectedMonth < 1 ||
                     $selectedMonth > 12
                 ) {
+
                     $selectedMonth =
                         (int)$today->format('n');
+
                 }
 
                 $periodStart =
@@ -279,6 +300,7 @@ class DashboardController extends AppController
                 ) {
 
                     if ($startDate > $endDate) {
+
                         [
                             $startDate,
                             $endDate
@@ -286,6 +308,7 @@ class DashboardController extends AppController
                             $endDate,
                             $startDate
                         ];
+
                     }
 
                     $periodStart =
@@ -332,6 +355,7 @@ class DashboardController extends AppController
 
                     $previousPeriodEnd =
                         $today;
+
                 }
 
                 break;
@@ -470,10 +494,15 @@ class DashboardController extends AppController
 
         /*
          * -------------------------------------------------
-         * CUSTOMER REBOOKING / BOOKING HISTORY
+         * CUSTOMER REBOOKING
          * -------------------------------------------------
          */
 
+        /*
+         * For now, a customer is considered
+         * inactive after 7 days without
+         * an accepted booking.
+         */
         $inactiveThresholdDays = 7;
 
 
@@ -495,6 +524,10 @@ class DashboardController extends AppController
             as $customer
         ) {
 
+            /*
+             * Find the customer's most recent
+             * accepted booking.
+             */
             $lastBooking =
                 $bookingsTable
                     ->find()
@@ -509,6 +542,10 @@ class DashboardController extends AppController
                         'start_at IS NOT' =>
                             null,
 
+                        /*
+                         * Future appointments should not
+                         * count as previous visits.
+                         */
                         'start_at <=' =>
                             FrozenTime::now(),
                     ])
@@ -548,6 +585,7 @@ class DashboardController extends AppController
                 $daysSinceLastBooking >=
                 $inactiveThresholdDays
             ) {
+
                 $rebookingCustomers[] = [
                     'customer' =>
                         $customer,
@@ -558,6 +596,7 @@ class DashboardController extends AppController
                     'daysSinceLastBooking' =>
                         $daysSinceLastBooking,
                 ];
+
             }
         }
 
@@ -580,6 +619,7 @@ class DashboardController extends AppController
                     $customerA[
                     'daysSinceLastBooking'
                     ];
+
             }
         );
 
@@ -649,6 +689,7 @@ class DashboardController extends AppController
             $customerGrowthData[
             $month
             ]++;
+
         }
 
 
@@ -737,6 +778,7 @@ class DashboardController extends AppController
             $bookingTrendData[
             $bookingMonth
             ]++;
+
         }
 
 
@@ -946,6 +988,7 @@ class DashboardController extends AppController
     public function sendRebookingReminder(
         string $customerId
     ): Response {
+
         $this->request
             ->allowMethod([
                 'post',
@@ -1010,6 +1053,7 @@ class DashboardController extends AppController
                 'action' =>
                     'index',
             ]);
+
         }
 
 
@@ -1060,83 +1104,40 @@ class DashboardController extends AppController
 
 
         if ($customerName === '') {
+
             $customerName =
                 'Customer';
+
         }
 
 
         /*
- * Decide whether to send to a test email
- * or the real customer email.
- */
-
-        $customerEmail =
-            $customer->email_address
-            ?? $customer->email
-            ?? null;
-
-
+         * Development safety:
+         * never send the reminder to a real
+         * customer while testing.
+         */
         $testEmail =
             env(
                 'REBOOKING_TEST_EMAIL'
             );
 
 
-        $sendToRealCustomer =
-            filter_var(
-                env(
-                    'REBOOKING_SEND_REAL',
-                    false
-                ),
-                FILTER_VALIDATE_BOOLEAN
-            );
+        if (empty($testEmail)) {
+
+            $this->Flash
+                ->error(
+                    'Rebooking test email is not configured.'
+                );
 
 
-        if ($sendToRealCustomer) {
+            return $this->redirect([
+                'controller' =>
+                    'Dashboard',
 
-            if (empty($customerEmail)) {
+                'action' =>
+                    'index',
+            ]);
 
-                $this->Flash
-                    ->error(
-                        'This customer does not have an email address.'
-                    );
-
-
-                return $this->redirect([
-                    'controller' =>
-                        'Dashboard',
-
-                    'action' =>
-                        'index',
-                ]);
-            }
-
-
-            $recipientEmail =
-                $customerEmail;
-
-        } else {
-
-            if (empty($testEmail)) {
-
-                $this->Flash
-                    ->error(
-                        'Rebooking test email is not configured.'
-                    );
-
-
-                return $this->redirect([
-                    'controller' =>
-                        'Dashboard',
-
-                    'action' =>
-                        'index',
-                ]);
-            }
-
-
-            $recipientEmail =
-                $testEmail;
         }
 
 
@@ -1153,7 +1154,7 @@ class DashboardController extends AppController
                     'html'
                 )
                 ->setTo(
-                    $recipientEmail
+                    $testEmail
                 )
                 ->setSubject(
                     'We’d love to see you again'
@@ -1180,9 +1181,8 @@ class DashboardController extends AppController
 
             $this->Flash
                 ->success(
-                    $sendToRealCustomer
-                        ? 'Rebooking reminder sent successfully.'
-                        : 'Test rebooking reminder sent successfully.'                );
+                    'Test rebooking reminder sent successfully.'
+                );
 
         } catch (\Throwable $e) {
 
@@ -1197,6 +1197,7 @@ class DashboardController extends AppController
                 ->error(
                     'Unable to send the test rebooking reminder.'
                 );
+
         }
 
 

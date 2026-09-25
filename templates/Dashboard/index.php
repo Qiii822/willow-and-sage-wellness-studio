@@ -25,14 +25,11 @@ $this->setLayout('dashboard');
 
 $today = \Cake\I18n\FrozenDate::today();
 
-$todayString =
-    $today->format('Y-m-d');
+$todayString = $today->format('Y-m-d');
 
-$currentMonth =
-    (int)$today->format('n');
+$currentMonth = (int)$today->format('n');
 
-$currentWeek =
-    $today->format('o-\WW');
+$currentWeek = $today->format('o-\WW');
 
 $months = [
     1 => 'January',
@@ -52,13 +49,11 @@ $months = [
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
 <div class="container-fluid p-0">
 
     <div class="dashboard-container">
 
         <?= $this->element('sidebar') ?>
-
 
         <main class="main-content">
 
@@ -68,8 +63,7 @@ $months = [
                 <div class="dashboard-heading-text">
 
                     <h1>
-                        Welcome back,
-                        <?= h($identity->first_name ?? '') ?>
+                        Welcome back, <?= h($identity->first_name ?? '') ?>
                     </h1>
 
                     <p>
@@ -77,7 +71,6 @@ $months = [
                     </p>
 
                 </div>
-
 
                 <div class="dashboard-toolbar">
 
@@ -95,38 +88,30 @@ $months = [
                             class="filter-extra"
                             data-filter-panel="day"
                         >
-
                             <input
                                 type="date"
                                 name="day"
                                 max="<?= h($todayString) ?>"
                                 value="<?= h(
-                                    $selectedDay
-                                    ?? $todayString
+                                    $selectedDay ?? $todayString
                                 ) ?>"
                             >
-
                         </div>
-
 
                         <!-- Weekly -->
                         <div
                             class="filter-extra"
                             data-filter-panel="week"
                         >
-
                             <input
                                 type="week"
                                 name="week"
                                 max="<?= h($currentWeek) ?>"
                                 value="<?= h(
-                                    $selectedWeek
-                                    ?? $currentWeek
+                                    $selectedWeek ?? $currentWeek
                                 ) ?>"
                             >
-
                         </div>
-
 
                         <!-- Monthly -->
                         <div
@@ -154,7 +139,6 @@ $months = [
 
                             </select>
 
-
                             <select
                                 name="month"
                                 class="dashboard-filter-select"
@@ -165,8 +149,7 @@ $months = [
                                     <option
                                         value="<?= h($number) ?>"
                                         <?= (int)(
-                                            $selectedMonth
-                                            ?? $currentMonth
+                                            $selectedMonth ?? $currentMonth
                                         ) === $number
                                             ? 'selected'
                                             : '' ?>
@@ -179,7 +162,6 @@ $months = [
                             </select>
 
                         </div>
-
 
                         <!-- Yearly -->
                         <div
@@ -209,7 +191,6 @@ $months = [
 
                         </div>
 
-
                         <!-- Custom -->
                         <div
                             class="custom-date-range"
@@ -233,7 +214,6 @@ $months = [
 
                             </div>
 
-
                             <div class="custom-date-field">
 
                                 <label for="end-date">
@@ -251,7 +231,6 @@ $months = [
                             </div>
 
                         </div>
-
 
                         <!-- Main range selector -->
                         <select
@@ -316,7 +295,6 @@ $months = [
 
                         </select>
 
-
                         <button
                             type="submit"
                             class="custom-date-apply"
@@ -327,7 +305,6 @@ $months = [
 
                     </form>
 
-
                     <!-- Add widget -->
                     <button
                         type="button"
@@ -337,7 +314,6 @@ $months = [
                         <i data-lucide="plus"></i>
                         Add widget
                     </button>
-
 
                     <!-- Edit layout -->
                     <button
@@ -353,13 +329,13 @@ $months = [
 
             </div>
 
-
             <!-- Dashboard Grid -->
             <div
                 id="dashboard-widgets"
                 class="dashboard-widget-grid"
             >
 
+                <!-- Drop Slots -->
                 <div
                     class="dashboard-drop-slot"
                     data-slot="1"
@@ -380,12 +356,10 @@ $months = [
                     data-slot="4"
                 ></div>
 
-
                 <!-- Total Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-customers"
-                    data-slot="1"
                 >
 
                     <div class="widget-edit-controls">
@@ -410,14 +384,21 @@ $months = [
 
                     <?= $this->element('total_customers') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- New Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="new-customers"
-                    data-slot="2"
                 >
 
                     <div class="widget-edit-controls">
@@ -442,14 +423,21 @@ $months = [
 
                     <?= $this->element('new_customers') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- Total Bookings -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-bookings"
-                    data-slot="3"
                 >
 
                     <div class="widget-edit-controls">
@@ -474,14 +462,21 @@ $months = [
 
                     <?= $this->element('total_bookings') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- Total Income -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-income"
-                    data-slot="4"
                 >
 
                     <div class="widget-edit-controls">
@@ -506,8 +501,16 @@ $months = [
 
                     <?= $this->element('total_income') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- Customer Growth -->
                 <div
@@ -535,7 +538,6 @@ $months = [
 
                     </div>
 
-
                     <div class="customer-growth-widget">
 
                         <div class="customer-growth-header">
@@ -555,7 +557,6 @@ $months = [
 
                         </div>
 
-
                         <div class="customer-growth-chart">
 
                             <canvas
@@ -567,7 +568,6 @@ $months = [
                     </div>
 
                 </div>
-
 
                 <!-- Booking Trends -->
                 <div
@@ -595,7 +595,6 @@ $months = [
 
                     </div>
 
-
                     <div class="booking-trends-widget">
 
                         <div class="booking-trends-header">
@@ -615,7 +614,6 @@ $months = [
 
                         </div>
 
-
                         <div class="booking-trends-chart">
 
                             <canvas
@@ -627,7 +625,6 @@ $months = [
                     </div>
 
                 </div>
-
 
                 <!-- Booking Status -->
                 <div
@@ -655,7 +652,6 @@ $months = [
 
                     </div>
 
-
                     <div class="booking-status-widget">
 
                         <div class="booking-status-header">
@@ -674,7 +670,6 @@ $months = [
                             </div>
 
                         </div>
-
 
                         <div class="booking-status-chart">
 
@@ -716,8 +711,16 @@ $months = [
 
                     <?= $this->element('recent_customers') ?>
 
-                </div>
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
+                </div>
 
                 <!-- Customer Rebooking -->
                 <div
@@ -745,7 +748,6 @@ $months = [
 
                     </div>
 
-
                     <div class="rebooking-widget">
 
                         <div class="rebooking-widget-header">
@@ -764,17 +766,12 @@ $months = [
 
                             </div>
 
-
                             <span class="rebooking-count">
-
                                 <?= count($rebookingCustomers) ?>
-
                                 customer<?= count($rebookingCustomers) === 1 ? '' : 's' ?>
-
                             </span>
 
                         </div>
-
 
                         <?php if (empty($rebookingCustomers)): ?>
 
@@ -816,33 +813,25 @@ $months = [
 
                                     </thead>
 
-
                                     <tbody>
 
                                     <?php foreach ($rebookingCustomers as $item): ?>
 
                                         <?php
-                                        $customer =
-                                            $item['customer'];
-
-                                        $lastBooking =
-                                            $item['lastBooking'];
-
+                                        $customer = $item['customer'];
+                                        $lastBooking = $item['lastBooking'];
                                         $daysSinceLastBooking =
                                             $item['daysSinceLastBooking'];
 
-                                        $customerName =
-                                            trim(
-                                                ($customer->given_name
-                                                    ?? $customer->first_name
-                                                    ?? '')
-                                                .
-                                                ' '
-                                                .
-                                                ($customer->family_name
-                                                    ?? $customer->last_name
-                                                    ?? '')
-                                            );
+                                        $customerName = trim(
+                                            ($customer->given_name
+                                                ?? $customer->first_name
+                                                ?? '')
+                                            . ' '
+                                            . ($customer->family_name
+                                                ?? $customer->last_name
+                                                ?? '')
+                                        );
 
                                         if ($customerName === '') {
                                             $customerName =
@@ -878,7 +867,6 @@ $months = [
 
                                             </td>
 
-
                                             <td>
 
                                                 <span class="rebooking-email">
@@ -892,7 +880,6 @@ $months = [
                                                 </span>
 
                                             </td>
-
 
                                             <td>
 
@@ -912,7 +899,6 @@ $months = [
 
                                             </td>
 
-
                                             <td>
 
                                                 <strong class="rebooking-days">
@@ -923,7 +909,6 @@ $months = [
                                                 </strong>
 
                                             </td>
-
 
                                             <td>
 
@@ -937,7 +922,6 @@ $months = [
 
                                             </td>
 
-
                                             <td>
 
                                                 <?= $this->Form->postLink(
@@ -945,19 +929,14 @@ $months = [
                                                     [
                                                         'controller' =>
                                                             'Dashboard',
-
                                                         'action' =>
                                                             'sendRebookingReminder',
-
                                                         $customer->id,
                                                     ],
                                                     [
-                                                        'escape' =>
-                                                            false,
-
+                                                        'escape' => false,
                                                         'class' =>
                                                             'rebooking-reminder-btn',
-
                                                         'confirm' =>
                                                             'Send a TEST reminder email for '
                                                             . $customerName
@@ -981,10 +960,18 @@ $months = [
 
                     </div>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
             </div>
-
 
             <!-- Widget Library -->
             <div
@@ -996,7 +983,6 @@ $months = [
                     class="widget-modal-overlay"
                     id="widget-modal-overlay"
                 ></div>
-
 
                 <div class="widget-modal-content">
 
@@ -1014,7 +1000,6 @@ $months = [
 
                         </div>
 
-
                         <button
                             type="button"
                             class="widget-modal-close"
@@ -1026,9 +1011,7 @@ $months = [
 
                     </div>
 
-
                     <div class="widget-library-grid">
-
 
                         <!-- Total Customers -->
                         <button
@@ -1051,7 +1034,6 @@ $months = [
 
                         </button>
 
-
                         <!-- New Customers -->
                         <button
                             type="button"
@@ -1072,7 +1054,6 @@ $months = [
                             </p>
 
                         </button>
-
 
                         <!-- Total Bookings -->
                         <button
@@ -1095,7 +1076,6 @@ $months = [
 
                         </button>
 
-
                         <!-- Total Income -->
                         <button
                             type="button"
@@ -1116,7 +1096,6 @@ $months = [
                             </p>
 
                         </button>
-
 
                         <!-- Customer Growth -->
                         <button
@@ -1139,7 +1118,6 @@ $months = [
 
                         </button>
 
-
                         <!-- Booking Trends -->
                         <button
                             type="button"
@@ -1160,7 +1138,6 @@ $months = [
                             </p>
 
                         </button>
-
 
                         <!-- Booking Status -->
                         <button
@@ -1183,7 +1160,6 @@ $months = [
 
                         </button>
 
-
                         <!-- Recent Customers -->
                         <button
                             type="button"
@@ -1204,7 +1180,6 @@ $months = [
                             </p>
 
                         </button>
-
 
                         <!-- Customer Rebooking -->
                         <button
@@ -1228,7 +1203,6 @@ $months = [
 
                         </button>
 
-
                     </div>
 
                 </div>
@@ -1240,7 +1214,6 @@ $months = [
     </div>
 
 </div>
-
 
 <script>
     document.addEventListener(
@@ -1255,7 +1228,6 @@ $months = [
                     'customerGrowthChart'
                 );
 
-
             if (customerCanvas) {
 
                 const customerLabels =
@@ -1263,12 +1235,10 @@ $months = [
                         $customerGrowthLabels
                     ) ?>;
 
-
                 const customerValues =
                     <?= json_encode(
                         $customerGrowthValues
                     ) ?>;
-
 
                 new Chart(
                     customerCanvas,
@@ -1276,57 +1246,44 @@ $months = [
                         type: 'line',
 
                         data: {
-                            labels:
-                            customerLabels,
+                            labels: customerLabels,
 
                             datasets: [
                                 {
-                                    label:
-                                        'New Customers',
+                                    label: 'New Customers',
 
-                                    data:
-                                    customerValues,
+                                    data: customerValues,
 
-                                    borderWidth:
-                                        2,
+                                    borderWidth: 2,
 
-                                    tension:
-                                        0.35,
+                                    tension: 0.35,
 
-                                    fill:
-                                        false,
+                                    fill: false,
 
-                                    pointRadius:
-                                        4,
+                                    pointRadius: 4,
 
-                                    pointHoverRadius:
-                                        6
+                                    pointHoverRadius: 6
                                 }
                             ]
                         },
 
                         options: {
-                            responsive:
-                                true,
+                            responsive: true,
 
-                            maintainAspectRatio:
-                                false,
+                            maintainAspectRatio: false,
 
                             plugins: {
                                 legend: {
-                                    display:
-                                        false
+                                    display: false
                                 }
                             },
 
                             scales: {
                                 y: {
-                                    beginAtZero:
-                                        true,
+                                    beginAtZero: true,
 
                                     ticks: {
-                                        precision:
-                                            0
+                                        precision: 0
                                     }
                                 }
                             }
@@ -1336,15 +1293,13 @@ $months = [
 
             }
 
-
             /*
- * Booking Trends Chart
- */
+             * Booking Trends Chart
+             */
             const bookingCanvas =
                 document.getElementById(
                     'bookingTrendsChart'
                 );
-
 
             if (bookingCanvas) {
 
@@ -1353,12 +1308,10 @@ $months = [
                         $bookingTrendLabels
                     ) ?>;
 
-
                 const bookingValues =
                     <?= json_encode(
                         $bookingTrendValues
                     ) ?>;
-
 
                 new Chart(
                     bookingCanvas,
@@ -1366,48 +1319,38 @@ $months = [
                         type: 'bar',
 
                         data: {
-                            labels:
-                            bookingLabels,
+                            labels: bookingLabels,
 
                             datasets: [
                                 {
-                                    label:
-                                        'Bookings',
+                                    label: 'Bookings',
 
-                                    data:
-                                    bookingValues,
+                                    data: bookingValues,
 
-                                    borderWidth:
-                                        1,
+                                    borderWidth: 1,
 
-                                    borderRadius:
-                                        6
+                                    borderRadius: 6
                                 }
                             ]
                         },
 
                         options: {
-                            responsive:
-                                true,
+                            responsive: true,
 
-                            maintainAspectRatio:
-                                false,
+                            maintainAspectRatio: false,
 
                             plugins: {
                                 legend: {
-                                    display:
-                                        false
+                                    display: false
                                 }
                             },
 
                             scales: {
                                 y: {
-                                    beginAtZero:
-                                        true,
+                                    beginAtZero: true,
 
                                     ticks: {
-                                        precision:
-                                            0
+                                        precision: 0
                                     }
                                 }
                             }
@@ -1416,7 +1359,6 @@ $months = [
                 );
 
             }
-
 
             /*
              * Booking Status Chart
@@ -1426,7 +1368,6 @@ $months = [
                     'bookingStatusChart'
                 );
 
-
             if (bookingStatusCanvas) {
 
                 const bookingStatusLabels =
@@ -1434,12 +1375,10 @@ $months = [
                         $bookingStatusLabels
                     ) ?>;
 
-
                 const bookingStatusValues =
                     <?= json_encode(
                         $bookingStatusValues
                     ) ?>;
-
 
                 new Chart(
                     bookingStatusCanvas,
@@ -1447,34 +1386,27 @@ $months = [
                         type: 'doughnut',
 
                         data: {
-                            labels:
-                            bookingStatusLabels,
+                            labels: bookingStatusLabels,
 
                             datasets: [
                                 {
-                                    data:
-                                    bookingStatusValues,
+                                    data: bookingStatusValues,
 
-                                    borderWidth:
-                                        2
+                                    borderWidth: 2
                                 }
                             ]
                         },
 
                         options: {
-                            responsive:
-                                true,
+                            responsive: true,
 
-                            maintainAspectRatio:
-                                false,
+                            maintainAspectRatio: false,
 
-                            cutout:
-                                '65%',
+                            cutout: '65%',
 
                             plugins: {
                                 legend: {
-                                    position:
-                                        'bottom'
+                                    position: 'bottom'
                                 }
                             }
                         }
