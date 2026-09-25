@@ -13,6 +13,9 @@ use Cake\Validation\Validator;
  * CustomerSyncService. This table has no direct relationship to the
  * Square API - it's populated exclusively via sync.
  *
+ * @property \App\Model\Table\BookingsTable&\Cake\ORM\Association\HasMany $Bookings
+ * @property \App\Model\Table\PaymentsTable&\Cake\ORM\Association\HasMany $Payments
+ *
  * @method \App\Model\Entity\Customer newEmptyEntity()
  * @method \App\Model\Entity\Customer newEntity(array $data, array $options = [])
  * @method array<\App\Model\Entity\Customer> newEntities(array $data, array $options = [])
@@ -31,6 +34,19 @@ class CustomersTable extends Table
         $this->setTable('customers');
         $this->setDisplayField('given_name');
         $this->setPrimaryKey('id');
+
+        // Joined for display purposes only (e.g. a customer's booking
+        // history) - not a real DB foreign key, for the same reason as
+        // the reciprocal association on BookingsTable.
+        $this->hasMany('Bookings', [
+            'foreignKey' => 'square_customer_id',
+            'bindingKey' => 'square_customer_id',
+        ]);
+
+        $this->hasMany('Payments', [
+            'foreignKey' => 'square_customer_id',
+            'bindingKey' => 'square_customer_id',
+        ]);
 
         // Auto-populates created_at on insert and updated_at on every
         // save - neither is set explicitly by CustomerSyncService.

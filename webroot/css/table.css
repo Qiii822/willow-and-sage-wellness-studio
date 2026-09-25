@@ -38,7 +38,6 @@
     font-size: 13px;
     font-weight: 700;
 
-
     background: var(--primary);
     border: none;
     border-radius: 10px;
@@ -53,6 +52,67 @@
 .table-action:hover {
     background: var(--primary-dark);
     transform: translateY(-1px);
+}
+
+/* Filter bar */
+
+.bookings-filter-form,
+.payments-filter-form {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.filter-field label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-field select,
+.filter-field input {
+    min-height: 42px;
+    padding: 8px 12px;
+
+    color: var(--text-primary);
+    font-size: 14px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    box-shadow: 0 2px 8px rgba(72, 64, 58, 0.04);
+}
+
+.filter-clear {
+    display: inline-flex;
+    align-items: center;
+
+    height: 42px;
+
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.filter-clear:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
 }
 
 .table-responsive {
@@ -104,6 +164,7 @@
 .dashboard-table tbody tr:hover {
     background: rgba(139, 126, 116, 0.04);
 }
+
 /* Status badges */
 
 .status-badge {
@@ -135,7 +196,6 @@
     background: #deebf3;
     border: 1px solid #bfd4e1;
 }
-
 /* Customer list source switcher */
 
 .source-tabs {
@@ -520,4 +580,36 @@
     font-weight: 500;
 
     opacity: 1;
+}
+/* Pending (booking awaiting confirmation) */
+.status-badge.pending {
+    color: #8a6415;
+    background: #faf0d7;
+    border: 1px solid #eddca3;
+}
+
+/* Cancelled / declined / no-show (booking did not go ahead) */
+.status-badge.cancelled-by-customer,
+.status-badge.cancelled-by-seller,
+.status-badge.declined,
+.status-badge.no-show {
+    color: #7a2e2e;
+    background: #f5dede;
+    border: 1px solid #e6bcbc;
+}
+
+/* Completed / approved payment */
+.status-badge.completed,
+.status-badge.approved {
+    color: #285438;
+    background: #dcecdf;
+    border: 1px solid #bdd8c2;
+}
+
+/* Canceled / failed payment */
+.status-badge.canceled,
+.status-badge.failed {
+    color: #7a2e2e;
+    background: #f5dede;
+    border: 1px solid #e6bcbc;
 }

@@ -325,15 +325,4 @@ $currentRole = $identity->roles ?? $identity->role ?? null;
 
     </div>
 
-    <?= $this->Html->link(
-        '← Back to Dashboard',
-        [
-            'controller' => 'Dashboard',
-            'action' => 'index',
-        ],
-        [
-            'class' => 'users-back'
-        ]
-    ) ?>
-
 </div>

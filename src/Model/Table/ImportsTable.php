@@ -11,7 +11,6 @@ use Cake\Validation\Validator;
  * Imports Model
  *
  * @property \App\Model\Table\IdentitiesTable&\Cake\ORM\Association\BelongsTo $Identities
- * @property \App\Model\Table\CustomerChangesTable&\Cake\ORM\Association\HasMany $CustomerChanges
  *
  * @method \App\Model\Entity\Import newEmptyEntity()
  * @method \App\Model\Entity\Import newEntity(array $data, array $options = [])
@@ -39,10 +38,6 @@ class ImportsTable extends Table
         $this->belongsTo('Identities', [
             'foreignKey' => 'identity_id',
         ]);
-
-        $this->hasMany('CustomerChanges', [
-            'foreignKey' => 'import_id',
-        ]);
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -51,6 +46,12 @@ class ImportsTable extends Table
             ->uuid('identity_id')
             ->requirePresence('identity_id', 'create')
             ->notEmptyString('identity_id');
+
+        $validator
+            ->scalar('resource')
+            ->inList('resource', ['customers', 'bookings', 'payments'])
+            ->requirePresence('resource', 'create')
+            ->notEmptyString('resource');
 
         $validator
             ->scalar('source')
@@ -81,28 +82,41 @@ class ImportsTable extends Table
 
     /**
      * Whether an import is currently running (and not stale). Used to
-     * stop two syncs running concurrently against the same customer table.
+     * stop two syncs writing to the same table at once.
      *
+     * @param string|null $resource Limit the check to one resource
+     *  (e.g. 'customers', 'bookings'). Omit to check across all resources -
+     *  used where any in-flight sync matters, e.g. blocking disconnect.
      * @return bool
      */
-    public function hasRunningImport(): bool
+    public function hasRunningImport(?string $resource = null): bool
     {
-        return $this->find()
+        $query = $this->find()
             ->where(['status' => 'running'])
-            ->andWhere(['started_at >' => DateTime::now()->subMinutes(self::STALE_AFTER_MINUTES)])
-            ->count() > 0;
+            ->andWhere(['started_at >' => DateTime::now()->subMinutes(self::STALE_AFTER_MINUTES)]);
+
+        if ($resource !== null) {
+            $query = $query->andWhere(['resource' => $resource]);
+        }
+
+        return $query->count() > 0;
     }
 
     /**
      * Returns the most recently completed import.
      *
+     * @param string|null $resource Limit to one resource (e.g. 'customers',
+     *  'bookings'). Omit to get the most recent completed import overall.
      * @return \App\Model\Entity\Import|null
      */
-    public function getLastCompleted(): ?\App\Model\Entity\Import
+    public function getLastCompleted(?string $resource = null): ?\App\Model\Entity\Import
     {
-        return $this->find()
-            ->where(['status' => 'completed'])
-            ->orderByDesc('finished_at')
-            ->first();
+        $query = $this->find()->where(['status' => 'completed']);
+
+        if ($resource !== null) {
+            $query = $query->andWhere(['resource' => $resource]);
+        }
+
+        return $query->orderByDesc('finished_at')->first();
     }
 }

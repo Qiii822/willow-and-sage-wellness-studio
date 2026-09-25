@@ -195,9 +195,9 @@ class AuthController extends AppController
      * revoking the token mid-sync would just cause Square API calls to
      * start failing partway through, rather than failing cleanly.
      *
-     * Local customer data (Customers/Imports/Customer_changes) is left
-     * untouched on disconnect - see Users/settings.php for the staleness
-     * indicator shown once Square is disconnected.
+     * Local synced data (Customers, Bookings, Imports) is left untouched
+     * on disconnect - see Users/settings.php for the staleness indicator
+     * shown once Square is disconnected.
      *
      * This does not touch the admin's own login session - disconnecting
      * Square and logging out of the app are unrelated actions. Staff
@@ -227,7 +227,7 @@ class AuthController extends AppController
     }
 
     /**
-     * Manually triggers a customer sync from Square.
+     * Manually triggers a full sync (customers, bookings, and payments) from Square.
      *
      * @return \Cake\Http\Response Redirect to the Settings page.
      */
@@ -236,7 +236,7 @@ class AuthController extends AppController
         $this->request->allowMethod(['post']);
 
         try {
-            (new SyncService())->syncCustomers('manual');
+            (new SyncService())->runAll('manual');
             $this->Flash->success('Sync completed successfully.');
         } catch (\Throwable $e) {
             \Cake\Log\Log::error('Manual sync failed: ' . $e->getMessage());

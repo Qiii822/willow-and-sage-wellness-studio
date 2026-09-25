@@ -498,18 +498,6 @@ $isSuperAdmin = $role === 'superadmin';
         </div>
     </div>
 
-
-    <?= $this->Html->link(
-        '← Back to Dashboard',
-        [
-            'controller' => 'Dashboard',
-            'action' => 'index'
-        ],
-        [
-            'class' => 'settings-back'
-        ]
-    ) ?>
-
 </div>
 
 <?= $this->Html->script('confirm_modal', ['block' => true]) ?>

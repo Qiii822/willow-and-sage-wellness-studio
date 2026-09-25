@@ -20,7 +20,7 @@
         <?= $this->fetch('title') ?>
     </title>
 
-    <?= $this->Html->meta('icon') ?>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <?= $this->Html->css('normalize.min') ?>
     <?= $this->Html->css('milligram.min') ?>
