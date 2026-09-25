@@ -3,6 +3,8 @@
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\User $user
  */
+use App\Model\Table\UsersTable;
+
 $this->assign('title', 'Change Password');
 
 $this->Html->css(
@@ -52,6 +54,8 @@ $this->Html->script(
                         'id' => 'password',
                         'value' => '',
                         'autocomplete' => 'new-password',
+                        'minlength' => UsersTable::PASSWORD_MIN,
+                        'maxlength' => UsersTable::PASSWORD_MAX,
                         'placeholder' => 'Enter your new password'
                     ]) ?>
 
@@ -66,7 +70,7 @@ $this->Html->script(
 
                 </div>
 
-                <p class="auth-form-hint">At least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
+                <p class="auth-form-hint"><?= UsersTable::PASSWORD_MIN ?>&ndash;<?= UsersTable::PASSWORD_MAX ?> characters, including an uppercase letter, a lowercase letter and a number.</p>
 
                 <?= $this->Form->error('password') ?>
             </div>
@@ -81,6 +85,8 @@ $this->Html->script(
                         'id' => 'password-confirm',
                         'value' => '',
                         'autocomplete' => 'new-password',
+                        'minlength' => UsersTable::PASSWORD_MIN,
+                        'maxlength' => UsersTable::PASSWORD_MAX,
                         'placeholder' => 'Confirm your new password'
                     ]) ?>
 

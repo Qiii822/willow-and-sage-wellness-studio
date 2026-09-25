@@ -13,9 +13,9 @@ Reset your account password
 
 Hi <?= h($first_name) ?>,
 
-Thank you for your request to reset the password of your account on Wendy Admin.
+Thank you for your request to reset the password of your account on Willow and Sage Wellness Studio.
 
-To reset your account password, use the button below to access the reset password page:
+To reset your account password, open the link below. It expires in one hour.
 <?= $this->Url->build(['controller' => 'Users', 'action' => 'resetPassword', $nonce], ['fullBase' => true]) ?>
 
 

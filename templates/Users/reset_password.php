@@ -3,6 +3,8 @@
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\User $user
  */
+use App\Model\Table\UsersTable;
+
 $this->assign('title', 'Reset Password');
 
 $this->Html->css('auth', ['block' => true]);
@@ -23,9 +25,11 @@ $this->Html->css('auth', ['block' => true]);
             'required' => true,
             'value' => '',
             'autocomplete' => 'new-password',
+            'minlength' => UsersTable::PASSWORD_MIN,
+            'maxlength' => UsersTable::PASSWORD_MAX,
         ]) ?>
 
-        <p class="auth-form-hint">At least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
+        <p class="auth-form-hint"><?= UsersTable::PASSWORD_MIN ?>&ndash;<?= UsersTable::PASSWORD_MAX ?> characters, including an uppercase letter, a lowercase letter and a number.</p>
 
         <?= $this->Form->control('password_confirm', [
             'type' => 'password',
@@ -33,6 +37,8 @@ $this->Html->css('auth', ['block' => true]);
             'required' => true,
             'value' => '',
             'autocomplete' => 'new-password',
+            'minlength' => UsersTable::PASSWORD_MIN,
+            'maxlength' => UsersTable::PASSWORD_MAX,
         ]) ?>
         <?= $this->Form->button('Save Password', ['class' => 'auth-button']) ?>
         <?= $this->Form->end() ?>

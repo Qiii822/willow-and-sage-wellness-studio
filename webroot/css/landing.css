@@ -1,0 +1,735 @@
+/* =========================================================
+   Customer facing landing page
+   ========================================================= */
+
+:root {
+    --gold: #b0916c;
+    --gold-dark: #9a7b52;
+
+    --header-height: 88px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    overflow-x: hidden;
+
+    color: var(--text-primary);
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: var(--surface);
+}
+
+button {
+    font: inherit;
+}
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+
+    background: var(--surface);
+    border-bottom: 1px solid rgba(229, 223, 217, 0.7);
+}
+
+.site-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+
+    width: 100%;
+    height: var(--header-height);
+
+    padding: 0 40px;
+}
+
+/* An anchor back to the home page, but it should not read as body copy. */
+.site-brand {
+    max-width: 260px;
+
+    color: var(--text-primary);
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.4px;
+    text-decoration: none;
+}
+
+.site-brand:hover {
+    color: var(--gold-dark);
+    text-decoration: none;
+}
+
+/* =========================================================
+   Navigation
+   ========================================================= */
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-left: auto;
+}
+
+/* Both <button> (inert entries) and <a> (Book, which leaves for Square). */
+.site-nav-link {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 10px 14px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.site-nav-link:hover {
+    color: var(--gold-dark);
+    background: var(--primary-light);
+}
+
+.site-nav-link.is-accent {
+    color: var(--gold-dark);
+}
+
+/* =========================================================
+   Header actions
+   ========================================================= */
+
+.site-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.site-icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    padding: 0;
+
+    color: var(--text-primary);
+
+    background: transparent;
+    border: 0;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.site-icon-button:hover {
+    color: var(--gold-dark);
+    background: var(--primary-light);
+}
+
+.site-icon-button svg {
+    display: block;
+
+    width: 20px;
+    height: 20px;
+
+    stroke-width: 1.8;
+}
+
+/* Rendered as a <span> when signed out, a <button> when signed in. */
+.site-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+
+    color: var(--on-primary);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    background: #cbb59a;
+    border: 0;
+    border-radius: 50%;
+
+    flex-shrink: 0;
+}
+
+button.site-avatar {
+    cursor: pointer;
+
+    transition: box-shadow 0.2s ease;
+}
+
+button.site-avatar:hover,
+button.site-avatar[aria-expanded="true"] {
+    box-shadow: 0 0 0 3px rgba(203, 181, 154, 0.35);
+}
+
+/* =========================================================
+   Account dropdown
+   ========================================================= */
+
+.account-menu {
+    position: relative;
+}
+
+.account-menu-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 40;
+
+    min-width: 210px;
+
+    padding: 6px;
+
+    background: #fff;
+    border: 1px solid rgba(24, 20, 17, 0.08);
+    border-radius: 14px;
+
+    box-shadow:
+        0 14px 34px rgba(24, 20, 17, 0.16);
+}
+
+.account-menu-panel[hidden] {
+    display: none;
+}
+
+.account-menu-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    padding: 10px 12px 12px;
+
+    border-bottom: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.account-menu-identity strong {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.account-menu-identity span {
+    color: var(--text-secondary);
+    font-size: 13px;
+
+    /* Long addresses must not stretch the panel. */
+    overflow-wrap: anywhere;
+}
+
+/* One rule for the link and the logout button alike. */
+.account-menu-item {
+    display: block;
+
+    width: 100%;
+
+    margin-top: 4px;
+    padding: 9px 12px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+
+    background: transparent;
+    border: 0;
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.account-menu-item:hover {
+    background: rgba(139, 126, 116, 0.12);
+}
+
+.account-menu-item.is-danger {
+    color: #c0392b;
+}
+
+.account-menu-item.is-danger:hover {
+    background: rgba(192, 57, 43, 0.1);
+}
+
+.account-menu-form {
+    margin: 0;
+}
+
+/* Announced to screen readers, invisible on screen. */
+.visually-hidden {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    margin: -1px;
+    padding: 0;
+
+    overflow: hidden;
+
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/*
+ * Signed out, this is the only account control in the header, so it is a
+ * solid button rather than a quiet text link.
+ */
+.site-session-link {
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 40px;
+
+    padding: 0 20px;
+
+    color: var(--on-primary);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: var(--gold);
+    border-radius: 999px;
+
+    white-space: nowrap;
+
+    transition: background 0.2s ease;
+}
+
+.site-session-link:hover {
+    color: var(--on-primary);
+    text-decoration: none;
+
+    background: var(--gold-dark);
+}
+
+/* =========================================================
+   Hero
+   ========================================================= */
+
+.hero {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    min-height: calc(100vh - var(--header-height));
+
+    padding: 90px 40px;
+    overflow: hidden;
+
+    /* Fallback backdrop: warm clay tones until a photo is supplied. */
+    background:
+        radial-gradient(
+            circle at 72% 34%,
+            rgba(214, 186, 152, 0.55),
+            transparent 46%
+        ),
+        radial-gradient(
+            circle at 24% 82%,
+            rgba(126, 104, 84, 0.55),
+            transparent 52%
+        ),
+        linear-gradient(
+            155deg,
+            #6f5f52 0%,
+            #4a3f37 46%,
+            #2a2521 100%
+        );
+}
+
+.hero.has-photo {
+    background-image:
+        linear-gradient(
+            100deg,
+            rgba(24, 20, 17, 0.86) 0%,
+            rgba(24, 20, 17, 0.42) 52%,
+            rgba(24, 20, 17, 0.20) 100%
+        ),
+        var(--hero-photo);
+
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/*
+ * The photo is swappable, so the text cannot rely on the scrim alone - a
+ * candle or lamp landing behind the small eyebrow line is enough to drop it
+ * under the contrast floor. The shadow holds the type legible whatever
+ * image is dropped in, without darkening the photo any further.
+ */
+.hero.has-photo .hero-eyebrow,
+.hero.has-photo .hero-title,
+.hero.has-photo .hero-lead,
+.hero.has-photo .hero-note {
+    text-shadow: 0 1px 3px rgba(24, 20, 17, 0.55);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    max-width: 640px;
+}
+
+.hero-eyebrow {
+    margin: 0 0 34px;
+
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.hero-title {
+    margin: 0 0 26px;
+
+    color: #ffffff;
+    font-size: clamp(48px, 7.5vw, 92px);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -2px;
+}
+
+.hero-lead {
+    margin: 0 0 40px;
+
+    max-width: 460px;
+
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.hero-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 60px;
+
+    padding: 0 34px;
+
+    color: var(--on-primary);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: var(--gold);
+    border: 0;
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 12px 28px rgba(24, 20, 17, 0.28);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.hero-cta:hover {
+    background: var(--gold-dark);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 16px 34px rgba(24, 20, 17, 0.34);
+}
+
+/* =========================================================
+   Feature strip
+   ========================================================= */
+
+.feature-strip {
+    padding: 96px 40px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #faf9f7 0%,
+            var(--background) 100%
+        );
+}
+
+.feature-strip-inner {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+}
+
+.section-intro {
+    max-width: 720px;
+
+    margin-bottom: 54px;
+}
+
+.section-intro h2 {
+    margin: 0 0 16px;
+
+    color: var(--text-primary);
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.section-intro p {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 17px;
+    line-height: 1.75;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 26px;
+}
+
+.feature-card {
+    padding: 38px 34px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+
+    box-shadow: var(--shadow);
+}
+
+.feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+
+    margin-bottom: 22px;
+
+    color: var(--gold-dark);
+
+    background: var(--amber-light);
+    border-radius: 16px;
+}
+
+.feature-icon svg {
+    display: block;
+
+    width: 24px;
+    height: 24px;
+
+    stroke-width: 1.7;
+}
+
+.feature-card h3 {
+    margin: 0 0 12px;
+
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+}
+
+.feature-card p {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   Footer
+   ========================================================= */
+
+.site-footer {
+    padding: 30px 40px;
+
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+}
+
+.site-footer-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    width: min(1180px, 100%);
+    margin: 0 auto;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.site-footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.site-footer-brand strong {
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.site-footer-contact {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 18px;
+}
+
+.site-footer-contact a {
+    color: var(--gold-dark);
+    text-decoration: none;
+}
+
+.site-footer-contact a:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1080px) {
+    .site-header-inner {
+        gap: 18px;
+
+        padding: 0 24px;
+    }
+
+    .site-nav-link {
+        padding: 10px 10px;
+
+        font-size: 15px;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 860px) {
+    .site-header-inner {
+        height: auto;
+
+        padding: 16px 20px;
+
+        flex-wrap: wrap;
+    }
+
+    /*
+     * Row one is brand + actions once the nav drops to its own row, so the
+     * brand has to be capped or its text runs under the avatar.
+     */
+    .site-brand {
+        max-width: 170px;
+    }
+
+    .site-nav {
+        order: 3;
+
+        width: 100%;
+        margin-left: 0;
+
+        overflow-x: auto;
+    }
+
+    .site-header-actions {
+        margin-left: auto;
+    }
+
+    .hero {
+        min-height: 0;
+
+        padding: 80px 24px 96px;
+    }
+
+    .feature-strip {
+        padding: 64px 24px;
+    }
+
+    .site-footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .site-brand {
+        font-size: 18px;
+    }
+
+    .hero-eyebrow {
+        margin-bottom: 24px;
+    }
+
+    .hero-lead {
+        font-size: 17px;
+    }
+
+    .hero-cta {
+        width: 100%;
+        min-height: 54px;
+    }
+}

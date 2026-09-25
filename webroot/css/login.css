@@ -376,6 +376,35 @@ main.main > .container {
         0 12px 24px rgba(139, 126, 116, 0.22);
 }
 
+/*
+ * Also used on an <a>, which needs the box behaviour a <button> gets for
+ * free, and must not carry the browser's link underline.
+ */
+.login-button.is-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 12px;
+
+    color: var(--primary-dark);
+    text-decoration: none;
+
+    background: transparent;
+    border: 1px solid rgba(139, 126, 116, 0.4);
+
+    box-shadow: none;
+}
+
+.login-button.is-secondary:hover {
+    color: var(--primary-dark);
+    text-decoration: none;
+
+    background: rgba(139, 126, 116, 0.1);
+
+    box-shadow: none;
+}
+
 /* =========================================================
    Responsive
    ========================================================= */
@@ -430,6 +459,143 @@ main.main > .container {
 
     .login-header h1 {
         font-size: 27px;
+    }
+}
+
+/* =========================================================
+   Flash messages inside the auth card
+   ========================================================= */
+
+/*
+ * cake.css styles these as plain 16px boxes with a 4px radius, which reads
+ * as a framework default next to the card's own type and rounding.
+ */
+.login-card .message {
+    margin: 0 0 20px;
+    padding: 12px 15px;
+
+    font-size: 14px;
+    line-height: 1.5;
+
+    border-radius: 12px;
+}
+
+.login-card .message.error {
+    color: #8c2f24;
+
+    background: #fbeae8;
+    border: 1px solid #f0cdc8;
+}
+
+.login-card .message.success {
+    color: #285438;
+
+    background: #dcecdf;
+    border: 1px solid #bdd8c2;
+}
+
+/* =========================================================
+   Signup form (shares the shell above)
+   ========================================================= */
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/*
+ * CakePHP's control() emits its own wrapper div, so the label/input
+ * spacing set on .form-group has to be restated one level in.
+ */
+.login-form .input {
+    margin: 0;
+}
+
+/*
+ * Flex so a character counter can sit at the right-hand end of the label
+ * line instead of taking a row of its own beneath the field.
+ */
+.login-form .input > label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+
+    margin-bottom: 8px;
+
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.field-counter {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+
+    /* Fixed-width digits, so the label does not twitch while typing. */
+    font-variant-numeric: tabular-nums;
+}
+
+.field-counter.is-full {
+    color: var(--danger);
+}
+
+.login-form .error-message {
+    margin-top: 7px;
+
+    color: var(--danger);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+/* Rules with several failures (password) render as a list. */
+.login-form .error-message ul {
+    margin: 0;
+    padding-left: 17px;
+
+    list-style: disc;
+}
+
+.login-form .error-message li {
+    margin: 0;
+}
+
+.login-form .form-control.form-error {
+    border-color: var(--danger);
+}
+
+.field-hint {
+    margin: 7px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.auth-switch {
+    margin: 22px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+}
+
+.auth-switch a {
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 }
 

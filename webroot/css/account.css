@@ -1,0 +1,344 @@
+/* =========================================================
+   Customer account settings
+
+   Uses the public site's header and footer, so only the page
+   body between them is styled here. Shares landing.css tokens.
+   ========================================================= */
+
+.account-main {
+    min-height: calc(100vh - var(--header-height, 74px) - 90px);
+
+    padding: 48px 40px 72px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f6f2ec 0%,
+            var(--background) 46%
+        );
+}
+
+.account-inner {
+    width: min(760px, 100%);
+    margin: 0 auto;
+}
+
+.account-card {
+    margin-bottom: 24px;
+    padding: 30px 32px;
+
+    background: #fffdfa;
+    border: 1px solid rgba(24, 20, 17, 0.06);
+    border-radius: 20px;
+
+    box-shadow:
+        0 10px 30px rgba(24, 20, 17, 0.05);
+}
+
+.account-card:last-child {
+    margin-bottom: 0;
+}
+
+.account-eyebrow {
+    margin: 0 0 10px;
+
+    color: var(--gold-dark);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.account-intro h1 {
+    margin: 0 0 10px;
+
+    color: var(--text-primary);
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -1.2px;
+}
+
+.account-lead {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.account-card h2 {
+    margin: 0 0 8px;
+
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+}
+
+.account-card-lead {
+    margin: 0 0 24px;
+
+    color: var(--text-secondary);
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   Form
+   ========================================================= */
+
+.account-field {
+    margin-bottom: 22px;
+}
+
+/*
+ * The form helper wraps each control in its own div, so the label and
+ * input spacing has to be restated one level in.
+ */
+.account-field .input {
+    margin: 0;
+}
+
+.account-field label,
+.account-field .input > label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.account-input {
+    width: 100%;
+    height: 50px;
+
+    padding: 0 16px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 15px;
+
+    background: #fff;
+    border: 1px solid rgba(24, 20, 17, 0.14);
+    border-radius: 14px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.account-input:focus {
+    border-color: var(--gold);
+    outline: none;
+
+    box-shadow: 0 0 0 3px rgba(203, 181, 154, 0.28);
+}
+
+.account-hint {
+    margin: 8px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+/* Validation messages, from the helper and from the manual blocks alike. */
+.account-field .error-message,
+.account-error {
+    margin-top: 7px;
+
+    color: var(--danger);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.account-error p {
+    margin: 0;
+}
+
+.account-field .form-error,
+.account-field .account-input.form-error {
+    border-color: var(--danger);
+}
+
+.account-button {
+    min-height: 48px;
+
+    padding: 0 26px;
+
+    color: var(--on-primary);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    background: var(--gold);
+    border: 0;
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.account-button:hover {
+    background: var(--gold-dark);
+}
+
+.account-button[disabled] {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.account-button.is-secondary {
+    color: var(--primary-dark);
+
+    background: transparent;
+    border: 1px solid rgba(139, 126, 116, 0.4);
+}
+
+.account-button.is-secondary:hover {
+    background: rgba(139, 126, 116, 0.1);
+}
+
+/* =========================================================
+   Pending contact verification
+   ========================================================= */
+
+.account-pending {
+    margin-bottom: 24px;
+    padding: 20px 22px;
+
+    background: #fdf6ec;
+    border: 1px solid #ecd9bb;
+    border-radius: 16px;
+}
+
+.account-pending-lead {
+    margin: 0 0 6px;
+
+    color: #6b5535;
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+.account-pending-lead strong {
+    overflow-wrap: anywhere;
+}
+
+.account-pending-note {
+    margin: 0 0 6px;
+
+    color: #8a7a5f;
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+
+.account-code-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+.account-code-input {
+    width: 150px;
+
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 6px;
+    text-align: center;
+
+    /* Even digit widths, so the code does not jitter as it is typed. */
+    font-variant-numeric: tabular-nums;
+}
+
+/* A form control that should read as a quiet link, not a button. */
+.account-link-button {
+    margin-top: 12px;
+    padding: 0;
+
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 13px;
+    text-decoration: underline;
+
+    background: none;
+    border: 0;
+
+    cursor: pointer;
+}
+
+.account-link-button:hover {
+    color: var(--text-primary);
+}
+
+/* The email-a-link alternative, set apart from the form above it. */
+.account-alt {
+    margin-top: 26px;
+    padding-top: 22px;
+
+    border-top: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.account-alt-lead {
+    margin: 0 0 16px;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.account-alt-lead strong {
+    color: var(--text-primary);
+    font-weight: 600;
+
+    overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   Flash messages
+   ========================================================= */
+
+.account-inner > .message {
+    margin-bottom: 22px;
+    padding: 13px 17px;
+
+    font-size: 14px;
+
+    border-radius: 14px;
+}
+
+.account-inner > .message.success {
+    color: #285438;
+
+    background: #dcecdf;
+    border: 1px solid #bdd8c2;
+}
+
+.account-inner > .message.error {
+    color: #8c2f24;
+
+    background: #fbeae8;
+    border: 1px solid #f0cdc8;
+}
+
+@media (max-width: 640px) {
+    .account-main {
+        padding: 32px 20px 56px;
+    }
+
+    .account-card {
+        padding: 24px 20px;
+    }
+
+    .account-intro h1 {
+        font-size: 32px;
+    }
+
+    .account-button {
+        width: 100%;
+    }
+}

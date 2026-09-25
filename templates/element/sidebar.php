@@ -13,6 +13,9 @@ $isUsers =
     $controller === 'Users' &&
     $action === 'index';
 
+$isCustomers =
+    $controller === 'Customers';
+
 $isBookings =
     $controller === 'Bookings' &&
     $action === 'index';
@@ -95,17 +98,23 @@ $isSettings =
                 ) ?>
             </li>
 
-        <?php endif; ?>
-
-        <?php if (in_array(
-            $role,
-            ['admin', 'superadmin'],
-            true
-        )): ?>
+            <li class="<?= $isCustomers ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="users"></i><span>Customers</span>',
+                    [
+                        'controller' => 'Customers',
+                        'action' => 'index'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
 
             <li class="<?= $isUsers ? 'active' : '' ?>">
                 <?= $this->Html->link(
-                    '<i data-lucide="users"></i><span>Users</span>',
+                    '<i data-lucide="shield"></i><span>Admins</span>',
                     [
                         'controller' => 'Users',
                         'action' => 'index'

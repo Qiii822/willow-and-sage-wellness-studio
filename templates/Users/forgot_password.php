@@ -29,7 +29,8 @@ $this->Html->css(
             'type' => 'email',
             'label' => 'Email address',
             'required' => true,
-            'placeholder' => 'wendy@example.com',
+            'placeholder' => 'you@example.com',
+            'maxlength' => \App\Model\Table\UsersTable::EMAIL_MAX,
         ]) ?>
 
         <div class="auth-actions">

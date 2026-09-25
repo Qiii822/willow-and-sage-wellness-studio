@@ -5,6 +5,8 @@
  * @var bool $isSuperAdmin
  */
 
+use App\Model\Table\UsersTable;
+
 $this->assign('title', 'Create User');
 
 $this->Html->css(
@@ -30,25 +32,43 @@ $this->Html->css(
             <?= $this->Form->control('first_name', [
                 'label' => 'First Name',
                 'required' => true,
-                'maxlength' => 50,
+                'maxlength' => UsersTable::NAME_MAX,
             ]) ?>
-            <p class="user-form-hint">Maximum 50 characters</p>
+            <p class="user-form-hint">Maximum <?= UsersTable::NAME_MAX ?> characters</p>
         </div>
 
         <div class="user-form-field">
             <?= $this->Form->control('surname', [
                 'label' => 'Surname',
                 'required' => true,
-                'maxlength' => 50,
+                'maxlength' => UsersTable::NAME_MAX,
             ]) ?>
-            <p class="user-form-hint">Maximum 50 characters</p>
+            <p class="user-form-hint">Maximum <?= UsersTable::NAME_MAX ?> characters</p>
         </div>
 
-        <?= $this->Form->control('email', [
-            'type' => 'email',
-            'label' => 'Email',
-            'required' => true,
-        ]) ?>
+        <div class="user-form-field">
+            <?= $this->Form->control('email', [
+                'type' => 'email',
+                'label' => 'Email',
+                'required' => true,
+                'maxlength' => UsersTable::EMAIL_MAX,
+            ]) ?>
+            <p class="user-form-hint">Maximum <?= UsersTable::EMAIL_MAX ?> characters</p>
+        </div>
+
+        <div class="user-form-field">
+            <?= $this->Form->control('phone', [
+                'type' => 'tel',
+                'label' => 'Mobile Number',
+                'required' => true,
+                'placeholder' => '0412 345 678',
+                'maxlength' => 20,
+            ]) ?>
+            <p class="user-form-hint">
+                Australian mobile. Used to match the account to its Square
+                customer record.
+            </p>
+        </div>
 
         <div class="user-password-field">
 
@@ -62,6 +82,8 @@ $this->Html->css(
                     'value' => '',
                     'autocomplete' => 'new-password',
                     'class' => 'user-password-input',
+                    'minlength' => UsersTable::PASSWORD_MIN,
+                    'maxlength' => UsersTable::PASSWORD_MAX,
                 ]) ?>
 
                 <button
@@ -75,7 +97,7 @@ $this->Html->css(
 
             </div>
 
-            <p class="user-form-hint">At least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
+            <p class="user-form-hint"><?= UsersTable::PASSWORD_MIN ?>&ndash;<?= UsersTable::PASSWORD_MAX ?> characters, including an uppercase letter, a lowercase letter and a number.</p>
 
             <?= $this->Form->error('password') ?>
 
@@ -93,6 +115,8 @@ $this->Html->css(
                     'value' => '',
                     'autocomplete' => 'new-password',
                     'class' => 'user-password-input',
+                    'minlength' => UsersTable::PASSWORD_MIN,
+                    'maxlength' => UsersTable::PASSWORD_MAX,
                 ]) ?>
 
                 <button
