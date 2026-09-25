@@ -41,6 +41,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const STORAGE_KEY =
         'wendy-dashboard-layout';
 
+    const SIZE_CLASSES =
+        ['widget-small', 'widget-medium', 'widget-large', 'widget-wide'];
+
+    const SIZE_NAMES =
+        ['small', 'medium', 'large', 'wide'];
+
+    const GRID_COLUMNS = 4;
+
+    const GRID_GAP = 24;
+
     let editing = false;
     let draggedWidget = null;
 
@@ -321,14 +331,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =====================================================
-       Drag Start
+       Drag Start (reorder)
        ===================================================== */
 
     dashboard?.addEventListener(
         'dragstart',
         function (event) {
 
-            if (!editing) {
+            if (
+                !editing ||
+                event.target.closest(
+                    '.widget-resize-handle'
+                )
+            ) {
 
                 event.preventDefault();
 
@@ -358,7 +373,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =====================================================
-       Drag Over
+       Drag Over (reorder) - moves the dragged widget to
+       wherever the pointer currently is, live, based on
+       DOM order rather than fixed slots. This lets widgets
+       of any size be reordered next to one another.
        ===================================================== */
 
     dashboard?.addEventListener(
@@ -374,29 +392,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
             event.preventDefault();
 
-            const slot =
-                event.target.closest(
-                    '.dashboard-drop-slot'
+            const target =
+                findDropTarget(
+                    event.clientX,
+                    event.clientY
                 );
 
+            if (!target.element) {
 
-            document
-                .querySelectorAll(
-                    '.dashboard-drop-slot'
-                )
-                .forEach(function (item) {
+                dashboard.appendChild(
+                    draggedWidget
+                );
 
-                    item.classList.remove(
-                        'drag-over'
-                    );
+                return;
+            }
 
-                });
+            if (target.element === draggedWidget) {
+                return;
+            }
 
+            if (target.after) {
 
-            if (slot) {
+                target.element.after(
+                    draggedWidget
+                );
 
-                slot.classList.add(
-                    'drag-over'
+            } else {
+
+                target.element.before(
+                    draggedWidget
                 );
 
             }
@@ -422,62 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             event.preventDefault();
 
-
-            const slot =
-                event.target.closest(
-                    '.dashboard-drop-slot'
-                );
-
-            if (!slot) {
-                return;
-            }
-
-
-            if (
-                !draggedWidget.classList.contains(
-                    'widget-small'
-                )
-            ) {
-                return;
-            }
-
-
-            const newSlot =
-                slot.dataset.slot;
-
-            const oldSlot =
-                draggedWidget.dataset.slot;
-
-
-            const existingWidget =
-                dashboard.querySelector(
-                    '.dashboard-widget.widget-small' +
-                    '[data-slot="' +
-                    newSlot +
-                    '"]'
-                );
-
-
-            if (
-                existingWidget &&
-                existingWidget !== draggedWidget
-            ) {
-
-                existingWidget.dataset.slot =
-                    oldSlot;
-
-            }
-
-
-            draggedWidget.dataset.slot =
-                newSlot;
-
-
-            updateWidgetPositions();
-
             saveLayout();
-
-            clearDropHighlights();
 
         }
     );
@@ -501,8 +470,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             draggedWidget = null;
 
-            clearDropHighlights();
-
             saveLayout();
 
         }
@@ -510,102 +477,225 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =====================================================
-       Clear Drop Highlights
+       Find Drop Target
        ===================================================== */
 
-    function clearDropHighlights() {
+    function findDropTarget(x, y) {
 
-        document
-            .querySelectorAll(
-                '.dashboard-drop-slot'
-            )
-            .forEach(function (slot) {
+        const candidates =
+            Array.from(
+                dashboard.querySelectorAll(
+                    '.dashboard-widget:not(.widget-hidden)'
+                )
+            ).filter(function (widget) {
 
-                slot.classList.remove(
-                    'drag-over'
-                );
+                return widget !== draggedWidget;
 
             });
+
+        let closest = {
+            distance: Infinity,
+            element: null,
+            after: false
+        };
+
+        candidates.forEach(function (widget) {
+
+            const box =
+                widget.getBoundingClientRect();
+
+            const centerX =
+                box.left + box.width / 2;
+
+            const centerY =
+                box.top + box.height / 2;
+
+            const distance =
+                Math.hypot(
+                    x - centerX,
+                    y - centerY
+                );
+
+            if (distance < closest.distance) {
+
+                const sameRow =
+                    Math.abs(y - centerY) <
+                    box.height / 2;
+
+                closest = {
+                    distance: distance,
+                    element: widget,
+                    after: sameRow
+                        ? x > centerX
+                        : y > centerY
+                };
+
+            }
+
+        });
+
+        return closest;
 
     }
 
 
     /* =====================================================
-       Widget Positions
+       Widget Resize
        ===================================================== */
 
-    function updateWidgetPositions() {
+    function sizeIndexOf(widget) {
 
-        if (!dashboard) {
-            return;
+        for (let i = 0; i < SIZE_CLASSES.length; i++) {
+
+            if (widget.classList.contains(SIZE_CLASSES[i])) {
+                return i;
+            }
+
         }
 
-
-        const smallWidgets =
-            dashboard.querySelectorAll(
-                '.dashboard-widget.widget-small'
-            );
-
-
-        smallWidgets.forEach(
-            function (widget) {
-
-                const slot =
-                    widget.dataset.slot;
-
-                if (!slot) {
-                    return;
-                }
-
-                widget.style.gridColumn =
-                    slot + ' / span 1';
-
-                widget.style.gridRow =
-                    '1';
-
-            }
-        );
-
-
-        const slots =
-            dashboard.querySelectorAll(
-                '.dashboard-drop-slot'
-            );
-
-
-        slots.forEach(
-            function (slot) {
-
-                const slotNumber =
-                    slot.dataset.slot;
-
-                slot.style.gridColumn =
-                    slotNumber + ' / span 1';
-
-                slot.style.gridRow =
-                    '1';
-
-            }
-        );
-
-
-        const recentCustomers =
-            dashboard.querySelector(
-                '[data-widget="recent-customers"]'
-            );
-
-
-        if (recentCustomers) {
-
-            recentCustomers.style.gridColumn =
-                '1 / -1';
-
-            recentCustomers.style.gridRow =
-                '2';
-
-        }
+        return 0;
 
     }
+
+
+    function applySizeIndex(widget, index) {
+
+        const clamped =
+            Math.min(
+                SIZE_CLASSES.length - 1,
+                Math.max(0, index)
+            );
+
+        SIZE_CLASSES.forEach(function (className) {
+
+            widget.classList.remove(className);
+
+        });
+
+        widget.classList.add(
+            SIZE_CLASSES[clamped]
+        );
+
+    }
+
+
+    function columnWidth() {
+
+        const containerWidth =
+            dashboard.getBoundingClientRect().width;
+
+        return (
+            containerWidth -
+            GRID_GAP * (GRID_COLUMNS - 1)
+        ) / GRID_COLUMNS;
+
+    }
+
+
+    document
+        .querySelectorAll(
+            '.widget-resize-handle'
+        )
+        .forEach(function (handle) {
+
+            handle.addEventListener(
+                'mousedown',
+                function (event) {
+
+                    if (!editing) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const widget =
+                        handle.closest(
+                            '.dashboard-widget'
+                        );
+
+                    if (!widget) {
+                        return;
+                    }
+
+                    const startX =
+                        event.clientX;
+
+                    const startWidth =
+                        widget.getBoundingClientRect().width;
+
+                    const colWidth =
+                        columnWidth();
+
+                    widget.classList.add(
+                        'resizing'
+                    );
+
+
+                    function onMove(moveEvent) {
+
+                        const deltaX =
+                            moveEvent.clientX -
+                            startX;
+
+                        const newWidth =
+                            startWidth + deltaX;
+
+                        let span =
+                            Math.round(
+                                (newWidth + GRID_GAP) /
+                                (colWidth + GRID_GAP)
+                            );
+
+                        span =
+                            Math.min(
+                                GRID_COLUMNS,
+                                Math.max(1, span)
+                            );
+
+                        applySizeIndex(
+                            widget,
+                            span - 1
+                        );
+
+                    }
+
+
+                    function onUp() {
+
+                        document.removeEventListener(
+                            'mousemove',
+                            onMove
+                        );
+
+                        document.removeEventListener(
+                            'mouseup',
+                            onUp
+                        );
+
+                        widget.classList.remove(
+                            'resizing'
+                        );
+
+                        saveLayout();
+
+                    }
+
+
+                    document.addEventListener(
+                        'mousemove',
+                        onMove
+                    );
+
+                    document.addEventListener(
+                        'mouseup',
+                        onUp
+                    );
+
+                }
+            );
+
+        });
 
 
     /* =====================================================
@@ -642,9 +732,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                     'widget-hidden'
                                 ),
 
-                        slot:
-                            widget.dataset.slot ||
-                            null
+                        size:
+                            SIZE_NAMES[
+                                sizeIndexOf(widget)
+                            ]
 
                     };
 
@@ -715,12 +806,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
 
-                if (savedWidget.slot) {
+                const sizeIndex =
+                    SIZE_NAMES.indexOf(
+                        savedWidget.size
+                    );
 
-                    widget.dataset.slot =
-                        savedWidget.slot;
+                if (sizeIndex !== -1) {
+
+                    applySizeIndex(
+                        widget,
+                        sizeIndex
+                    );
 
                 }
+
+
+                /*
+                 * Re-appending in saved order restores
+                 * the widget positions, since layout is
+                 * driven by DOM order rather than slots.
+                 */
+                dashboard.appendChild(widget);
 
             }
         );
@@ -778,8 +884,6 @@ document.addEventListener('DOMContentLoaded', function () {
        ===================================================== */
 
     loadLayout();
-
-    updateWidgetPositions();
 
     updateWidgetLibrary();
 

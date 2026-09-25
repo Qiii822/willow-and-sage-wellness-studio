@@ -10,6 +10,8 @@
  * @var string|null $startDate
  * @var string|null $endDate
  * @var array $availableYears
+ * @var array $rebookingCustomers
+ * @var int $inactiveThresholdDays
  */
 
 $this->assign('title', 'Dashboard');
@@ -347,32 +349,10 @@ $months = [
                 class="dashboard-widget-grid"
             >
 
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="1"
-                ></div>
-
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="2"
-                ></div>
-
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="3"
-                ></div>
-
-                <div
-                    class="dashboard-drop-slot"
-                    data-slot="4"
-                ></div>
-
-
                 <!-- Total Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-customers"
-                    data-slot="1"
                 >
 
                     <div class="widget-edit-controls">
@@ -397,14 +377,22 @@ $months = [
 
                     <?= $this->element('total_customers') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
 
                 <!-- New Customers -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="new-customers"
-                    data-slot="2"
                 >
 
                     <div class="widget-edit-controls">
@@ -429,14 +417,22 @@ $months = [
 
                     <?= $this->element('new_customers') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
 
                 <!-- Total Bookings -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-bookings"
-                    data-slot="3"
                 >
 
                     <div class="widget-edit-controls">
@@ -461,14 +457,22 @@ $months = [
 
                     <?= $this->element('total_bookings') ?>
 
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
                 </div>
 
 
                 <!-- Total Income -->
                 <div
-                    class="dashboard-widget widget-small"
+                    class="dashboard-widget widget-card widget-small"
                     data-widget="total-income"
-                    data-slot="4"
                 >
 
                     <div class="widget-edit-controls">
@@ -492,6 +496,15 @@ $months = [
                     </div>
 
                     <?= $this->element('total_income') ?>
+
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
                 </div>
 
@@ -523,6 +536,270 @@ $months = [
                     </div>
 
                     <?= $this->element('recent_customers') ?>
+
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
+
+                </div>
+
+                <!-- Customer Rebooking -->
+                <div
+                    class="dashboard-widget widget-wide"
+                    data-widget="customer-rebooking"
+                >
+
+                    <div class="widget-edit-controls">
+
+                        <button
+                            type="button"
+                            class="widget-drag-handle"
+                            title="Move widget"
+                        >
+                            <i data-lucide="grip-vertical"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-remove-btn"
+                            title="Remove widget"
+                        >
+                            <i data-lucide="trash-2"></i>
+                        </button>
+
+                    </div>
+
+
+                    <div class="rebooking-widget">
+
+                        <!-- Header -->
+                        <div class="rebooking-widget-header">
+
+                            <div>
+
+                                <h2>
+                                    Customer Rebooking
+                                </h2>
+
+                                <p>
+                                    Customers who have not booked for
+                                    <?= h($inactiveThresholdDays) ?>
+                                    days or more.
+                                </p>
+
+                            </div>
+
+
+                            <span class="rebooking-count">
+                <?= count($rebookingCustomers) ?>
+                customer<?= count($rebookingCustomers) === 1 ? '' : 's' ?>
+            </span>
+
+                        </div>
+
+
+                        <?php if (empty($rebookingCustomers)): ?>
+
+                            <!-- Empty state -->
+                            <div class="rebooking-empty">
+
+                                <div class="rebooking-empty-icon">
+                                    <i data-lucide="calendar-check"></i>
+                                </div>
+
+                                <h3>
+                                    No inactive customers
+                                </h3>
+
+                                <p>
+                                    All customers with previous bookings
+                                    have booked within the last
+                                    <?= h($inactiveThresholdDays) ?>
+                                    days.
+                                </p>
+
+                            </div>
+
+                        <?php else: ?>
+
+                            <!-- Customer table -->
+                            <div class="rebooking-table-wrapper">
+
+                                <table class="rebooking-table">
+
+                                    <thead>
+
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Email</th>
+                                        <th>Last Booking</th>
+                                        <th>Inactive For</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                    <?php foreach ($rebookingCustomers as $item): ?>
+
+                                        <?php
+                                        $customer = $item['customer'];
+                                        $lastBooking = $item['lastBooking'];
+                                        $daysSinceLastBooking = $item['daysSinceLastBooking'];
+
+                                        $customerName = trim(
+                                            ($customer->given_name ?? $customer->first_name ?? '')
+                                            . ' '
+                                            . ($customer->family_name ?? $customer->last_name ?? '')
+                                        );
+
+                                        if ($customerName === '') {
+                                            $customerName = 'Unknown Customer';
+                                        }
+                                        ?>
+
+                                        <tr>
+
+                                            <!-- Customer -->
+                                            <td>
+
+                                                <div class="rebooking-customer">
+
+                                                    <div class="rebooking-avatar">
+
+                                                        <?= h(
+                                                            strtoupper(
+                                                                substr(
+                                                                    $customerName,
+                                                                    0,
+                                                                    1
+                                                                )
+                                                            )
+                                                        ) ?>
+
+                                                    </div>
+
+                                                    <strong>
+                                                        <?= h($customerName) ?>
+                                                    </strong>
+
+                                                </div>
+
+                                            </td>
+
+
+                                            <!-- Email -->
+                                            <td>
+
+                                <span class="rebooking-email">
+
+                                    <?= h(
+                                        $customer->email_address
+                                        ?? $customer->email
+                                        ?? 'No email'
+                                    ) ?>
+
+                                </span>
+
+                                            </td>
+
+
+                                            <!-- Last booking -->
+                                            <td>
+
+                                                <?php if (!empty($lastBooking->start_at)): ?>
+
+                                                    <?= h(
+                                                        $lastBooking
+                                                            ->start_at
+                                                            ->format('d M Y')
+                                                    ) ?>
+
+                                                <?php else: ?>
+
+                                                    —
+
+                                                <?php endif; ?>
+
+                                            </td>
+
+
+                                            <!-- Inactive -->
+                                            <td>
+
+                                                <strong class="rebooking-days">
+
+                                                    <?= h($daysSinceLastBooking) ?>
+                                                    days
+
+                                                </strong>
+
+                                            </td>
+
+
+                                            <!-- Status -->
+                                            <td>
+
+                                <span class="rebooking-status">
+
+                                    <i data-lucide="clock"></i>
+
+                                    Needs Rebooking
+
+                                </span>
+
+                                            </td>
+
+
+                                            <!-- Action -->
+                                            <td>
+
+                                                <?= $this->Form->postLink(
+                                                    '<i data-lucide="mail"></i> Send Reminder',
+                                                    [
+                                                        'controller' => 'Dashboard',
+                                                        'action' => 'sendRebookingReminder',
+                                                        $customer->id,
+                                                    ],
+                                                    [
+                                                        'escape' => false,
+                                                        'class' => 'rebooking-reminder-btn',
+                                                        'confirm' => 'Send a TEST reminder email for ' . $customerName . '?',
+                                                    ]
+                                                ) ?>
+
+                                            </td>
+
+                                        </tr>
+
+                                    <?php endforeach; ?>
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="widget-resize-handle"
+                        title="Resize widget"
+                        aria-label="Resize widget"
+                    >
+                        <i data-lucide="move-horizontal"></i>
+                    </button>
 
                 </div>
 
@@ -678,6 +955,27 @@ $months = [
 
                             <p>
                                 View the latest customers imported from Square.
+                            </p>
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="widget-library-item"
+                            data-widget="customer-rebooking"
+                        >
+
+                            <div class="widget-library-icon">
+                                <i data-lucide="calendar-clock"></i>
+                            </div>
+
+                            <h3>
+                                Customer Rebooking
+                            </h3>
+
+                            <p>
+                                Find customers who have not booked recently
+                                and send rebooking reminders.
                             </p>
 
                         </button>

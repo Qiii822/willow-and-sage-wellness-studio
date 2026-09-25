@@ -6,6 +6,7 @@ use Cake\Database\Driver\Mysql;
 use Cake\Log\Engine\FileLog;
 use Cake\Mailer\Transport\MailTransport;
 use function Cake\Core\env;
+use Cake\Mailer\Transport\SmtpTransport;
 
 return [
     /*
@@ -237,6 +238,24 @@ return [
             'tls' => false,
             'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
         ],
+
+        'rebooking_test' => [
+
+            'className' => SmtpTransport::class,
+
+            'host' => 'smtp.gmail.com',
+
+            'port' => 587,
+
+            'timeout' => 30,
+
+            'username' => env('REBOOKING_SMTP_USERNAME'),
+
+            'password' => env('REBOOKING_SMTP_PASSWORD'),
+
+            'tls' => true,
+
+        ],
     ],
 
     /*
@@ -257,6 +276,13 @@ return [
              */
             //'charset' => 'utf-8',
             //'headerCharset' => 'utf-8',
+        ],
+
+        'rebooking_test' => [
+            'transport' => 'rebooking_test',
+            'from' => [
+                env('REBOOKING_SMTP_USERNAME') => 'Willow and Sage Test',
+            ],
         ],
     ],
 
