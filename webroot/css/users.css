@@ -58,8 +58,20 @@ body {
         0 12px 36px rgba(72, 64, 58, 0.08);
 }
 
+/* The table lives inside the sidebar-constrained main content area, so it can
+   run out of room well above the mobile breakpoint. Let the wrapper scroll at
+   any width instead of letting the columns get crushed. */
+
+.table-responsive {
+    width: 100%;
+
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .users-table {
     width: 100%;
+    min-width: 720px;
 
     margin: 0;
 
@@ -142,17 +154,42 @@ body {
 
 .users-back {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 
+    min-height: 42px;
+    padding: 0 18px;
     margin-top: 18px;
 
-    color: var(--primary-dark);
+    color: var(--on-primary);
     font-size: 13px;
     font-weight: 700;
+    text-decoration: none;
+
+    background: var(--primary);
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+            background 0.2s ease,
+            transform 0.2s ease;
+}
+
+.users-back:hover,
+.users-back:focus,
+.users-back:active,
+.users-back:visited {
+    color: var(--on-primary);
     text-decoration: none;
 }
 
 .users-back:hover {
-    text-decoration: underline;
+    background: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 760px) {
@@ -164,11 +201,6 @@ body {
 
     .users-card {
         padding: 18px;
-        overflow-x: auto;
-    }
-
-    .users-table {
-        min-width: 700px;
     }
 }
 
@@ -544,4 +576,287 @@ body {
     margin: 6px 0 0;
     font-size: 12px;
     font-weight: 500;
+}
+
+
+/* =========================================================
+   Field hint text
+   ========================================================= */
+
+.users-card .user-form-field .input {
+    margin-bottom: 6px;
+}
+
+.user-form-hint {
+    margin: 0 0 18px;
+
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* =========================================================
+   Stop very long names from stretching the table
+   ========================================================= */
+
+.users-table th:first-child,
+.users-table td:first-child {
+    min-width: 150px;
+    max-width: 260px;
+
+    /* break-word only splits a word that is too long on its own, unlike
+       `anywhere`, which also shrinks the column's min-content width and
+       was wrapping ordinary names like "Wendy S" mid-word. */
+    overflow-wrap: break-word;
+}
+
+.user-password-field .user-form-hint {
+    margin: 6px 0 0;
+}
+
+/* =========================================================
+   Search bar
+   ========================================================= */
+
+.users-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0 0 18px;
+}
+
+.users-search-field {
+    position: relative;
+
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 420px;
+}
+
+.users-search-field svg {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+
+    width: 17px;
+    height: 17px;
+
+    color: var(--text-secondary);
+
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.users-search-field input {
+    width: 100%;
+    min-height: 44px;
+
+    margin: 0;
+    padding: 0 14px 0 41px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    box-sizing: border-box;
+
+    transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.users-search-field input:focus {
+    border-color: var(--primary);
+
+    outline: none;
+
+    box-shadow: 0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+.users-search-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+    padding: 0 18px;
+    margin: 0;
+
+    color: var(--on-primary);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    background: var(--primary);
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+            background 0.2s ease,
+            transform 0.2s ease;
+}
+
+.users-search-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.users-search-clear {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.users-search-clear:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.users-empty {
+    padding: 28px 14px;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .users-search {
+        flex-wrap: wrap;
+    }
+
+    .users-search-field {
+        max-width: none;
+        flex-basis: 100%;
+    }
+}
+
+/* =========================================================
+   Filters (role / status / created range)
+   ========================================================= */
+
+.users-search {
+    flex-wrap: wrap;
+}
+
+.users-filter-select {
+    min-height: 44px;
+    padding: 0 34px 0 14px;
+    margin: 0;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+
+    transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.users-filter-select:focus {
+    border-color: var(--primary);
+
+    outline: none;
+
+    box-shadow: 0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+.users-date-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    min-height: 44px;
+    padding: 0 12px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.users-date-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+
+    white-space: nowrap;
+}
+
+.users-date-sep {
+    color: var(--text-secondary);
+}
+
+.users-date-range input[type="date"] {
+    width: auto;
+    min-height: 32px;
+
+    margin: 0;
+    padding: 0 4px;
+
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 13px;
+
+    background: transparent;
+
+    border: none;
+
+    cursor: pointer;
+}
+
+.users-date-range input[type="date"]:focus {
+    outline: none;
+}
+
+.users-date-range input[type="date"]::-webkit-calendar-picker-indicator {
+    padding: 2px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+    opacity: 0.5;
+
+    transition:
+            opacity 0.2s ease,
+            background 0.2s ease;
+}
+
+.users-date-range input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    background: var(--primary-light);
+    opacity: 1;
+}
+
+@media (max-width: 760px) {
+    .users-filter-select,
+    .users-date-range {
+        flex: 1 1 auto;
+    }
+
+    .users-date-range {
+        flex-basis: 100%;
+        justify-content: space-between;
+    }
 }

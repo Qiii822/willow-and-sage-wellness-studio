@@ -17,6 +17,10 @@ $isBookings =
     $controller === 'Bookings' &&
     $action === 'index';
 
+$isPayments =
+    $controller === 'Payments' &&
+    $action === 'index';
+
 $isSettings =
     $controller === 'Users' &&
     $action === 'settings';
@@ -77,6 +81,28 @@ $isSettings =
             true
         )): ?>
 
+            <li class="<?= $isPayments ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="credit-card"></i><span>Payments</span>',
+                    [
+                        'controller' => 'Payments',
+                        'action' => 'index'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
+
+        <?php endif; ?>
+
+        <?php if (in_array(
+            $role,
+            ['admin', 'superadmin'],
+            true
+        )): ?>
+
             <li class="<?= $isUsers ? 'active' : '' ?>">
                 <?= $this->Html->link(
                     '<i data-lucide="users"></i><span>Users</span>',
@@ -92,7 +118,6 @@ $isSettings =
             </li>
 
         <?php endif; ?>
-
 
         <?php if (in_array(
             $role,
@@ -115,7 +140,7 @@ $isSettings =
             </li>
 
         <?php endif; ?>
-        
+
     </ul>
 
     <div class="logout-section">

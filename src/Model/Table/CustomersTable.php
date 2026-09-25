@@ -14,6 +14,7 @@ use Cake\Validation\Validator;
  * Square API - it's populated exclusively via sync.
  *
  * @property \App\Model\Table\BookingsTable&\Cake\ORM\Association\HasMany $Bookings
+ * @property \App\Model\Table\PaymentsTable&\Cake\ORM\Association\HasMany $Payments
  *
  * @method \App\Model\Entity\Customer newEmptyEntity()
  * @method \App\Model\Entity\Customer newEntity(array $data, array $options = [])
@@ -38,6 +39,11 @@ class CustomersTable extends Table
         // history) - not a real DB foreign key, for the same reason as
         // the reciprocal association on BookingsTable.
         $this->hasMany('Bookings', [
+            'foreignKey' => 'square_customer_id',
+            'bindingKey' => 'square_customer_id',
+        ]);
+
+        $this->hasMany('Payments', [
             'foreignKey' => 'square_customer_id',
             'bindingKey' => 'square_customer_id',
         ]);

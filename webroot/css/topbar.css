@@ -37,61 +37,65 @@
 
 /* Date picker */
 
-.top-actions input {
+.top-actions input[type="date"] {
     min-height: 46px;
-    padding: 10px 14px;
+    padding: 0 14px;
+    margin: 0;
 
     color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
 
     background: var(--surface);
-    box-shadow: 0 2px 8px rgba(72, 64, 58, 0.04);
-}
 
-/* Export button */
-
-.export-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    min-height: 46px;
-    padding: 0 20px;
-
-    color: var(--on-primary);
-    font-weight: 700;
-
-    background:
-            linear-gradient(
-                    135deg,
-                    var(--accent-gradient-start),
-                    var(--primary)
-            );
-
-    border: 1px solid transparent;
+    border: 1px solid var(--border);
     border-radius: 14px;
 
     cursor: pointer;
 
-    box-shadow:
-            0 8px 20px rgba(139, 126, 116, 0.20);
+    box-shadow: 0 2px 8px rgba(72, 64, 58, 0.04);
 
     transition:
+            border-color 0.2s ease,
             transform 0.2s ease,
-            background 0.2s ease,
             box-shadow 0.2s ease;
 }
 
-.export-btn:hover {
-    background: var(--primary-dark);
+.top-actions input[type="date"]:hover {
+    border-color: var(--primary);
     transform: translateY(-1px);
+
+    box-shadow: 0 8px 20px rgba(139, 126, 116, 0.12);
 }
 
-.export-btn svg {
-    width: 18px;
-    height: 18px;
+.top-actions input[type="date"]:focus {
+    border-color: var(--primary);
 
-    stroke-width: 2;
+    outline: none;
+
+    box-shadow: 0 0 0 4px rgba(139, 126, 116, 0.10);
+}
+
+/* Native calendar icon, tinted to match the theme */
+
+.top-actions input[type="date"]::-webkit-calendar-picker-indicator {
+    padding: 4px;
+    margin-left: 8px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+    opacity: 0.5;
+
+    transition:
+            opacity 0.2s ease,
+            background 0.2s ease;
+}
+
+.top-actions input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    background: var(--primary-light);
+    opacity: 1;
 }
 
 /* Profile */

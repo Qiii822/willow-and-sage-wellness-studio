@@ -177,21 +177,6 @@ body {
     background: #fdeaea;
 }
 
-.settings-back {
-    display: inline-flex;
-
-    margin-top: 18px;
-
-    color: var(--primary-dark);
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.settings-back:hover {
-    text-decoration: underline;
-}
-
 @media (max-width: 640px) {
     .settings-page {
         width: calc(100% - 24px);

@@ -23,6 +23,25 @@ class UsersController extends AppController
             'forgotPassword',
             'resetPassword',
         ]);
+
+        // Admin screens share the dashboard shell so the sidebar navigation
+        // stays visible when moving between them.
+        $adminLayoutActions = [
+            'index',
+            'view',
+            'edit',
+            'add',
+            'settings',
+            'profile',
+        ];
+
+        if (in_array(
+            $this->request->getParam('action'),
+            $adminLayoutActions,
+            true
+        )) {
+            $this->viewBuilder()->setLayout('admin');
+        }
     }
 
     /**
@@ -249,15 +268,113 @@ class UsersController extends AppController
     {
         $this->requireAdmin();
 
-        $users = $this->Users
+        $search = trim((string)$this->request->getQuery('q', ''));
+
+        $query = $this->Users
             ->find()
             ->orderBy([
                 'Users.first_name' => 'ASC',
                 'Users.surname' => 'ASC',
-            ])
-            ->all();
+            ]);
 
-        $this->set(compact('users'));
+        if ($search !== '') {
+            /*
+             * Escape the LIKE wildcards so a literal % or _ typed by the user
+             * is matched as a character rather than treated as a pattern.
+             * The value itself is parameter-bound by the ORM.
+             */
+            $like = '%' . addcslashes($search, '%_\\') . '%';
+
+            $conditions = [
+                ['Users.first_name LIKE' => $like],
+                ['Users.surname LIKE' => $like],
+                ['Users.email LIKE' => $like],
+            ];
+
+            // "Eric Cao" should also match first name + surname across columns.
+            $parts = preg_split('/\s+/', $search, 2);
+
+            if (count($parts) === 2 && $parts[1] !== '') {
+                $conditions[] = [
+                    'Users.first_name LIKE' => '%' . addcslashes($parts[0], '%_\\') . '%',
+                    'Users.surname LIKE' => '%' . addcslashes($parts[1], '%_\\') . '%',
+                ];
+            }
+
+            $query->where(['OR' => $conditions]);
+        }
+
+        /*
+         * Filters. Every value is checked against a whitelist or a strict
+         * format before it reaches the query, and anything unrecognised is
+         * reset to an empty string so the form redisplays a clean state
+         * rather than echoing back whatever was in the URL.
+         */
+
+        $role = (string)$this->request->getQuery('role', '');
+        $status = (string)$this->request->getQuery('status', '');
+        $createdFrom = trim((string)$this->request->getQuery('created_from', ''));
+        $createdTo = trim((string)$this->request->getQuery('created_to', ''));
+
+        if (in_array($role, ['user', 'admin', 'superadmin'], true)) {
+            $query->where(['Users.roles' => $role]);
+        } else {
+            $role = '';
+        }
+
+        if ($status === 'active' || $status === 'inactive') {
+            $query->where(['Users.active' => $status === 'active']);
+        } else {
+            $status = '';
+        }
+
+        $isDate = static fn (string $value): bool
+            => (bool)preg_match('/^\d{4}-\d{2}-\d{2}$/', $value);
+
+        if (!$isDate($createdFrom)) {
+            $createdFrom = '';
+        }
+
+        if (!$isDate($createdTo)) {
+            $createdTo = '';
+        }
+
+        /*
+         * Tolerate a reversed range. ISO dates sort correctly as plain
+         * strings, so comparing them directly is enough to spot the swap.
+         * Correcting it beats returning zero rows for what is obviously
+         * just the two fields filled in the other order.
+         */
+        if ($createdFrom !== '' && $createdTo !== '' && $createdFrom > $createdTo) {
+            [$createdFrom, $createdTo] = [$createdTo, $createdFrom];
+        }
+
+        if ($createdFrom !== '') {
+            $query->where(['Users.created_at >=' => $createdFrom . ' 00:00:00']);
+        }
+
+        if ($createdTo !== '') {
+            $query->where(['Users.created_at <=' => $createdTo . ' 23:59:59']);
+        }
+
+        $hasFilters =
+            $search !== ''
+            || $role !== ''
+            || $status !== ''
+            || $createdFrom !== ''
+            || $createdTo !== '';
+
+        $users = $query->all();
+
+        $this->set(compact(
+            'users',
+            'search',
+            'role',
+            'status',
+            'createdFrom',
+            'createdTo',
+            'hasFilters'
+        ));
     }
 
 

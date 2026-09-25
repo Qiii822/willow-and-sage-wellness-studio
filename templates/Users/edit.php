@@ -33,15 +33,23 @@ $isEditingSelf = $identity->id === $user->id;
             'id' => 'user-edit-form'
         ]) ?>
 
-        <?= $this->Form->control('first_name', [
-            'label' => 'First Name',
-            'required' => true,
-        ]) ?>
+        <div class="user-form-field">
+            <?= $this->Form->control('first_name', [
+                'label' => 'First Name',
+                'required' => true,
+                'maxlength' => 50,
+            ]) ?>
+            <p class="user-form-hint">Maximum 50 characters</p>
+        </div>
 
-        <?= $this->Form->control('surname', [
-            'label' => 'Surname',
-            'required' => true,
-        ]) ?>
+        <div class="user-form-field">
+            <?= $this->Form->control('surname', [
+                'label' => 'Surname',
+                'required' => true,
+                'maxlength' => 50,
+            ]) ?>
+            <p class="user-form-hint">Maximum 50 characters</p>
+        </div>
 
         <?= $this->Form->control('email', [
             'type' => 'email',

@@ -49,7 +49,7 @@ class ImportsTable extends Table
 
         $validator
             ->scalar('resource')
-            ->inList('resource', ['customers', 'bookings'])
+            ->inList('resource', ['customers', 'bookings', 'payments'])
             ->requirePresence('resource', 'create')
             ->notEmptyString('resource');
 

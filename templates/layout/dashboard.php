@@ -17,7 +17,7 @@
 <?= $this->fetch('title') ?>
 </title>
 
-<?= $this->Html->meta('icon') ?>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
 <!-- Base CSS -->
 <?= $this->Html->css('normalize.min') ?>
@@ -64,7 +64,6 @@ src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.j
 <?= $this->fetch('script') ?>
 
 <?= $this->Html->script('dashboard') ?>
-<?= $this->Html->script('topbar') ?>
 <?= $this->Html->script('recent-customers') ?>
 
 </body>
