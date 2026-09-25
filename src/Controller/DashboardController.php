@@ -1112,31 +1112,82 @@ class DashboardController extends AppController
 
 
         /*
-         * Development safety:
-         * never send the reminder to a real
-         * customer while testing.
+         * Decide whether to send to the
+         * real customer or the test email.
          */
+        $sendReal =
+            filter_var(
+                env(
+                    'REBOOKING_SEND_REAL',
+                    'false'
+                ),
+                FILTER_VALIDATE_BOOLEAN
+            );
+
+
         $testEmail =
             env(
                 'REBOOKING_TEST_EMAIL'
             );
 
 
-        if (empty($testEmail)) {
+        $customerEmail =
+            $customer
+                ->email_address
+            ??
+            $customer
+                ->email
+            ??
+            null;
 
-            $this->Flash
-                ->error(
-                    'Rebooking test email is not configured.'
-                );
+
+        if ($sendReal) {
+
+            if (empty($customerEmail)) {
+
+                $this->Flash
+                    ->error(
+                        'This customer does not have an email address.'
+                    );
 
 
-            return $this->redirect([
-                'controller' =>
-                    'Dashboard',
+                return $this->redirect([
+                    'controller' =>
+                        'Dashboard',
 
-                'action' =>
-                    'index',
-            ]);
+                    'action' =>
+                        'index',
+                ]);
+
+            }
+
+
+            $recipientEmail =
+                $customerEmail;
+
+        } else {
+
+            if (empty($testEmail)) {
+
+                $this->Flash
+                    ->error(
+                        'Rebooking test email is not configured.'
+                    );
+
+
+                return $this->redirect([
+                    'controller' =>
+                        'Dashboard',
+
+                    'action' =>
+                        'index',
+                ]);
+
+            }
+
+
+            $recipientEmail =
+                $testEmail;
 
         }
 
@@ -1154,7 +1205,7 @@ class DashboardController extends AppController
                     'html'
                 )
                 ->setTo(
-                    $testEmail
+                    $recipientEmail
                 )
                 ->setSubject(
                     'We’d love to see you again'
@@ -1179,10 +1230,21 @@ class DashboardController extends AppController
                 ->deliver();
 
 
-            $this->Flash
-                ->success(
-                    'Test rebooking reminder sent successfully.'
-                );
+            if ($sendReal) {
+
+                $this->Flash
+                    ->success(
+                        'Rebooking reminder sent successfully.'
+                    );
+
+            } else {
+
+                $this->Flash
+                    ->success(
+                        'Test rebooking reminder sent successfully.'
+                    );
+
+            }
 
         } catch (\Throwable $e) {
 
@@ -1195,7 +1257,7 @@ class DashboardController extends AppController
 
             $this->Flash
                 ->error(
-                    'Unable to send the test rebooking reminder.'
+                    'Unable to send the rebooking reminder.'
                 );
 
         }
