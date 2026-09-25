@@ -37,5 +37,10 @@ class AppView extends View
      */
     public function initialize(): void
     {
+        // Editable home page copy, read by the public templates.
+        $this->addHelper('SiteContent');
+
+        // Shared formatting for the booking pages.
+        $this->addHelper('Book');
     }
 }

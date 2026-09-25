@@ -38,6 +38,8 @@ $statusClass = fn (string $status): string => str_replace('_', '-', $status);
                         <h3>All Bookings</h3>
                         <p><?= count($bookings) ?> bookings</p>
                     </div>
+
+                    <?= $this->element('bookings/views', ['current' => 'list']) ?>
                 </div>
 
                 <form

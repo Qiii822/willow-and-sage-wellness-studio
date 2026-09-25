@@ -1,0 +1,572 @@
+/* =========================================================
+   Home page content editor
+
+   Lives in the dashboard shell, so it borrows the page
+   background and sidebar from dashboard.css.
+   ========================================================= */
+
+.content-page {
+    width: min(880px, 100%);
+
+    padding: 32px 36px 60px;
+}
+
+/* =========================================================
+   Website sections
+   =========================================================
+
+   One sidebar entry leads to three screens; this is where they are told
+   apart. Each carries a line saying what it edits, because "Services" and
+   "Offers" and "Page content" are not self-evidently different jobs to
+   someone who only comes here once a month.
+   ========================================================= */
+
+.website-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-bottom: 26px;
+    padding-bottom: 18px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.website-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    padding: 10px 16px;
+
+    color: var(--text-secondary);
+    text-decoration: none;
+
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    transition:
+        color 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.website-tab:hover {
+    color: var(--text-primary);
+
+    background: var(--panel);
+    border-color: var(--border);
+}
+
+.website-tab.is-current {
+    color: var(--on-primary);
+
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.website-tab-label {
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.website-tab-hint {
+    font-size: 12.5px;
+}
+
+.website-tab.is-current .website-tab-hint {
+    /* Legible on the filled chip without matching the label's weight. */
+    color: rgba(255, 255, 255, 0.82);
+}
+
+@media (max-width: 640px) {
+    .website-tabs {
+        flex-direction: column;
+    }
+
+    .website-tab {
+        padding: 9px 14px;
+    }
+}
+
+.content-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin-bottom: 26px;
+}
+
+.content-header h1 {
+    margin: 0 0 6px;
+
+    color: #2f2d2b;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+}
+
+.content-header p {
+    max-width: 520px;
+    margin: 0;
+
+    color: #6b6259;
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   Groups
+   ========================================================= */
+
+.content-card {
+    margin-bottom: 20px;
+    padding: 24px 26px;
+
+    background: #fffdfa;
+    border: 1px solid rgba(24, 20, 17, 0.07);
+    border-radius: 16px;
+
+    box-shadow: 0 8px 22px rgba(24, 20, 17, 0.04);
+}
+
+.content-card h2 {
+    margin: 0 0 18px;
+
+    color: #2f2d2b;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.content-field {
+    margin-bottom: 18px;
+}
+
+.content-field:last-child {
+    margin-bottom: 0;
+}
+
+.content-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #2f2d2b;
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.content-input {
+    width: 100%;
+
+    padding: 11px 14px;
+
+    color: #2f2d2b;
+    font-family: inherit;
+    font-size: 14.5px;
+    line-height: 1.55;
+
+    background: #fff;
+    border: 1px solid rgba(24, 20, 17, 0.14);
+    border-radius: 10px;
+
+    /* Textareas only grow downwards; sideways would break the layout. */
+    resize: vertical;
+}
+
+.content-input:focus {
+    border-color: #b0916c;
+    outline: none;
+
+    box-shadow: 0 0 0 3px rgba(176, 145, 108, 0.25);
+}
+
+/*
+ * A native select paints its own arrow and its own padding, which do not
+ * match the text inputs beside it. Stripping that back and drawing the
+ * arrow here keeps the two looking like the same control.
+ */
+select.content-input {
+    appearance: none;
+
+    /* Room for the arrow, so a long category cannot run underneath it. */
+    padding-right: 40px;
+
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%236b6259' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+
+    cursor: pointer;
+}
+
+/* Stands in for a control that has nothing to offer yet. */
+.content-empty-field {
+    margin: 0;
+    padding: 11px 14px;
+
+    color: #6b6259;
+    font-size: 14.5px;
+    line-height: 1.55;
+
+    background: rgba(139, 126, 116, 0.08);
+    border: 1px dashed rgba(24, 20, 17, 0.18);
+    border-radius: 10px;
+}
+
+.content-empty-field a {
+    color: #6f645b;
+    font-weight: 600;
+}
+
+/* =========================================================
+   Page layout: block order, visibility and arrangement
+   ========================================================= */
+
+.content-card-lead {
+    margin: -10px 0 18px;
+
+    color: #6b6259;
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+.section-list {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.section-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 10px;
+    padding: 14px 16px;
+
+    background: #fff;
+    border: 1px solid rgba(24, 20, 17, 0.1);
+    border-radius: 12px;
+}
+
+.section-row:last-child {
+    margin-bottom: 0;
+}
+
+/* A hidden block is dimmed, not removed, so it can be brought back. */
+.section-row.is-hidden {
+    background: #f6f4f1;
+    opacity: 0.6;
+}
+
+.section-move {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.section-move-button {
+    width: 28px;
+    height: 22px;
+
+    color: #6b6259;
+    font-size: 13px;
+    line-height: 1;
+
+    background: #f3f0ec;
+    border: 1px solid rgba(24, 20, 17, 0.12);
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+.section-move-button:hover:not([disabled]) {
+    color: #2f2d2b;
+    background: #e7e2db;
+}
+
+.section-move-button[disabled] {
+    cursor: default;
+    opacity: 0.35;
+}
+
+.section-detail {
+    display: flex;
+    flex: 1 1 220px;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.section-detail strong {
+    color: #2f2d2b;
+    font-size: 14.5px;
+}
+
+.section-detail span {
+    color: #6b6259;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.section-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-left: auto;
+}
+
+.section-select {
+    width: auto;
+    min-width: 150px;
+
+    padding: 8px 12px;
+
+    font-size: 13.5px;
+}
+
+.section-visible {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #6b6259;
+    font-size: 13.5px;
+
+    white-space: nowrap;
+}
+
+/* Announced to screen readers, invisible on screen. */
+.visually-hidden {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    margin: -1px;
+    padding: 0;
+
+    overflow: hidden;
+
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .section-controls {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .section-select {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* =========================================================
+   Image field
+   ========================================================= */
+
+.content-image-preview {
+    margin-bottom: 12px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(24, 20, 17, 0.1);
+    border-radius: 12px;
+}
+
+.content-image-preview img {
+    display: block;
+
+    width: 100%;
+    max-height: 220px;
+
+    /* Shows the framing the hero will actually use. */
+    object-fit: cover;
+}
+
+.content-file {
+    width: 100%;
+
+    padding: 10px 12px;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    background: #fff;
+    border: 1px dashed rgba(24, 20, 17, 0.2);
+    border-radius: 10px;
+
+    cursor: pointer;
+}
+
+/* Note under the preview while a chosen file is not yet uploaded. */
+.content-image-note {
+    margin: 8px 0 0;
+
+    color: #6b6259;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.content-image-note[hidden],
+.content-image-preview[hidden] {
+    display: none;
+}
+
+/*
+ * Upload errors, shown against the field rather than at the top of the
+ * page. The framework's default markup is a bare div, so it is styled
+ * here to read as a field message.
+ */
+.content-field-flash .message {
+    margin: 10px 0 0;
+    padding: 11px 14px;
+
+    font-size: 13.5px;
+    line-height: 1.5;
+
+    border-radius: 10px;
+}
+
+.content-field-flash .message.error {
+    color: #8c2f24;
+
+    background: #fbeae8;
+    border: 1px solid #f0cdc8;
+}
+
+.content-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 10px;
+
+    color: #6b6259;
+    font-size: 13.5px;
+    font-weight: 400;
+}
+
+.content-help {
+    margin: 6px 0 0;
+
+    color: #6b6259;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+
+.content-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 24px;
+}
+
+/*
+ * Laid out as a flex box rather than relying on the centring a <button>
+ * gets for free, because this class is worn by both <button> and <a>. The
+ * height comes from min-height with no vertical padding, so on an anchor
+ * the label would otherwise sit against the top of the pill.
+ */
+.content-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /*
+     * These sit in flex rows, where a child shrinks past its own label
+     * rather than let the row overflow. Every such row here wraps, so
+     * refusing to shrink sends a button to the next line instead of
+     * squeezing its text into a narrower pill than it needs.
+     */
+    flex-shrink: 0;
+
+    min-height: 44px;
+
+    padding: 0 24px;
+
+    white-space: nowrap;
+
+    color: #fff;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: #8b7e74;
+    border: 0;
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.content-button:hover {
+    color: #fff;
+
+    background: #6f645b;
+}
+
+.content-button.secondary {
+    color: #6f645b;
+
+    background: transparent;
+    border: 1px solid rgba(139, 126, 116, 0.4);
+}
+
+.content-button.secondary:hover {
+    color: #6f645b;
+
+    background: rgba(139, 126, 116, 0.1);
+}
+
+.content-button.danger {
+    color: #b3382c;
+
+    background: transparent;
+    border: 1px solid rgba(179, 56, 44, 0.35);
+}
+
+.content-button.danger:hover {
+    color: #b3382c;
+
+    background: rgba(179, 56, 44, 0.08);
+}
+
+/* Set apart from the save action, so the two are not clicked by mistake. */
+.content-reset {
+    margin-top: 34px;
+    padding-top: 22px;
+
+    border-top: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+@media (max-width: 640px) {
+    .content-page {
+        padding: 24px 18px 48px;
+    }
+
+    .content-card {
+        padding: 20px 16px;
+    }
+
+    .content-actions .content-button {
+        width: 100%;
+    }
+}

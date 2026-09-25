@@ -6,6 +6,7 @@ namespace App\Service;
 use App\Service\Sync\CustomerSyncService;
 use App\Service\Sync\BookingSyncService;
 use App\Service\Sync\PaymentSyncService;
+use App\Service\Sync\ServiceSyncService;
 
 /**
  * Single entry point for triggering a sync against Square.
@@ -28,6 +29,18 @@ class SyncService
         $this->syncCustomers($source);
         $this->syncBookings($source);
         $this->syncPayments($source);
+        $this->syncServices($source);
+    }
+
+    /**
+     * Runs only the treatment menu sync.
+     *
+     * @param string $source One of: oauth_callback, cron, manual, webhook.
+     * @return \App\Model\Entity\Import
+     */
+    public function syncServices(string $source): \App\Model\Entity\Import
+    {
+        return (new ServiceSyncService())->run($source);
     }
 
     /**

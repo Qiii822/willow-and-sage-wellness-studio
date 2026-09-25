@@ -1,0 +1,222 @@
+/* =========================================================
+   Location and hours
+   ========================================================= */
+
+.section-intro.location-heading {
+    margin-bottom: 30px;
+}
+
+.section-intro.location-heading h2 {
+    margin-bottom: 0;
+}
+
+.location-layout {
+    display: grid;
+    gap: 44px;
+    align-items: start;
+}
+
+/* Map on the left, the details beside it. */
+.location-layout-map {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* No map: the details spread out instead. */
+.location-layout-split .location-info {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.location-layout-stacked {
+    grid-template-columns: minmax(0, 620px);
+}
+
+.location-info {
+    display: grid;
+    gap: 36px;
+}
+
+/* =========================================================
+   The map
+   ========================================================= */
+
+.location-map {
+    /*
+     * A fixed shape the iframe fills, so the frame cannot decide the height
+     * of the section on its own.
+     */
+    aspect-ratio: 4 / 3;
+
+    overflow: hidden;
+
+    background: #efeae3;
+    border-radius: 18px;
+}
+
+.location-map iframe {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+}
+
+/* =========================================================
+   Address and contact
+   ========================================================= */
+
+.location-address {
+    margin: 0 0 16px;
+
+    color: var(--text-secondary);
+    font-size: 16.5px;
+    font-style: normal;
+    line-height: 1.75;
+}
+
+.location-contact {
+    margin: 0 0 24px;
+    padding: 0;
+
+    list-style: none;
+}
+
+.location-contact li {
+    margin-bottom: 8px;
+}
+
+/*
+ * Icons rather than an underline alone: on a phone the number is a tap
+ * away from dialling, and the handset makes that obvious in a way a
+ * differently coloured line of text does not.
+ */
+.location-contact a {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    color: var(--text-primary);
+    font-size: 16.5px;
+    text-decoration: none;
+}
+
+.location-contact a span {
+    border-bottom: 1px solid rgba(24, 20, 17, 0.25);
+}
+
+.location-contact a:hover span {
+    border-bottom-color: var(--text-primary);
+}
+
+.location-contact a:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 3px;
+}
+
+.location-contact svg {
+    flex: none;
+
+    width: 17px;
+    height: 17px;
+
+    /* Decorative; the text beside it is the link. */
+    color: var(--gold-dark);
+}
+
+/*
+ * A link, so it reads as leaving for a map rather than as a form control,
+ * but sized like a button because it is the action of this block.
+ */
+.location-directions {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    min-height: 44px;
+    padding: 0 22px;
+
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: var(--text-primary);
+    border-radius: 999px;
+
+    transition: background 0.2s ease;
+}
+
+.location-directions:hover {
+    color: #fff;
+
+    background: #4a4643;
+}
+
+.location-directions:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
+}
+
+.location-directions svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* =========================================================
+   Opening hours
+   ========================================================= */
+
+.location-hours h3 {
+    margin: 0 0 14px;
+
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.location-hours dl {
+    margin: 0;
+}
+
+.location-hours-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+
+    padding: 9px 0;
+
+    border-bottom: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.location-hours-row:first-child {
+    border-top: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+.location-hours dt {
+    color: var(--text-primary);
+    font-size: 15.5px;
+    font-weight: 600;
+}
+
+.location-hours dd {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 15.5px;
+    text-align: right;
+}
+
+@media (max-width: 860px) {
+    .location-layout-map,
+    .location-layout-split .location-info {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .location-layout {
+        gap: 32px;
+    }
+
+    .location-map {
+        aspect-ratio: 3 / 2;
+    }
+}

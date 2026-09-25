@@ -27,6 +27,14 @@ $isPayments =
 $isSettings =
     $controller === 'Users' &&
     $action === 'settings';
+
+/*
+ * Page content, services and offers were three entries in their own right,
+ * which read as three unrelated places when they are one job - editing the
+ * public site - split by what is being edited. One entry now leads to all
+ * three, and the split is made on the page itself.
+ */
+$isWebsite = in_array($controller, ['SiteContents', 'Services', 'Offers'], true);
 ?>
 
 <aside class="sidebar">
@@ -127,6 +135,29 @@ $isSettings =
             </li>
 
         <?php endif; ?>
+
+        <?php if (in_array(
+            $role,
+            ['admin', 'superadmin'],
+            true
+        )): ?>
+
+            <li class="<?= $isWebsite ? 'active' : '' ?>">
+                <?= $this->Html->link(
+                    '<i data-lucide="globe"></i><span>Website</span>',
+                    [
+                        'controller' => 'SiteContents',
+                        'action' => 'index'
+                    ],
+                    [
+                        'escape' => false,
+                        'class' => 'sidebar-link'
+                    ]
+                ) ?>
+            </li>
+
+        <?php endif; ?>
+
 
         <?php if (in_array(
             $role,

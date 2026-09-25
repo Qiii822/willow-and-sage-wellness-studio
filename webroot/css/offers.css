@@ -1,0 +1,186 @@
+/* =========================================================
+   Current offers block
+   ========================================================= */
+
+/* No paragraph under the heading, so it needs a smaller gap. */
+.section-intro.offers-heading-only {
+    margin-bottom: 30px;
+}
+
+.section-intro.offers-heading-only h2 {
+    margin-bottom: 0;
+}
+
+.offers-list {
+    display: grid;
+    gap: 22px;
+}
+
+/* Cards across, as many as fit. */
+.offers-list-cards {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+
+    justify-items: center;
+}
+
+/*
+ * Running a single offer is a normal state, and auto-fit would give that one
+ * card the whole row - a 16:10 picture then stands nearly 700px tall and
+ * swallows the page. The cap keeps one card the size of one card; with
+ * several, the tracks are narrower than the cap and nothing changes.
+ */
+.offers-list-cards .offer-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+.offer-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    background: #fffdfa;
+    border: 1px solid rgba(24, 20, 17, 0.07);
+    border-radius: 18px;
+}
+
+.offer-image {
+    /*
+     * A fixed shape rather than the picture's own, so a row of offers lines
+     * up whatever mixture of portrait and landscape photos gets uploaded.
+     */
+    aspect-ratio: 16 / 10;
+
+    background: #efeae3;
+}
+
+.offer-image img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.offer-body {
+    padding: 24px 26px;
+}
+
+/*
+ * Terracotta rather than the brand gold: white on either gold measures
+ * under 3:1, where this sits at 7.2:1, and it still belongs to the warm
+ * palette instead of shouting like a sale sticker.
+ */
+.offer-badge {
+    display: inline-block;
+
+    margin: 0 0 10px;
+    padding: 4px 11px;
+
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+
+    background: #8f3f2c;
+    border-radius: 999px;
+}
+
+.offer-body h3 {
+    margin: 0 0 8px;
+
+    color: var(--text-primary);
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.offer-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 9px;
+
+    margin: 0 0 10px;
+}
+
+/*
+ * A shade darker than the usual secondary text. Struck-through digits are
+ * already harder to pick apart, so this one is worth the extra headroom.
+ */
+.offer-price-was {
+    color: #6b645e;
+    font-size: 15px;
+}
+
+/* The number they actually pay leads, so it stays the neutral ink. */
+.offer-price-now {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.offer-description {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.offer-terms {
+    margin: 12px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+
+    opacity: 0.85;
+}
+
+/* =========================================================
+   Picture beside text
+   ========================================================= */
+
+.offers-list-rows {
+    grid-template-columns: 1fr;
+}
+
+.offers-list-rows .offer-card {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.offers-list-rows .offer-image {
+    flex: 0 0 38%;
+
+    aspect-ratio: auto;
+}
+
+.offers-list-rows .offer-body {
+    flex: 1;
+
+    align-self: center;
+
+    padding: 28px 30px;
+}
+
+/*
+ * Below this the side-by-side row leaves the text in a column too narrow to
+ * read, so it stacks like a card instead.
+ */
+@media (max-width: 640px) {
+    .offers-list-rows .offer-card {
+        flex-direction: column;
+    }
+
+    .offers-list-rows .offer-image {
+        flex: none;
+
+        aspect-ratio: 16 / 10;
+    }
+
+    .offer-body {
+        padding: 20px 22px;
+    }
+}

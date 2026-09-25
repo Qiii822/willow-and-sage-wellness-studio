@@ -8,8 +8,8 @@ use Cake\Http\Response;
 /**
  * Home Controller
  *
- * Customer facing landing page. Public so visitors can browse it before
- * signing in, and the page non-admins land on after login.
+ * Customer-facing public landing page. Visitors can browse it without
+ * signing in, while signed-in users can still be identified by the view.
  */
 class HomeController extends AppController
 {
@@ -26,7 +26,9 @@ class HomeController extends AppController
     {
         $identity = $this->request->getAttribute('identity');
 
-        $this->set(compact('identity'));
+        $sections = $this->fetchTable('SiteSections')->visibleLayout();
+
+        $this->set(compact('identity', 'sections'));
 
         return $this->render();
     }

@@ -9,6 +9,9 @@
 /webroot/uploads/packages/*
 !/webroot/uploads/profiles/.gitkeep
 !/webroot/uploads/packages/.gitkeep
+# Pictures uploaded through the website content editor. Created on demand,
+# and each environment holds its own - they do not belong in the repository.
+/webroot/img/uploads/*
 config/Migrations/schema-dump-default.lock
 
 # OS generated files #

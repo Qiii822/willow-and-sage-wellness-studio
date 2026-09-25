@@ -47,6 +47,19 @@ $isSuperAdmin = $role === 'superadmin';
 
         </div>
 
+        <?php /*
+         * The result of a sync or a disconnect, shown here rather than at
+         * the top of the page: it is about this card, and it is read right
+         * where the button that caused it sits.
+         */ ?>
+        <?php $squareResult = $this->Flash->render('square'); ?>
+
+        <?php if ($squareResult !== null && trim($squareResult) !== ''): ?>
+            <div class="settings-result">
+                <?= $squareResult ?>
+            </div>
+        <?php endif; ?>
+
         <?php if ($squareIdentity): ?>
 
             <div class="connection-details">

@@ -40,8 +40,13 @@
 
 <body>
 
-<?= $this->Flash->render() ?>
-
+<?php /*
+ * Flash messages are not rendered here. Standing at the top of the body
+ * they landed above the studio's name, outside the page's own width and
+ * with none of its styling. Every page on this layout opens with the
+ * site_header element, so they are rendered there instead - directly under
+ * the header, inside the page.
+ */ ?>
 <?= $this->fetch('content') ?>
 
 <?= $this->fetch('script') ?>
