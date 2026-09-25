@@ -171,6 +171,21 @@
     font-weight: 600;
 }
 
+.service-book {
+    margin: 14px 0 0;
+}
+
+.service-book-link {
+    color: var(--gold-dark);
+    font-size: 14.5px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.service-book-link:hover {
+    text-decoration: underline;
+}
+
 .services-empty {
     padding: 28px 0;
 

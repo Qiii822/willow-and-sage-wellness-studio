@@ -13,6 +13,8 @@
  *
  * @var \App\View\AppView $this
  * @var array<string, array<int, \App\Model\Entity\Service>> $menu
+ * @var string|null $preselectedService Id of a treatment pre-ticked from a
+ *  "book this" link on the menu page.
  */
 
 $this->assign('title', 'Book - ' . $this->SiteContent->raw('site.title'));
@@ -83,6 +85,7 @@ $this->Html->script('book_cart', ['block' => true]);
                                         'id' => $fieldId,
                                         'hiddenField' => false,
                                         'disabled' => !$bookable,
+                                        'checked' => $bookable && $service->id === $preselectedService,
                                         'class' => 'book-choice-input',
                                     ]) ?>
 

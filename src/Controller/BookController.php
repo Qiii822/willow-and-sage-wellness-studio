@@ -137,6 +137,7 @@ class BookController extends AppController
         }
 
         $this->set('menu', $services->menu());
+        $this->set('preselectedService', $this->request->getQuery('service'));
         $this->set(compact('cartError', 'longestDayMinutes'));
     }
 

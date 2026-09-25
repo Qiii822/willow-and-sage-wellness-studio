@@ -134,6 +134,26 @@ $this->Html->script('services', ['block' => true]);
                                     </p>
                                 <?php endif; ?>
 
+                                <?php /*
+                                 * Only for treatments that can be booked
+                                 * online: one with no Square variation would
+                                 * send the customer into a cart that cannot
+                                 * hold it, and only disappoint.
+                                 */ ?>
+                                <?php if (!empty($service->square_variation_id)): ?>
+                                    <p class="service-book">
+                                        <?= $this->Html->link(
+                                            'Book this treatment',
+                                            [
+                                                'controller' => 'Book',
+                                                'action' => 'index',
+                                                '?' => ['service' => $service->id],
+                                            ],
+                                            ['class' => 'service-book-link']
+                                        ) ?>
+                                    </p>
+                                <?php endif; ?>
+
                             </li>
 
                         <?php endforeach; ?>
