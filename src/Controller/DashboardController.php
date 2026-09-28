@@ -910,42 +910,50 @@ class DashboardController extends AppController
         }
 
 
-        $bookingStatusLabels = [
-            'Pending',
-            'Cancelled By Customer',
-            'Cancelled By Seller',
-            'Declined',
-            'Accepted',
-            'No Show',
+        $bookingStatusLabels = [];
+        $bookingStatusValues = [];
+
+
+        $bookingStatusDisplayLabels = [
+            'pending' =>
+                'Pending',
+
+            'cancelled_by_customer' =>
+                'Cancelled By Customer',
+
+            'cancelled_by_seller' =>
+                'Cancelled By Seller',
+
+            'declined' =>
+                'Declined',
+
+            'accepted' =>
+                'Accepted',
+
+            'no_show' =>
+                'No Show',
         ];
 
 
-        $bookingStatusValues = [
-            $bookingStatusData[
-            'pending'
-            ],
+        foreach (
+            $bookingStatusDisplayLabels
+            as $statusKey => $statusLabel
+        ) {
 
-            $bookingStatusData[
-            'cancelled_by_customer'
-            ],
+            if (
+                $bookingStatusData[$statusKey] > 0
+            ) {
 
-            $bookingStatusData[
-            'cancelled_by_seller'
-            ],
+                $bookingStatusLabels[] =
+                    $statusLabel;
 
-            $bookingStatusData[
-            'declined'
-            ],
+                $bookingStatusValues[] =
+                    $bookingStatusData[
+                    $statusKey
+                    ];
 
-            $bookingStatusData[
-            'accepted'
-            ],
-
-            $bookingStatusData[
-            'no_show'
-            ],
-        ];
-
+            }
+        }
 
         /*
          * Send data to view.

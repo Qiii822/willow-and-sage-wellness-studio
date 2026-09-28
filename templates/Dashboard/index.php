@@ -1361,7 +1361,7 @@ $months = [
             }
 
             /*
-             * Booking Status Chart
+             * BOOKING STATUS CHART
              */
             const bookingStatusCanvas =
                 document.getElementById(
