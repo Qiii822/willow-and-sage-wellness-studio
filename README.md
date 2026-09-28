@@ -25,18 +25,26 @@ Copy `config/.env.example` to `config/.env` and fill in:
 | `TOKEN_ENCRYPTION_KEY`                        | Secret used to encrypt Square tokens in the database.                                         |
 | `SECURITY_SALT`                               | Must match the salt used to encrypt any existing tokens (otherwise they cannot be decrypted). |
 | `SQUARE_SCOPE`                                | The OAuth scopes requested during connection.                                                 |
+| `TURNSTILE_SITE_KEY`                          | Cloudflare Turnstile site key for the CAPTCHA shown on the login page.                        |
+| `SMS_TRANSPORT`                               | How SMS verification codes are delivered (`log` or `none`); see `src/Service/SmsSender.php`.  |
+| `REBOOKING_SMTP_USERNAME` / `REBOOKING_SMTP_PASSWORD` | Gmail SMTP credentials used to send rebooking reminder emails.                       |
+| `REBOOKING_SEND_REAL`                         | Set to `true` to email the real customer; default `false` sends to `REBOOKING_TEST_EMAIL`.    |
+| `REBOOKING_TEST_EMAIL`                        | Test recipient for rebooking reminders when `REBOOKING_SEND_REAL` is `false`.                 |
 
 `SQUARE_SCOPE` must include one scope per synced resource:
 
-| Resource         | Scope                                             |
-| ---------------- | ------------------------------------------------- |
-| Customers        | `CUSTOMERS_READ`                                |
-| Bookings         | `APPOINTMENTS_READ`, `APPOINTMENTS_ALL_READ` |
-| Payments         | `PAYMENTS_READ`                                 |
-| Merchant profile | `MERCHANT_PROFILE_READ`                         |
-| Read Items       | `ITEMS_READ`                                    |
+| Resource          | Scope                                                     |
+| ----------------- | --------------------------------------------------------- |
+| Customers         | `CUSTOMERS_READ`, `CUSTOMERS_WRITE`                     |
+| Bookings          | `APPOINTMENTS_READ`, `APPOINTMENTS_WRITE`               |
+| Payments          | `PAYMENTS_READ`                                         |
+| Merchant profile  | `MERCHANT_PROFILE_READ`                                 |
+| Menu (items)      | `ITEMS_READ`                                            |
+| Business settings | `APPOINTMENTS_BUSINESS_SETTINGS_READ`                   |
 
-Default: `CUSTOMERS_READ,MERCHANT_PROFILE_READ,APPOINTMENTS_READ,APPOINTMENTS_ALL_READ,PAYMENTS_READ,ITEMS_READ`
+The write scopes (`APPOINTMENTS_WRITE`, `CUSTOMERS_WRITE`) are needed for the rebooking reminders. Default:
+
+`CUSTOMERS_READ,MERCHANT_PROFILE_READ,APPOINTMENTS_READ,PAYMENTS_READ,ITEMS_READ,APPOINTMENTS_WRITE,CUSTOMERS_WRITE,APPOINTMENTS_BUSINESS_SETTINGS_READ`
 
 > **Scopes only take effect when connecting.** If you change `SQUARE_SCOPE`, disconnect and reconnect Square for the new scopes to be authorised.
 
@@ -55,6 +63,12 @@ This serves the app at `http://localhost:8765`. You can also serve it through Ap
 The default credentials are `wendy@example.com` / `admin123`.
 
 Log in and go to the dashboard, then connect Square and run a sync from **Settings**.
+
+### Behaviour notes
+
+- The **Services** screen is read-only except for a treatment's visibility and its order in the menu. The menu comes entirely from Square, so names, descriptions, prices, durations and categories are managed there and re-synced — edits made here would be overwritten on the next sync.
+- Customer **rebooking reminders** are sent from the dashboard. They use the `rebooking_*` variables above; with `REBOOKING_SEND_REAL` unset, they go to `REBOOKING_TEST_EMAIL` rather than the real customer.
+- The login page shows a Cloudflare **Turnstile** CAPTCHA (set `TURNSTILE_SITE_KEY`). The widget renders on the client; server-side verification of the token is not wired up yet.
 
 ## Connecting with Square in Sandbox
 
