@@ -110,7 +110,8 @@
 /* Filter bar */
 
 .bookings-filter-form,
-.payments-filter-form {
+.payments-filter-form,
+.customers-filter-form {
     display: flex;
     align-items: flex-end;
     flex-wrap: wrap;
@@ -148,6 +149,10 @@
     border-radius: 10px;
 
     box-shadow: 0 2px 8px rgba(72, 64, 58, 0.04);
+}
+
+.filter-field input[type="search"] {
+    min-width: 240px;
 }
 
 .filter-clear {

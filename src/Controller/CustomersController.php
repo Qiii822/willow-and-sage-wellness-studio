@@ -14,6 +14,13 @@ class CustomersController extends AppController
     /** People per page. */
     protected const PER_PAGE = 10;
 
+    /** Choices for the bookings filter, value => label. */
+    protected const BOOKING_FILTERS = [
+        'none' => 'No bookings',
+        'one' => 'One booking',
+        'returning' => 'Returning (2+)',
+    ];
+
     /**
      * Everyone Square knows about, one row per person.
      *
@@ -32,22 +39,38 @@ class CustomersController extends AppController
      */
     public function index(): Response
     {
-        $people = $this->peopleByPhone();
+        $filters = [
+            'q' => trim((string)$this->request->getQuery('q', '')),
+            'bookings' => (string)$this->request->getQuery('bookings', ''),
+            'start_date' => $this->validDate($this->request->getQuery('start_date')),
+            'end_date' => $this->validDate($this->request->getQuery('end_date')),
+        ];
+
+        if (!array_key_exists($filters['bookings'], self::BOOKING_FILTERS)) {
+            $filters['bookings'] = '';
+        }
+
+        // Only the filters actually in use, so page links stay short and
+        // "Clear filters" shows only when there is something to clear.
+        $query = array_filter($filters, fn ($value) => $value !== '' && $value !== null);
+
+        $people = $this->filterPeople($this->peopleByPhone(), $filters);
 
         $total = count($people);
         $maxPage = max(1, (int)ceil($total / self::PER_PAGE));
         $page = (int)$this->request->getQuery('page', 1);
 
         if ($page < 1) {
-            return $this->redirect(['action' => 'index']);
+            return $this->redirect(['action' => 'index', '?' => $query]);
         }
 
         if ($page > $maxPage) {
-            return $this->redirect(['action' => 'index', '?' => ['page' => $maxPage]]);
+            return $this->redirect(['action' => 'index', '?' => $query + ['page' => $maxPage]]);
         }
 
         $this->set('people', array_slice($people, ($page - 1) * self::PER_PAGE, self::PER_PAGE));
-        $this->set(compact('total', 'page', 'maxPage'));
+        $this->set(compact('total', 'page', 'maxPage', 'filters', 'query'));
+        $this->set('bookingFilters', self::BOOKING_FILTERS);
         $this->set('first', $total === 0 ? 0 : (($page - 1) * self::PER_PAGE) + 1);
         $this->set('last', min($page * self::PER_PAGE, $total));
 
@@ -109,6 +132,91 @@ class CustomersController extends AppController
         }
 
         return array_values($people);
+    }
+
+    /**
+     * The people who match the filters on the list.
+     *
+     * Done on the grouped people, not on the query, so a search hits every
+     * email a person has used and the bookings filter counts all of their
+     * records together - the same numbers the table shows.
+     *
+     * @param array<int, array<string, mixed>> $people
+     * @param array<string, string|null> $filters
+     * @return array<int, array<string, mixed>>
+     */
+    protected function filterPeople(array $people, array $filters): array
+    {
+        $needle = mb_strtolower($filters['q']);
+        // Leading zero dropped so a local "0412..." also finds "+61412...".
+        $needleDigits = ltrim(BookingAccessCodesTable::digits($filters['q']), '0');
+
+        return array_values(array_filter($people, function (array $person) use ($filters, $needle, $needleDigits) {
+            $customer = $person['customer'];
+
+            if ($needle !== '') {
+                $text = mb_strtolower(implode(' ', [
+                    $customer->given_name ?? '',
+                    $customer->family_name ?? '',
+                    implode(' ', $person['emails']),
+                ]));
+
+                $phone = BookingAccessCodesTable::digits($customer->phone_number);
+
+                // Numbers are matched on digits alone, so "0412 345" finds
+                // "+61412345678" as well as "0412345678".
+                $phoneMatch = $needleDigits !== '' && str_contains($phone, $needleDigits);
+
+                if (!str_contains($text, $needle) && !$phoneMatch) {
+                    return false;
+                }
+            }
+
+            $bookings = $person['bookings'];
+
+            if (
+                ($filters['bookings'] === 'none' && $bookings !== 0)
+                || ($filters['bookings'] === 'one' && $bookings !== 1)
+                || ($filters['bookings'] === 'returning' && $bookings < 2)
+            ) {
+                return false;
+            }
+
+            if ($filters['start_date'] !== null || $filters['end_date'] !== null) {
+                if (!$customer->square_created_at) {
+                    return false;
+                }
+
+                $seen = $customer->square_created_at->format('Y-m-d');
+
+                if ($filters['start_date'] !== null && $seen < $filters['start_date']) {
+                    return false;
+                }
+
+                if ($filters['end_date'] !== null && $seen > $filters['end_date']) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+    }
+
+    /**
+     * A Y-m-d date from the query string, or null if it is not one.
+     *
+     * @param mixed $value Raw query value.
+     * @return string|null
+     */
+    protected function validDate(mixed $value): ?string
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        return $date && $date->format('Y-m-d') === $value ? $value : null;
     }
 
     /**
