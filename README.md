@@ -17,25 +17,26 @@ A CakePHP dashboard for **Willow and Sage Wellness** that syncs customer, bookin
 
 Copy `config/.env.example` to `config/.env` and fill in:
 
-| Variable | Purpose |
-|----------|---------|
-| `SQUARE_CLIENT_ID` / `SQUARE_CLIENT_SECRET` | Your Square application's credentials (sandbox or production). |
-| `SQUARE_AUTHORIZED_MERCHANT_ID` | The merchant id the app is allowed to connect to. |
-| `SQUARE_REDIRECT_URI` | Must match the redirect URI registered on the Square app, including the port. |
-| `TOKEN_ENCRYPTION_KEY` | Secret used to encrypt Square tokens in the database. |
-| `SECURITY_SALT` | Must match the salt used to encrypt any existing tokens (otherwise they cannot be decrypted). |
-| `SQUARE_SCOPE` | The OAuth scopes requested during connection. |
+| Variable                                        | Purpose                                                                                       |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `SQUARE_CLIENT_ID` / `SQUARE_CLIENT_SECRET` | Your Square application's credentials (sandbox or production).                                |
+| `SQUARE_AUTHORIZED_MERCHANT_ID`               | The merchant id the app is allowed to connect to.                                             |
+| `SQUARE_REDIRECT_URI`                         | Must match the redirect URI registered on the Square app, including the port.                 |
+| `TOKEN_ENCRYPTION_KEY`                        | Secret used to encrypt Square tokens in the database.                                         |
+| `SECURITY_SALT`                               | Must match the salt used to encrypt any existing tokens (otherwise they cannot be decrypted). |
+| `SQUARE_SCOPE`                                | The OAuth scopes requested during connection.                                                 |
 
 `SQUARE_SCOPE` must include one scope per synced resource:
 
-| Resource | Scope |
-|----------|-------|
-| Customers | `CUSTOMERS_READ` |
-| Bookings / appointments | `APPOINTMENTS_READ` |
-| Payments | `PAYMENTS_READ` |
-| Merchant profile | `MERCHANT_PROFILE_READ` |
+| Resource         | Scope                                             |
+| ---------------- | ------------------------------------------------- |
+| Customers        | `CUSTOMERS_READ`                                |
+| Bookings         | `APPOINTMENTS_READ`, `APPOINTMENTS_ALL_READ` |
+| Payments         | `PAYMENTS_READ`                                 |
+| Merchant profile | `MERCHANT_PROFILE_READ`                         |
+| Read Items       | `ITEMS_READ`                                    |
 
-Default: `CUSTOMERS_READ,MERCHANT_PROFILE_READ,APPOINTMENTS_READ,PAYMENTS_READ`
+Default: `CUSTOMERS_READ,MERCHANT_PROFILE_READ,APPOINTMENTS_READ,APPOINTMENTS_ALL_READ,PAYMENTS_READ,ITEMS_READ`
 
 > **Scopes only take effect when connecting.** If you change `SQUARE_SCOPE`, disconnect and reconnect Square for the new scopes to be authorised.
 
@@ -57,9 +58,9 @@ Log in and go to the dashboard, then connect Square and run a sync from **Settin
 
 ## Connecting with Square in Sandbox
 
-1. Go to <https://app.squareup.com/launchpad>
+1. Go to [https://app.squareup.com/launchpad](https://app.squareup.com/launchpad)
 2. Click View Dashboard for our account.
-3. Go to <https://developer.squareup.com/apps>
+3. Go to [https://developer.squareup.com/apps](https://developer.squareup.com/apps)
 4. Click Sandbox test accounts.
 5. Click Square Dashboard for the `Auth` user.
 
@@ -81,10 +82,10 @@ The Square access token must be refreshed periodically (Square recommends every 
 
 ## Troubleshooting
 
-| Symptom | Cause / fix |
-|---------|-------------|
-| `Table ... doesn't exist` | Pending migrations — run `bin/cake migrations migrate`. |
-| `INSUFFICIENT_SCOPES` | A scope for a synced resource is missing — add it to `SQUARE_SCOPE` and reconnect. |
-| `Merchant not onboarded to Appointments` | Enable Square Appointments on the sandbox merchant. |
-| `Invalid token` / `Invalid refresh token` | The token was revoked or replaced — reconnect Square. |
+| Symptom                                        | Cause / fix                                                                                 |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `Table ... doesn't exist`                    | Pending migrations — run`bin/cake migrations migrate`.                                   |
+| `INSUFFICIENT_SCOPES`                        | A scope for a synced resource is missing — add it to`SQUARE_SCOPE` and reconnect.        |
+| `Merchant not onboarded to Appointments`     | Enable Square Appointments on the sandbox merchant.                                         |
+| `Invalid token` / `Invalid refresh token`  | The token was revoked or replaced — reconnect Square.                                      |
 | `Required option not passed: "access_token"` | Square rejected a token refresh (usually the refresh token is invalid) — reconnect Square. |
