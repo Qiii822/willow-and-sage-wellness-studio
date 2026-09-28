@@ -48,34 +48,14 @@ class SiteContentsTable extends Table
             'default' => 'Willow and Sage Wellness Studio',
         ],
         /*
-         * There was a `booking.url` here, pointing the Book buttons at
-         * Square's own booking page. Booking now happens on this site, so
-         * that one was removed. This is a different job: where a customer
-         * goes to change an appointment they already have.
-         *
-         * It has to be a setting rather than something worked out in code.
-         * Square gives no API for it - a Booking carries no link of its own
-         * - and the address differs between accounts: a sandbox is
-         * square.site/book/{location}/{slug}, a real seller is
-         * book.squareup.com/appointments/{seller}/location/{location}.
+         * Two Square addresses used to live here and are both gone:
+         * `booking.url`, which pointed the Book buttons at Square's booking
+         * page, and `booking.manage_url`, which sent a customer to Square to
+         * change an appointment. Making a booking and changing one both
+         * happen on this site now, so neither has a page left to point at -
+         * and a setting for an address nothing reads is only a way to spend
+         * an afternoon wondering why editing it changes nothing.
          */
-        'booking.manage_url' => [
-            'group' => 'General',
-            'label' => 'Where customers manage a booking',
-            'type' => self::TYPE_TEXT,
-            'default' => 'https://book.squareup.com/appointments/r2a8ubnahl2pug'
-                . '/location/LPSB9KGV9MYAJ/bookings',
-            /*
-             * No "leave blank to turn it off": a blank value is ignored
-             * site-wide and the default comes back, so promising otherwise
-             * here would be a promise this screen does not keep.
-             */
-            'help' => 'Square\'s own page for changing or cancelling. The customer '
-                . 'enters their mobile number there and Square texts them a code. '
-                . 'Find it in Square under Appointments, or copy the address of '
-                . 'your booking site and put /bookings on the end.',
-            'validate' => 'url',
-        ],
 
         'hero.image' => [
             'group' => 'Hero',

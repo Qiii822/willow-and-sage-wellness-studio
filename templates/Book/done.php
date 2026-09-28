@@ -55,17 +55,21 @@ $this->Html->css('book', ['block' => true]);
 
             <h2>Changing or cancelling</h2>
 
-            <?php $manageUrl = trim($this->SiteContent->raw('booking.manage_url')); ?>
-
+            <?php /*
+             * Back to our own page rather than off to Square's. Nothing is
+             * needed but the number this booking was made with, which the
+             * customer has just typed - so there is nothing to look up in an
+             * email and no second site to arrive at.
+             */ ?>
             <p>
-                <?php if ($manageUrl !== ''): ?>
-                    You can
-                    <a href="<?= h($manageUrl) ?>" target="_blank" rel="noopener">manage this booking</a>
-                    with your mobile number - you will be texted a code.
-                <?php else: ?>
-                    Your confirmation email has a link for changing or
-                    cancelling this appointment.
-                <?php endif; ?>
+                Go to
+                <?= $this->Html->link('My bookings', [
+                    'controller' => 'MyBookings',
+                    'action' => 'index',
+                ]) ?>
+                and enter <strong><?= h($draft->customer_phone) ?></strong> -
+                we will text you a code, and from there you can move this
+                appointment or cancel it.
                 <?php if ($phone !== ''): ?>
                     Or call us on
                     <a href="tel:<?= h(preg_replace('/[^\d+]/', '', $phone)) ?>"><?= h($phone) ?></a>.
