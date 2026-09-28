@@ -10,7 +10,18 @@ $this->Html->script(
     'login',
     ['block' => true]
 );
+
+$this->Html->script(
+    'https://challenges.cloudflare.com/turnstile/v0/api.js',
+    [
+        'block' => true,
+        'async' => true,
+        'defer' => true,
+    ]
+);
 ?>
+
+
 
 <div class="login-page">
 
@@ -93,6 +104,13 @@ $this->Html->script(
                             'action' => 'forgotPassword'
                         ]
                     ) ?>
+                </div>
+
+                <div class="form-group">
+                    <div
+                        class="cf-turnstile"
+                        data-sitekey="<?= h(env('TURNSTILE_SITE_KEY')) ?>"
+                    ></div>
                 </div>
 
                 <?= $this->Form->button('Login', [
