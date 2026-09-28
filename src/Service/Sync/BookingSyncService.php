@@ -99,6 +99,11 @@ class BookingSyncService
                 $bookings[] = $this->mapBooking($squareBooking);
             }
 
+            // Guard for Zero Bookings
+            if ($bookings === [] && $this->bookingsTable->find()->count() > 0) {
+                throw new \RuntimeException('Square returned zero bookings; refusing to wipe local table.');
+            }
+
             // Wipe and reload atomically - the local table always ends up either
             // fully replaced or, on failure, untouched.
             $this->bookingsTable->getConnection()->transactional(function () use ($bookings): void {
