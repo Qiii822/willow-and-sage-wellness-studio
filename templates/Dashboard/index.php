@@ -512,6 +512,7 @@ $months = [
 
                 </div>
 
+                <?php if ($range === 'year'): ?>
                 <!-- Customer Growth -->
                 <div
                     class="dashboard-widget widget-wide"
@@ -683,6 +684,7 @@ $months = [
 
                 </div>
 
+                <?php endif; ?>
                 <!-- Recent Customers -->
                 <div
                     class="dashboard-widget widget-wide"
