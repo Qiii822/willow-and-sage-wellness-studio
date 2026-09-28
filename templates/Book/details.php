@@ -106,6 +106,10 @@ $this->Html->css('book', ['block' => true]);
             <p class="book-help">Not accepting codes yet.</p>
         </div>
 
+        <div class="cf-turnstile"
+             data-sitekey="<?= h(env('TURNSTILE_SITE_KEY')) ?>">
+        </div>
+
         <div class="book-actions">
             <?= $this->Form->button('Confirm booking', ['class' => 'hero-cta']) ?>
         </div>
