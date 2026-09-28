@@ -26,8 +26,15 @@ $this->Html->css('book', ['block' => true]);
 
             <h1>You're booked in</h1>
 
+            <?php /*
+             * "We've sent" was not true: this site sends no email at all.
+             * The confirmation comes from Square, which is also what
+             * carries the link for changing or cancelling - Square makes
+             * that link inside its own message and does not expose it to
+             * us, so it cannot be repeated here.
+             */ ?>
             <p>
-                We've sent the details to
+                Your confirmation is on its way to
                 <strong><?= h($draft->customer_email) ?></strong>.
                 We look forward to seeing you.
             </p>
@@ -46,12 +53,24 @@ $this->Html->css('book', ['block' => true]);
 
             <?php $phone = trim($this->SiteContent->raw('footer.phone')); ?>
 
-            <?php if ($phone !== ''): ?>
-                <p>
-                    Need to change something? Call us on
+            <h2>Changing or cancelling</h2>
+
+            <?php $manageUrl = trim($this->SiteContent->raw('booking.manage_url')); ?>
+
+            <p>
+                <?php if ($manageUrl !== ''): ?>
+                    You can
+                    <a href="<?= h($manageUrl) ?>" target="_blank" rel="noopener">manage this booking</a>
+                    with your mobile number - you will be texted a code.
+                <?php else: ?>
+                    Your confirmation email has a link for changing or
+                    cancelling this appointment.
+                <?php endif; ?>
+                <?php if ($phone !== ''): ?>
+                    Or call us on
                     <a href="tel:<?= h(preg_replace('/[^\d+]/', '', $phone)) ?>"><?= h($phone) ?></a>.
-                </p>
-            <?php endif; ?>
+                <?php endif; ?>
+            </p>
 
         </div>
 

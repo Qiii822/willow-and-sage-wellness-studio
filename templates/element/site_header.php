@@ -87,14 +87,20 @@ $showOffers = $locator->get('Offers')->current() !== []
 
         <?php
         /*
-         * Public-only build: there is no sign-in here, so the header carries
-         * nothing that implies an account - no login link, no avatar menu,
-         * no notification bell.
+         * Staff who are already signed in get their account here; everyone
+         * else gets nothing at all.
          *
-         * The staff screens still exist and still require a login. They are
-         * simply not reachable from this site.
+         * Deliberately one-way: there is no "log in" link, because this is
+         * the customer's site and an invitation to sign in would only
+         * puzzle them. Someone signed in arrived through the staff screens
+         * and is only being offered a way back out.
          */
         ?>
+        <?php $identity = $this->request->getAttribute('identity'); ?>
+
+        <?php if ($identity): ?>
+            <?= $this->element('site_account', ['identity' => $identity]) ?>
+        <?php endif; ?>
 
     </div>
 

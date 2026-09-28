@@ -46,10 +46,12 @@ $services = iterator_to_array($services);
             <?php endif; ?>
         </div>
 
+        <?php /*
+         * No "Add treatment" any more. The menu is Square's, and one added
+         * here disappeared at the next sync - the button offered something
+         * the app could not keep.
+         */ ?>
         <div class="services-admin-actions">
-            <?= $this->Html->link('Add treatment', ['action' => 'add'], [
-                'class' => 'content-button',
-            ]) ?>
             <?= $this->Html->link('View page', ['action' => 'index'], [
                 'class' => 'content-button secondary',
                 'target' => '_blank',
@@ -74,35 +76,16 @@ $services = iterator_to_array($services);
         </p>
 
         <?php /*
-         * The same warning the treatment list carries, for the same reason:
-         * one added here looks saved, and then quietly goes at the next
-         * sync unless Square has it too.
+         * Read-only, like the treatments. The add box and the Remove links
+         * were taken out with them: a sync replaces this list with Square's,
+         * so one added here vanished at the next one and one removed came
+         * straight back.
          */ ?>
-        <?php if ($syncedCount > 0): ?>
-            <p class="content-notice">
-                <strong>Square owns this list too.</strong>
-                A sync replaces it with Square's categories, so one added
-                here is removed again unless Square has it as well. Add it
-                in Square to keep it.
-            </p>
-        <?php endif; ?>
-
-        <?= $this->Form->create(null, [
-            'url' => ['action' => 'addCategory'],
-            'class' => 'category-add',
-        ]) ?>
-
-        <?= $this->Form->text('name', [
-            'class' => 'content-input',
-            'required' => true,
-            'maxlength' => 100,
-            'placeholder' => 'e.g. Massage',
-            'aria-label' => 'New category name',
-        ]) ?>
-
-        <?= $this->Form->button('Add category', ['class' => 'content-button']) ?>
-
-        <?= $this->Form->end() ?>
+        <p class="content-notice">
+            <strong>Categories come from Square.</strong>
+            They are set on each treatment in Square, and a sync brings them
+            across. There is nothing to change here.
+        </p>
 
         <?php if ($categories !== []): ?>
 
@@ -120,22 +103,9 @@ $services = iterator_to_array($services);
                                 : $category['used'] . ' treatment' . ($category['used'] === 1 ? '' : 's') ?>
                         </span>
 
-                        <?php if ($category['used'] === 0 && $category['id'] !== null): ?>
-                            <?= $this->Form->postLink('Remove', ['action' => 'deleteCategory', $category['id']], [
-                                'class' => 'services-admin-link is-danger',
-                                'confirm' => 'Remove the category "' . $category['name'] . '"?',
-                                'block' => true,
-                            ]) ?>
-                        <?php else: ?>
-                            <?php /*
-                             * No control at all rather than one that
-                             * refuses: a button that never works is worse
-                             * than none, and the note says why.
-                             */ ?>
-                            <span class="category-locked">
-                                <?= $category['used'] > 0 ? 'in use' : 'from Square' ?>
-                            </span>
-                        <?php endif; ?>
+                        <span class="category-locked">
+                            <?= $category['used'] > 0 ? 'in use' : 'not used' ?>
+                        </span>
 
                     </li>
 
@@ -201,19 +171,26 @@ $services = iterator_to_array($services);
                             </span>
                         </div>
 
+                        <?php /*
+                         * Edit and Delete are gone - both changed things
+                         * the next sync put straight back. Showing or
+                         * hiding is the one decision left here, so it is
+                         * the one control, rather than a checkbox buried in
+                         * a form of fields nobody could really change.
+                         */ ?>
                         <div class="section-controls">
 
-                            <?= $this->Html->link('Edit', ['action' => 'edit', $service->id], [
-                                'class' => 'services-admin-link',
-                            ]) ?>
-
-                            <?= $this->Form->postLink('Delete', ['action' => 'delete', $service->id], [
-                                'class' => 'services-admin-link is-danger',
-                                'confirm' => 'Remove "' . $service->name . '" from the menu?',
-                                // Its own request, so it cannot be swallowed
-                                // by the reorder form wrapping this list.
-                                'block' => true,
-                            ]) ?>
+                            <?= $this->Form->postLink(
+                                $service->visible ? 'Hide' : 'Show',
+                                ['action' => 'toggleVisibility', $service->id],
+                                [
+                                    'class' => 'services-admin-link',
+                                    // Its own request, so it cannot be
+                                    // swallowed by the reorder form
+                                    // wrapping this list.
+                                    'block' => true,
+                                ]
+                            ) ?>
 
                         </div>
 

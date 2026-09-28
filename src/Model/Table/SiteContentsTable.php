@@ -50,10 +50,32 @@ class SiteContentsTable extends Table
         /*
          * There was a `booking.url` here, pointing the Book buttons at
          * Square's own booking page. Booking now happens on this site, so
-         * the setting had nothing left to change - and a settings box that
-         * does nothing is worse than no box at all. Any row still saved
-         * under that key is ignored, so removing it is safe.
+         * that one was removed. This is a different job: where a customer
+         * goes to change an appointment they already have.
+         *
+         * It has to be a setting rather than something worked out in code.
+         * Square gives no API for it - a Booking carries no link of its own
+         * - and the address differs between accounts: a sandbox is
+         * square.site/book/{location}/{slug}, a real seller is
+         * book.squareup.com/appointments/{seller}/location/{location}.
          */
+        'booking.manage_url' => [
+            'group' => 'General',
+            'label' => 'Where customers manage a booking',
+            'type' => self::TYPE_TEXT,
+            'default' => 'https://book.squareup.com/appointments/r2a8ubnahl2pug'
+                . '/location/LPSB9KGV9MYAJ/bookings',
+            /*
+             * No "leave blank to turn it off": a blank value is ignored
+             * site-wide and the default comes back, so promising otherwise
+             * here would be a promise this screen does not keep.
+             */
+            'help' => 'Square\'s own page for changing or cancelling. The customer '
+                . 'enters their mobile number there and Square texts them a code. '
+                . 'Find it in Square under Appointments, or copy the address of '
+                . 'your booking site and put /bookings on the end.',
+            'validate' => 'url',
+        ],
 
         'hero.image' => [
             'group' => 'Hero',

@@ -952,6 +952,12 @@
     line-height: 1.55;
 }
 
+/* The one thing to press on this page, so it is not left looking like
+   another line of the note above it. */
+.book-manage-action {
+    margin: 16px 0 0;
+}
+
 /* =========================================================
    Details form
    ========================================================= */

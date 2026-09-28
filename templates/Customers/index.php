@@ -1,22 +1,22 @@
 <?php
 /**
+ * Everyone Square knows about, one row per person.
+ *
+ * Pagination is done by hand rather than with the Paginator helper: the
+ * rows are people worked out in PHP, not a database query, and the helper
+ * only knows how to page a query.
+ *
  * @var \App\View\AppView $this
- * @var iterable $customers
- * @var string $source
- * @var int $squareCount
- * @var int $registeredCount
+ * @var array<int, array<string, mixed>> $people
+ * @var int $total
+ * @var int $page
+ * @var int $maxPage
+ * @var int $first
+ * @var int $last
  */
 
 $this->assign('title', 'Customers');
 $this->setLayout('dashboard');
-
-$isRegistered = $source === 'registered';
-
-// Keep the selected source on every pagination link, or paging away from
-// the registered list would silently drop back to the Square one.
-$this->Paginator->options([
-    'url' => ['?' => ['source' => $source]],
-]);
 ?>
 
 <div class="container-fluid p-0">
@@ -25,46 +25,27 @@ $this->Paginator->options([
         <?= $this->element('sidebar') ?>
 
         <main class="main-content">
+
             <div class="top-bar">
                 <div>
                     <h1>Customers</h1>
                     <p class="subtitle">
-                        Customers synced from Square, and people who
-                        registered on the site.
+                        Everyone who has booked, synced from Square.
                     </p>
                 </div>
             </div>
 
-            <div class="source-tabs" role="tablist">
-
-                <?= $this->Html->link(
-                    'From Square (' . number_format($squareCount) . ')',
-                    ['action' => 'index', '?' => ['source' => 'square']],
-                    [
-                        'class' => 'source-tab' . (!$isRegistered ? ' is-active' : ''),
-                        'aria-current' => !$isRegistered ? 'page' : null,
-                    ]
-                ) ?>
-
-                <?= $this->Html->link(
-                    'Registered on site (' . number_format($registeredCount) . ')',
-                    ['action' => 'index', '?' => ['source' => 'registered']],
-                    [
-                        'class' => 'source-tab' . ($isRegistered ? ' is-active' : ''),
-                        'aria-current' => $isRegistered ? 'page' : null,
-                    ]
-                ) ?>
-
-            </div>
-
             <div class="card table-card">
+
                 <div class="table-header">
                     <div>
-                        <h3><?= $isRegistered ? 'Registered Accounts' : 'Square Customers' ?></h3>
+                        <h3>Customers</h3>
                         <p>
-                            <?= $this->Paginator->counter(
-                                'Showing {{start}}&ndash;{{end}} of {{count}} customers'
-                            ) ?>
+                            <?php if ($total === 0): ?>
+                                No customers yet
+                            <?php else: ?>
+                                Showing <?= $first ?>&ndash;<?= $last ?> of <?= $total ?>
+                            <?php endif; ?>
                         </p>
                     </div>
                 </div>
@@ -76,116 +57,122 @@ $this->Paginator->options([
                             <th>Customer</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Account Created</th>
+                            <th>Bookings</th>
+                            <th>First seen</th>
                             <th></th>
                         </tr>
                         </thead>
 
                         <tbody>
-                        <?php foreach ($customers as $customer): ?>
-                            <?php
-                            /*
-                             * The two sources are different entities, so the
-                             * columns are read per source rather than merged.
-                             */
-                            if ($isRegistered) {
-                                $name = trim(
-                                    ($customer->first_name ?? '') . ' ' .
-                                    ($customer->surname ?? '')
-                                );
-                                $email = $customer->email;
-                                $phone = \App\Utility\PhoneNumber::format($customer->phone);
-                                $created = $customer->created_at;
-                            } else {
-                                $name = trim(
-                                    ($customer->given_name ?? '') . ' ' .
-                                    ($customer->family_name ?? '')
-                                );
-                                $email = $customer->email_address;
-                                $phone = $customer->phone_number;
-                                $created = $customer->square_created_at;
-                            }
-                            ?>
+
+                        <?php if ($people === []): ?>
                             <tr>
-                                <td><?= h($name !== '' ? $name : '-') ?></td>
-                                <td><?= h($email ?? '-') ?></td>
-                                <td><?= h($phone ?? '-') ?></td>
+                                <td colspan="6">
+                                    Nobody has booked yet. Customers appear here
+                                    after a sync with Square.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+
+                        <?php foreach ($people as $person): ?>
+
+                            <?php
+                            $customer = $person['customer'];
+                            $name = trim(
+                                ($customer->given_name ?? '') . ' ' .
+                                ($customer->family_name ?? '')
+                            );
+                            ?>
+
+                            <tr>
                                 <td>
-                                    <?php if ($created): ?>
-                                        <?= h($created->format('d/m/Y H:i:s')) ?>
+                                    <?= h($name !== '' ? $name : '-') ?>
+
+                                    <?php /*
+                                     * Square makes a new customer for each
+                                     * new email address, so one person can
+                                     * be several records. Said plainly here
+                                     * rather than left as a silent merge.
+                                     */ ?>
+                                    <?php if ($person['records'] > 1): ?>
+                                        <span class="customer-merged">
+                                            <?= $person['records'] ?> Square records
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <td>
+                                    <?= h($customer->email_address ?: '-') ?>
+
+                                    <?php if (count($person['emails']) > 1): ?>
+                                        <span class="customer-merged">
+                                            +<?= count($person['emails']) - 1 ?> more
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <td><?= h($customer->phone_number ?: '-') ?></td>
+
+                                <td><?= $person['bookings'] ?></td>
+
+                                <td>
+                                    <?php if ($customer->square_created_at): ?>
+                                        <?= h($customer->square_created_at->format('d/m/Y')) ?>
                                     <?php else: ?>
                                         -
                                     <?php endif; ?>
                                 </td>
+
                                 <td>
-                                    <?= $this->Html->link(
-                                        'View',
-                                        [
-                                            'controller' => 'Customers',
-                                            'action' => 'view',
-                                            $customer->id,
-                                        ],
-                                        [
-                                            'class' => 'table-action',
-                                        ]
-                                    ) ?>
+                                    <?= $this->Html->link('View', [
+                                        'action' => 'view',
+                                        $customer->id,
+                                    ], ['class' => 'table-action']) ?>
                                 </td>
                             </tr>
+
                         <?php endforeach; ?>
+
                         </tbody>
                     </table>
                 </div>
 
-                <?php if ($this->Paginator->total() > 1): ?>
+                <?php if ($maxPage > 1): ?>
 
                     <nav class="pagination-bar" aria-label="Customer pages">
 
                         <ul class="pagination">
-                            <?= $this->Paginator->prev(
-                                '&larr; Previous',
-                                ['escape' => false]
-                            ) ?>
 
-                            <?= $this->Paginator->numbers([
-                                'modulus' => 3,
-                                'first' => 1,
-                                'last' => 1,
-                                'ellipsis' => '<li class="ellipsis">&hellip;</li>',
-                            ]) ?>
+                            <?php if ($page > 1): ?>
+                                <li>
+                                    <?= $this->Html->link('&larr; Previous', [
+                                        'action' => 'index',
+                                        '?' => ['page' => $page - 1],
+                                    ], ['escape' => false]) ?>
+                                </li>
+                            <?php endif; ?>
 
-                            <?= $this->Paginator->next(
-                                'Next &rarr;',
-                                ['escape' => false]
-                            ) ?>
+                            <?php foreach (range(1, $maxPage) as $number): ?>
+                                <li<?= $number === $page ? ' class="active"' : '' ?>>
+                                    <?= $number === $page
+                                        ? '<a href="#">' . $number . '</a>'
+                                        : $this->Html->link((string)$number, [
+                                            'action' => 'index',
+                                            '?' => ['page' => $number],
+                                        ]) ?>
+                                </li>
+                            <?php endforeach; ?>
+
+                            <?php if ($page < $maxPage): ?>
+                                <li>
+                                    <?= $this->Html->link('Next &rarr;', [
+                                        'action' => 'index',
+                                        '?' => ['page' => $page + 1],
+                                    ], ['escape' => false]) ?>
+                                </li>
+                            <?php endif; ?>
+
                         </ul>
-
-                        <form
-                                class="pagination-jump"
-                                method="get"
-                                action="<?= $this->Url->build([
-                                    'controller' => 'Customers',
-                                    'action' => 'index'
-                                ]) ?>"
-                            >
-                                <label for="page-jump">Jump to</label>
-
-                                <input
-                                    type="hidden"
-                                    name="source"
-                                    value="<?= h($source) ?>"
-                                >
-
-                                <input
-                                    type="number"
-                                    id="page-jump"
-                                    name="page"
-                                    min="1"
-                                    max="<?= $this->Paginator->total() ?>"
-                                    aria-label="Page number"
-                                >
-
-                            <button type="submit">Go</button>
-                        </form>
 
                     </nav>
 
@@ -195,14 +182,8 @@ $this->Paginator->options([
 
             <?= $this->Html->link(
                 '&larr; Back to Dashboard',
-                [
-                    'controller' => 'Dashboard',
-                    'action' => 'index'
-                ],
-                [
-                    'escape' => false,
-                    'class' => 'dashboard-back'
-                ]
+                ['controller' => 'Dashboard', 'action' => 'index'],
+                ['escape' => false, 'class' => 'dashboard-back']
             ) ?>
 
         </main>

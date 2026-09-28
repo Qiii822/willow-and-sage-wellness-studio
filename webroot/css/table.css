@@ -249,41 +249,31 @@
     background: #deebf3;
     border: 1px solid #bfd4e1;
 }
-/* Customer list source switcher */
+/*
+ * The customer list used to switch between "From Square" and "Registered
+ * on site". Nobody can register on this site, so there is one source and
+ * nothing to switch - .source-tabs and .source-tab were removed with it.
+ */
 
-.source-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+/*
+ * Said beside a customer when Square holds more than one record for them.
+ * Square keys a customer on their email, so booking twice with different
+ * addresses makes two records for one person; the list adds them together
+ * and this is how it says so.
+ */
+.customer-merged {
+    display: inline-block;
 
-    margin-bottom: 20px;
-}
-
-.source-tab {
-    padding: 9px 16px;
+    margin-left: 6px;
+    padding: 2px 8px;
 
     color: #6b6259;
-    font-size: 14px;
+    font-size: 11.5px;
     font-weight: 600;
-    text-decoration: none;
+    white-space: nowrap;
 
-    background: rgba(139, 126, 116, 0.09);
-    border: 1px solid transparent;
+    background: rgba(139, 126, 116, 0.12);
     border-radius: 999px;
-
-    transition:
-        color 0.2s ease,
-        background 0.2s ease;
-}
-
-.source-tab:hover {
-    color: #4a423b;
-    background: rgba(139, 126, 116, 0.16);
-}
-
-.source-tab.is-active {
-    color: #fff;
-    background: #8b7e74;
 }
 
 /* Where a customer row came from: the Square sync, or a site signup. */

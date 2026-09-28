@@ -153,40 +153,13 @@ class ServicesTable extends Table
         return $this->find()->orderBy(['position' => 'ASC', 'name' => 'ASC']);
     }
 
-    /**
-     * The categories already in use, for the editor's suggestions.
-     *
-     * @return array<int, string>
+    /*
+     * categories() and nextPosition() were here, both serving the add and
+     * edit screens - suggestions for the category picker, and a slot at the
+     * end of the menu for a newly added treatment. Treatments are only ever
+     * created by the sync now, which sets its own order, so neither had a
+     * caller left.
      */
-    public function categories(): array
-    {
-        try {
-            return $this->find()
-                ->select(['category'])
-                ->distinct(['category'])
-                ->orderBy(['category' => 'ASC'])
-                ->all()
-                ->extract('category')
-                ->toList();
-        } catch (Throwable $e) {
-            return [];
-        }
-    }
-
-    /**
-     * Puts a treatment at the end of the menu.
-     *
-     * @return int
-     */
-    public function nextPosition(): int
-    {
-        $highest = $this->find()
-            ->select(['position'])
-            ->orderBy(['position' => 'DESC'])
-            ->first();
-
-        return $highest ? (int)$highest->position + 1 : 0;
-    }
 
     /**
      * Applies a submitted order.
