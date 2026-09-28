@@ -203,6 +203,12 @@ $isSuperAdmin = $role === 'superadmin';
                     </p>
                 <?php endif; ?>
 
+                <p>
+                    Customers, bookings and payments from Square are still
+                    stored here. Clearing them keeps the treatment menu,
+                    offers, site content and everyone's login.
+                </p>
+
             </div>
 
 
@@ -220,6 +226,23 @@ $isSuperAdmin = $role === 'superadmin';
                             'class' => 'settings-button'
                         ]
                     ) ?>
+
+                    <?= $this->Form->create(null, [
+                        'id' => 'clear-data-form',
+                        'url' => [
+                            'controller' => 'Auth',
+                            'action' => 'clearData'
+                        ]
+                    ]) ?>
+
+                    <?= $this->Form->button(
+                        'Clear Square data',
+                        [
+                            'class' => 'settings-button danger'
+                        ]
+                    ) ?>
+
+                    <?= $this->Form->end() ?>
 
                 </div>
 
@@ -499,6 +522,17 @@ $isSuperAdmin = $role === 'superadmin';
         </div>
 
     <?php endif; ?>
+
+    <div class="confirm-modal-overlay" id="clear-data-confirm-overlay" data-form-id="clear-data-form" hidden>
+        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="clear-data-confirm-title">
+            <h2 id="clear-data-confirm-title">Clear Square data?</h2>
+            <p>This permanently deletes the customers, bookings and payments stored here, and the sync history. It cannot be undone, but reconnecting Square and syncing will bring them back.</p>
+            <div class="confirm-modal-actions">
+                <button type="button" class="settings-button secondary" id="clear-data-confirm-cancel">Cancel</button>
+                <button type="button" class="settings-button danger" id="clear-data-confirm-ok">Clear data</button>
+            </div>
+        </div>
+    </div>
 
     <div class="confirm-modal-overlay" id="disconnect-confirm-overlay" data-form-id="disconnect-square-form" hidden>
         <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="disconnect-confirm-title">
