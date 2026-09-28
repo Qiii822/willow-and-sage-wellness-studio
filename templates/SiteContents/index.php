@@ -15,7 +15,7 @@ $this->Html->css('site_contents', ['block' => true]);
 $this->Html->script('site_contents', ['block' => true]);
 ?>
 
-<div class="content-page">
+<div class="content-page content-page-with-side">
 
     <?= $this->element('website_tabs') ?>
 
@@ -41,8 +41,11 @@ $this->Html->script('site_contents', ['block' => true]);
 
     </div>
 
+    <div class="content-layout">
+
     <?php // enctype is required or the browser sends the file's name only. ?>
     <?= $this->Form->create(null, [
+        'id' => 'site-content-form',
         'class' => 'content-form',
         'url' => ['action' => 'index'],
         'type' => 'file',
@@ -221,29 +224,47 @@ $this->Html->script('site_contents', ['block' => true]);
 
     <?php endforeach; ?>
 
-    <div class="content-actions">
-
-        <?= $this->Form->button('Save changes', [
-            'class' => 'content-button',
-        ]) ?>
-
-    </div>
-
     <?= $this->Form->end() ?>
 
     <?php /*
-     * Its own form, so a stray Enter in a text field submits the edits
-     * rather than wiping them.
+     * Beside the form and sticky, like the basket on the booking page: the
+     * form is long, and the save button used to sit below every field, out
+     * of sight while editing.
+     *
+     * Outside the edit form because the reset is a form of its own and
+     * forms cannot nest; the save button reaches the edit form through its
+     * `form` attribute instead.
      */ ?>
-    <?= $this->Form->create(null, [
-        'class' => 'content-reset',
-        'url' => ['action' => 'index'],
-    ]) ?>
-    <?= $this->Form->hidden('reset', ['value' => 1]) ?>
-    <?= $this->Form->button('Restore original wording', [
-        'class' => 'content-button danger',
-        'confirm' => 'This replaces every field with the original text. Continue?',
-    ]) ?>
-    <?= $this->Form->end() ?>
+    <aside class="content-side">
+
+        <h2>Save your changes</h2>
+
+        <p class="content-side-note">
+            Nothing changes on the home page until you save.
+        </p>
+
+        <?= $this->Form->button('Save changes', [
+            'class' => 'content-button',
+            'form' => 'site-content-form',
+        ]) ?>
+
+        <?php /*
+         * Its own form, so a stray Enter in a text field submits the edits
+         * rather than wiping them.
+         */ ?>
+        <?= $this->Form->create(null, [
+            'class' => 'content-reset',
+            'url' => ['action' => 'index'],
+        ]) ?>
+        <?= $this->Form->hidden('reset', ['value' => 1]) ?>
+        <?= $this->Form->button('Restore original wording', [
+            'class' => 'content-button danger',
+            'confirm' => 'This replaces every field with the original text. Continue?',
+        ]) ?>
+        <?= $this->Form->end() ?>
+
+    </aside>
+
+    </div>
 
 </div>
