@@ -20,6 +20,7 @@ use Cake\ORM\Entity;
  * @property string|null $source_type
  * @property string|null $square_customer_id
  * @property string|null $order_id
+ * @property string|null $reference_id For payments recorded from a booking, the Square booking id.
  * @property string|null $receipt_number
  * @property string|null $receipt_url
  * @property string|null $note
@@ -38,6 +39,7 @@ class Payment extends Entity
         'source_type' => true,
         'square_customer_id' => true,
         'order_id' => true,
+        'reference_id' => true,
         'receipt_number' => true,
         'receipt_url' => true,
         'note' => true,

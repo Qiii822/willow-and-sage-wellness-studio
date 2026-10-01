@@ -11,6 +11,11 @@
         padding: 30px 24px 50px;
     }
 
+    body > .message {
+        margin-right: 24px;
+        margin-left: calc(var(--sidebar-width) + 24px);
+    }
+
     .charts {
         grid-template-columns: 1fr;
     }
@@ -108,6 +113,11 @@
 
         margin-left: 0;
         padding: 22px 14px 40px;
+    }
+
+    /* The sidebar stacks above the page here, so nothing to clear. */
+    body > .message {
+        margin: 14px 14px 0;
     }
 
     .top-bar {

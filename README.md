@@ -37,14 +37,14 @@ Copy `config/.env.example` to `config/.env` and fill in:
 | ----------------- | --------------------------------------------------------- |
 | Customers         | `CUSTOMERS_READ`, `CUSTOMERS_WRITE`                     |
 | Bookings          | `APPOINTMENTS_READ`, `APPOINTMENTS_WRITE`               |
-| Payments          | `PAYMENTS_READ`                                         |
+| Payments          | `PAYMENTS_READ`, `PAYMENTS_WRITE`                       |
 | Merchant profile  | `MERCHANT_PROFILE_READ`                                 |
 | Menu (items)      | `ITEMS_READ`                                            |
 | Business settings | `APPOINTMENTS_BUSINESS_SETTINGS_READ`                   |
 
-The write scopes (`APPOINTMENTS_WRITE`, `CUSTOMERS_WRITE`) are needed for the rebooking reminders. Default:
+The write scopes (`APPOINTMENTS_WRITE`, `CUSTOMERS_WRITE`) are needed for the rebooking reminders. `PAYMENTS_WRITE` is needed to record a cash or card payment against a booking from the booking page. Default:
 
-`CUSTOMERS_READ,MERCHANT_PROFILE_READ,APPOINTMENTS_READ,PAYMENTS_READ,ITEMS_READ,APPOINTMENTS_WRITE,CUSTOMERS_WRITE,APPOINTMENTS_BUSINESS_SETTINGS_READ`
+`CUSTOMERS_READ,MERCHANT_PROFILE_READ,APPOINTMENTS_READ,PAYMENTS_READ,ITEMS_READ,APPOINTMENTS_WRITE,CUSTOMERS_WRITE,APPOINTMENTS_BUSINESS_SETTINGS_READ,PAYMENTS_WRITE`
 
 > **Scopes only take effect when connecting.** If you change `SQUARE_SCOPE`, disconnect and reconnect Square for the new scopes to be authorised.
 

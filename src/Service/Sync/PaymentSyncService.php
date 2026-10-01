@@ -114,10 +114,14 @@ class PaymentSyncService
     /**
      * Maps a Square payment to the local `payments` row shape.
      *
+     * Public so a payment recorded from a booking can be written to the
+     * local table straight away, in the same shape the next sync will give
+     * it, rather than missing from the payments page until then.
+     *
      * @param \Square\Types\Payment $squarePayment
      * @return array
      */
-    protected function mapPayment(SquarePayment $squarePayment): array
+    public function mapPayment(SquarePayment $squarePayment): array
     {
         $amountMoney = $squarePayment->getAmountMoney();
         $totalMoney = $squarePayment->getTotalMoney();
@@ -133,6 +137,7 @@ class PaymentSyncService
             'source_type' => $squarePayment->getSourceType(),
             'square_customer_id' => $squarePayment->getCustomerId(),
             'order_id' => $squarePayment->getOrderId(),
+            'reference_id' => $squarePayment->getReferenceId(),
             'receipt_number' => $squarePayment->getReceiptNumber(),
             'receipt_url' => $squarePayment->getReceiptUrl(),
             'note' => $squarePayment->getNote(),

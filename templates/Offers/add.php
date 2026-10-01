@@ -22,7 +22,7 @@ $currentImage = $offer->image
     : null;
 ?>
 
-<div class="content-page">
+<div class="content-page content-page-with-side">
 
     <div class="content-header">
         <div>
@@ -39,6 +39,8 @@ $currentImage = $offer->image
         'class' => 'content-form',
         'type' => 'file',
     ]) ?>
+
+    <div class="content-layout">
 
     <section class="content-card">
 
@@ -188,10 +190,25 @@ $currentImage = $offer->image
 
     </section>
 
-    <div class="content-actions">
+    <?php /*
+     * Beside the form and sticky, like the page content editor, so the
+     * button is in reach without scrolling past the picture first.
+     */ ?>
+    <aside class="content-side">
+
+        <h2><?= $isEdit ? 'Save your changes' : 'Add this offer' ?></h2>
+
+        <p class="content-side-note">
+            It shows on the home page once saved, if "Show on the home
+            page" is ticked.
+        </p>
+
         <?= $this->Form->button($isEdit ? 'Save offer' : 'Add offer', [
             'class' => 'content-button',
         ]) ?>
+
+    </aside>
+
     </div>
 
     <?= $this->Form->end() ?>

@@ -80,6 +80,16 @@ select {
     margin-top: 10px;
 }
 
+/*
+ * The dashboard layout prints messages at the top of <body>, but the
+ * sidebar is fixed over the left edge - so they move over by its width and
+ * line up with the page content below them rather than slipping under it.
+ */
+body > .message {
+    margin-right: 42px;
+    margin-left: calc(var(--sidebar-width) + 42px);
+}
+
 /* Clicking dismisses it - that is what the elements' own onclick does. */
 .message.hidden {
     display: none;

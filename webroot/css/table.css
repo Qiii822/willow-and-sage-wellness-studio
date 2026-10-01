@@ -111,7 +111,8 @@
 
 .bookings-filter-form,
 .payments-filter-form,
-.customers-filter-form {
+.customers-filter-form,
+.booking-pay-form {
     display: flex;
     align-items: flex-end;
     flex-wrap: wrap;
@@ -153,6 +154,27 @@
 
 .filter-field input[type="search"] {
     min-width: 240px;
+}
+
+/* Booking page: recording a payment */
+
+.booking-pay-form {
+    margin: 20px 0 0;
+}
+
+.booking-pay-note {
+    flex: 1 1 220px;
+}
+
+.booking-pay-help {
+    margin: 16px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.booking-total th {
+    font-weight: 700;
 }
 
 .filter-clear {

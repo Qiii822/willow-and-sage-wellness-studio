@@ -23,18 +23,23 @@ use Square\Customers\Requests\GetCustomersRequest;
 use Square\Customers\Requests\ListCustomersRequest;
 use Square\Customers\Requests\SearchCustomersRequest;
 use Square\Environments;
+use Square\Payments\Requests\CreatePaymentRequest;
 use Square\Payments\Requests\ListPaymentsRequest;
 use Square\SquareClient;
 use Square\Types\AppointmentSegment;
 use Square\Types\Booking;
+use Square\Types\CashPaymentDetails;
 use Square\Types\CatalogItem;
 use Square\Types\CatalogObject;
 use Square\Types\Customer;
 use Square\Types\CustomerFilter;
 use Square\Types\CustomerQuery;
 use Square\Types\CustomerTextFilter;
+use Square\Types\ExternalPaymentDetails;
 use Square\Types\FilterValue;
 use Square\Types\Location;
+use Square\Types\Money;
+use Square\Types\Payment;
 use Square\Types\SearchAvailabilityFilter;
 use Square\Types\SearchAvailabilityQuery;
 use Square\Types\SegmentFilter;
@@ -54,6 +59,12 @@ class SquareApiService
      * days; a day under it leaves room for the boundary arithmetic.
      */
     protected const BOOKING_WINDOW_DAYS = 30;
+
+    /** Ways a booking can be paid for at the studio, as recorded in Square. */
+    public const PAYMENT_METHODS = [
+        'cash' => 'Cash',
+        'card' => 'Card (studio card reader)',
+    ];
 
     protected SquareAuthService $squareAuth;
 
@@ -262,6 +273,74 @@ class SquareApiService
         // Pager::getIterator() yields Payment objects one at a time,
         // fetching additional pages from Square automatically as needed.
         return iterator_to_array($pager);
+    }
+
+    /**
+     * Records a payment taken at the studio against a booking.
+     *
+     * No money moves through Square here - the customer has already paid in
+     * cash or on the studio's own card reader. This writes the payment into
+     * Square's books so its reports and this app's payments page both show
+     * it, the same as a payment taken on a Square terminal would.
+     *
+     * The Square booking id goes in `reference_id`, which is how the booking
+     * later knows it has been paid.
+     *
+     * @param string $bookingId Square booking id.
+     * @param int $amountCents
+     * @param string $method A key of PAYMENT_METHODS.
+     * @param string|null $customerId Square customer id.
+     * @param string|null $locationId
+     * @param string|null $note
+     * @return \Square\Types\Payment
+     */
+    public function recordBookingPayment(
+        string $bookingId,
+        int $amountCents,
+        string $method,
+        ?string $customerId = null,
+        ?string $locationId = null,
+        ?string $note = null,
+    ): Payment {
+        if (!isset(self::PAYMENT_METHODS[$method])) {
+            throw new RuntimeException('Unknown payment method: ' . $method);
+        }
+
+        $money = fn(): Money => new Money(['amount' => $amountCents, 'currency' => 'AUD']);
+
+        $request = [
+            /*
+             * Keyed on the booking, amount and method, so a double click or
+             * a resubmitted form gets the same payment back from Square
+             * rather than recording the customer as having paid twice.
+             */
+            'idempotencyKey' => substr(sha1('booking-payment|' . $bookingId . '|' . $amountCents . '|' . $method), 0, 40),
+            'amountMoney' => $money(),
+            'customerId' => $customerId,
+            'locationId' => $locationId,
+            'referenceId' => $bookingId,
+            'note' => $note !== null && $note !== '' ? $note : null,
+        ];
+
+        if ($method === 'cash') {
+            $request['sourceId'] = 'CASH';
+            // Exact money handed over, so Square records no change given.
+            $request['cashDetails'] = new CashPaymentDetails(['buyerSuppliedMoney' => $money()]);
+        } else {
+            $request['sourceId'] = 'EXTERNAL';
+            $request['externalDetails'] = new ExternalPaymentDetails([
+                'type' => 'CARD',
+                'source' => 'Studio card reader',
+            ]);
+        }
+
+        $payment = $this->getClient()->payments->create(new CreatePaymentRequest($request))->getPayment();
+
+        if ($payment === null || $payment->getId() === null) {
+            throw new RuntimeException('Square did not return a payment.');
+        }
+
+        return $payment;
     }
 
     /**

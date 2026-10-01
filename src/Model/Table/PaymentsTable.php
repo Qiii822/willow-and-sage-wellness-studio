@@ -109,6 +109,11 @@ class PaymentsTable extends Table
             ->allowEmptyString('order_id');
 
         $validator
+            ->scalar('reference_id')
+            ->maxLength('reference_id', 255)
+            ->allowEmptyString('reference_id');
+
+        $validator
             ->scalar('receipt_number')
             ->maxLength('receipt_number', 50)
             ->allowEmptyString('receipt_number');
