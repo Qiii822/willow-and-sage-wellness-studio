@@ -73,7 +73,7 @@ $text = fn (string $key): string => nl2br(h($content[$key] ?? ''));
             ><?= $text('cta_text') ?></p>
 
             <a
-                href="https://willow-and-sage-wellness-studio.square.site/"
+                href="https://rev.u26s1145.iedev.org/book"
                 target="_blank"
                 data-email-field="button"
                 style="

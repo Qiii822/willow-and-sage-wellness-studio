@@ -332,7 +332,7 @@ class BookingsController extends AppController
         $payment = $this->paidPayment($this->paymentsFor($booking));
 
         if ($payment === null) {
-            $this->Flash->error('There is no payment on this booking to undo.');
+            $this->Flash->error('There is no payment on this booking to refund.');
 
             return $this->redirect($back);
         }
@@ -347,7 +347,7 @@ class BookingsController extends AppController
             Log::error('Undoing booking payment failed: ' . $e->getMessage());
 
             $this->Flash->error(
-                'The payment could not be undone in Square just now. It is still recorded - please try again.',
+                'The payment could not be refunded in Square just now. It is still recorded - please try again.',
             );
 
             return $this->redirect($back);
@@ -370,7 +370,7 @@ class BookingsController extends AppController
         }
 
         $this->Flash->success(sprintf(
-            'Payment of $%s undone. The booking is not paid any more.',
+            'Payment of $%s refunded. The booking is not paid any more.',
             number_format($payment->amount / 100, 2),
         ));
 
@@ -397,7 +397,7 @@ class BookingsController extends AppController
         $owing = (bool)$this->request->getData('unpaid');
 
         if ($owing && $this->paidPayment($this->paymentsFor($booking)) !== null) {
-            $this->Flash->error('This booking has been paid for. Undo the payment first if that was a mistake.');
+            $this->Flash->error('This booking has been paid for. Refund the payment first if that was a mistake.');
 
             return $this->redirect(['action' => 'view', $booking->id]);
         }

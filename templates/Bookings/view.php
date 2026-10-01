@@ -49,11 +49,6 @@ if ($booking->start_at) {
 
             <div class="top-bar">
                 <div>
-                    <?= $this->Html->link(
-                        '&larr; Back to calendar',
-                        $calendarLink,
-                        ['escape' => false, 'class' => 'table-action']
-                    ) ?>
                     <h1><?= h($customerName) ?></h1>
                     <p class="subtitle">
                         <?php if ($booking->start_at): ?>
@@ -64,6 +59,12 @@ if ($booking->start_at) {
                         <?php endif; ?>
                     </p>
                 </div>
+
+                <?= $this->Html->link(
+                    '&larr; Back to calendar',
+                    $calendarLink,
+                    ['escape' => false, 'class' => 'table-action']
+                ) ?>
             </div>
 
             <div class="card table-card">
@@ -208,7 +209,7 @@ if ($booking->start_at) {
                                     <td><?= h($formatMoney($payment->amount)) ?></td>
                                     <td>
                                         <?php if ($payment->is_undone): ?>
-                                            <span class="status-badge undone">Undone</span>
+                                            <span class="status-badge undone">Refunded</span>
                                         <?php else: ?>
                                             <span class="status-badge <?= h($payment->status) ?>">
                                                 <?= h(ucfirst($payment->status)) ?>
@@ -303,10 +304,10 @@ if ($booking->start_at) {
                         'url' => ['action' => 'undo', $booking->id],
                         'class' => 'booking-secondary-action',
                     ]) ?>
-                    <?= $this->Form->button('Undo payment', [
+                    <?= $this->Form->button('Refund payment', [
                         'class' => 'booking-link-button is-danger',
                         'confirm' => sprintf(
-                            'Undo the %s payment? Square records it as refunded in full, and the booking goes back to not paid.',
+                            'Refund the %s payment? Square records it as refunded in full, and the booking goes back to not paid.',
                             $formatMoney($paidPayment->amount),
                         ),
                     ]) ?>
