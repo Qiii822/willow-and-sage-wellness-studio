@@ -624,7 +624,7 @@ class DashboardController extends AppController
          * an accepted booking.
          */
         $inactiveThresholdDays = 7;
-
+        $inactiveMaximumDays = 100;
 
         $customersForRebooking =
             $customersTable
@@ -704,6 +704,9 @@ class DashboardController extends AppController
             if (
                 $daysSinceLastBooking >=
                 $inactiveThresholdDays
+                &&
+                $daysSinceLastBooking <=
+                $inactiveMaximumDays
             ) {
 
                 $rebookingCustomers[] = [
@@ -973,6 +976,13 @@ class DashboardController extends AppController
                     )
                 );
 
+            $status =
+                str_replace(
+                    [' ', '-'],
+                    '_',
+                    $status
+                );
+
 
             if ($status === 'pending') {
 
@@ -981,8 +991,7 @@ class DashboardController extends AppController
                 ]++;
 
             } elseif (
-                $status ===
-                'cancelled by customer'
+                $status === 'cancelled_by_customer'
             ) {
 
                 $bookingStatusData[
@@ -990,8 +999,7 @@ class DashboardController extends AppController
                 ]++;
 
             } elseif (
-                $status ===
-                'cancelled by seller'
+                $status === 'cancelled_by_seller'
             ) {
 
                 $bookingStatusData[
@@ -1017,8 +1025,7 @@ class DashboardController extends AppController
                 ]++;
 
             } elseif (
-                $status ===
-                'no show'
+                $status === 'no_show'
             ) {
 
                 $bookingStatusData[
@@ -1107,6 +1114,7 @@ class DashboardController extends AppController
             'bookingStatusValues',
             'customerGrowthYear',
             'bookingTrendYear',
+            'inactiveMaximumDays',
             'incomeRange'
         ));
 

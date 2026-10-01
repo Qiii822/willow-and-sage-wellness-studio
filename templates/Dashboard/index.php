@@ -18,6 +18,7 @@
  * @var array $bookingTrendValues
  * @var array $bookingStatusLabels
  * @var array $bookingStatusValues
+ * @var int $inactiveMaximumDays
  */
 
 $this->assign('title', 'Dashboard');
@@ -823,7 +824,9 @@ $months = [
                                 <p>
                                     Customers who have not booked for
                                     <?= h($inactiveThresholdDays) ?>
-                                    days or more.
+                                    to
+                                    <?= h($inactiveMaximumDays) ?>
+                                    days.
                                 </p>
 
                             </div>
