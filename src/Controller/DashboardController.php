@@ -466,7 +466,76 @@ class DashboardController extends AppController
 
 
         /*
-         * Total income from completed payments.
+  * -------------------------------------------------
+  * TOTAL INCOME
+  * -------------------------------------------------
+  */
+
+        /*
+         * Total Income has its own filter.
+         */
+        $incomeRange =
+            $this->request->getQuery('income_range')
+            ?? 'month';
+
+
+        switch ($incomeRange) {
+
+            case 'day':
+
+                $incomeStart =
+                    $today;
+
+                $incomeEnd =
+                    $today->addDays(1);
+
+                break;
+
+
+            case 'week':
+
+                $incomeStart =
+                    $today->startOfWeek();
+
+                $incomeEnd =
+                    $incomeStart->addWeeks(1);
+
+                break;
+
+
+            case 'year':
+
+                $incomeStart =
+                    new FrozenTime(
+                        $today->format('Y')
+                        . '-01-01 00:00:00'
+                    );
+
+                $incomeEnd =
+                    $incomeStart->addYears(1);
+
+                break;
+
+
+            case 'month':
+
+            default:
+
+                $incomeRange = 'month';
+
+                $incomeStart =
+                    $today->startOfMonth();
+
+                $incomeEnd =
+                    $incomeStart->addMonths(1);
+
+                break;
+        }
+
+
+        /*
+         * Total income from completed payments
+         * during the selected income period.
          */
         $totalIncomeCents =
             (int)(
@@ -483,14 +552,16 @@ class DashboardController extends AppController
                         'status' =>
                             'completed',
 
+                        'square_created_at >=' =>
+                            $incomeStart,
+
                         'square_created_at <' =>
-                            $periodEnd,
+                            $incomeEnd,
                     ])
                     ->first()
                     ?->total
                 ?? 0
             );
-
 
         /*
          * -------------------------------------------------
@@ -985,7 +1056,8 @@ class DashboardController extends AppController
             'bookingTrendLabels',
             'bookingTrendValues',
             'bookingStatusLabels',
-            'bookingStatusValues'
+            'bookingStatusValues',
+            'incomeRange'
         ));
 
 
