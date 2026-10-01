@@ -144,6 +144,28 @@ class DashboardController extends AppController
 
 
         /*
+ * Booking Trends has its own year filter.
+ */
+        $bookingTrendYear =
+            (int)(
+                $this->request->getQuery(
+                    'booking_trend_year'
+                )
+                ?? $defaultYear
+            );
+
+        if (
+            !in_array(
+                $bookingTrendYear,
+                $availableYears,
+                true
+            )
+        ) {
+            $bookingTrendYear =
+                $defaultYear;
+        }
+
+        /*
          * Work out current and previous periods.
          */
         switch ($range) {
@@ -840,13 +862,13 @@ class DashboardController extends AppController
                 ->where([
                     'start_at >=' =>
                         new FrozenTime(
-                            $selectedYear .
+                            $bookingTrendYear .
                             '-01-01 00:00:00'
                         ),
 
                     'start_at <' =>
                         new FrozenTime(
-                            ($selectedYear + 1) .
+                            ($bookingTrendYear + 1) .
                             '-01-01 00:00:00'
                         ),
 
@@ -1084,6 +1106,7 @@ class DashboardController extends AppController
             'bookingStatusLabels',
             'bookingStatusValues',
             'customerGrowthYear',
+            'bookingTrendYear',
             'incomeRange'
         ));
 

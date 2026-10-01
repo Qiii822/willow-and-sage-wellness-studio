@@ -638,10 +638,41 @@ $months = [
 
                                 <p>
                                     Bookings during
-                                    <?= h($selectedYear) ?>
+                                    <?= h($bookingTrendYear) ?>
                                 </p>
 
                             </div>
+
+                            <form
+                                method="get"
+                                action="<?= $this->Url->build([
+                                    'controller' => 'Dashboard',
+                                    'action' => 'index',
+                                ]) ?>"
+                            >
+
+                                <select
+                                    name="booking_trend_year"
+                                    class="dashboard-filter-select"
+                                    onchange="this.form.submit()"
+                                >
+
+                                    <?php foreach ($availableYears as $year): ?>
+
+                                        <option
+                                            value="<?= h($year) ?>"
+                                            <?= (int)$bookingTrendYear === (int)$year
+                                                ? 'selected'
+                                                : '' ?>
+                                        >
+                                            <?= h($year) ?>
+                                        </option>
+
+                                    <?php endforeach; ?>
+
+                                </select>
+
+                            </form>
 
                         </div>
 
