@@ -84,8 +84,7 @@ class UsersController extends AppController
             'add',
             'delete',
             'settings',
-            'saveMailSettings',
-            'disconnectMailSettings',
+            'saveEmailContent',
         ];
 
         if (in_array(
@@ -1199,206 +1198,40 @@ class UsersController extends AppController
         $lastImport = $importsTable->getLastCompleted();
         $lastSyncedAt = $lastImport?->finished_at;
 
-        $mailSettingsTable = $this->fetchTable('MailSettings');
-
         $this->set('squareIdentity', $squareIdentity);
         $this->set('lastSyncedAt', $lastSyncedAt);
         $this->set('justConnected', (bool)$this->request->getQuery('connected'));
-        $this->set('mailSettings', $mailSettingsTable->getActive());
-        $this->set('mailProviders', \App\Model\Table\MailSettingsTable::PROVIDERS);
-        // Without a key the password could only be stored in the clear, so
-        // the form says so rather than quietly doing it.
-        $this->set('mailKeyMissing', \App\Model\Table\MailSettingsTable::encryptionKey() === null);
-    }
-
-    /**
-     * Connects the account outgoing mail is sent from.
-     *
-     * The credentials are proved before they are kept: a test message is
-     * sent with them, and nothing is written unless it goes through. That
-     * avoids saving a broken configuration that would then silently swallow
-     * password resets and verification codes.
-     *
-     * @return \Cake\Http\Response|null
-     */
-    public function saveMailSettings()
-    {
-        $this->requireSuperAdmin();
-        $this->request->allowMethod(['post']);
-
-        $table = $this->fetchTable('MailSettings');
-        $providers = \App\Model\Table\MailSettingsTable::PROVIDERS;
-
-        $provider = (string)$this->request->getData('provider');
 
         /*
-         * The mode only appears on the form for providers offering more than
-         * one; elsewhere preset() falls back to their single mode.
+         * Which account email goes out from is set by the developers in
+         * .env, not here - it is one-off technical setup the studio should
+         * never have to touch. What the studio does edit is the wording.
          */
-        $preset = \App\Model\Table\MailSettingsTable::preset(
-            $provider,
-            (string)$this->request->getData('auth_mode') ?: null
-        );
-
-        if ($preset === null) {
-            $this->Flash->error('Choose an email provider first.');
-
-            return $this->redirect(['action' => 'settings']);
-        }
-
-        if (\App\Model\Table\MailSettingsTable::encryptionKey() === null) {
-            $this->Flash->error(
-                'Set a real SECURITY_SALT (32+ characters) in config/app_local.php before '
-                . 'connecting an email account - the password cannot be stored safely without one.'
-            );
-
-            return $this->redirect(['action' => 'settings']);
-        }
-
-        $existing = $table->getActive();
-        $password = (string)$this->request->getData('password');
-
-        // A blank password on an existing connection means "leave it alone".
-        if ($password === '' && $existing) {
-            $password = (string)$table->decryptPassword($existing);
-        }
-
-        $host = trim((string)$this->request->getData('host'));
-        $authMode = $preset['auth_mode'];
-
-        $data = [
-            'provider' => $provider,
-            'auth_mode' => $authMode,
-            'host' => $host !== '' ? $host : $preset['host'],
-            'port' => (int)($this->request->getData('port') ?: $preset['port']),
-            'username' => trim((string)$this->request->getData('username')) ?: null,
-            'tls' => (bool)$this->request->getData('tls'),
-            'from_email' => trim((string)$this->request->getData('from_email')),
-            'from_name' => trim((string)$this->request->getData('from_name')) ?: null,
-        ];
-
-        $entity = $existing ?? $table->newEmptyEntity();
-        $entity = $table->patchEntity($entity, $data);
-
-        if ($entity->getErrors()) {
-            $this->Flash->error('Please correct the highlighted fields.');
-            $this->set('mailErrors', $entity->getErrors());
-
-            return $this->redirect(['action' => 'settings']);
-        }
-
-        if ($password === '') {
-            $this->Flash->error(
-                $authMode === \App\Model\Table\MailSettingsTable::MODE_API
-                    ? 'An API token is required.'
-                    : 'A password or app key is required.'
-            );
-
-            return $this->redirect(['action' => 'settings']);
-        }
-
-        $identity = $this->request->getAttribute('identity');
-
-        // Chosen on the form; the signed-in admin's own address is only the
-        // default, since the inbox they want to check may be a different one.
-        $testRecipient = trim((string)$this->request->getData('test_to'))
-            ?: (string)($identity->email ?? $data['from_email']);
-
-        $failure = $this->probeMailCredentials($entity, $password, $testRecipient);
-
-        if ($failure !== null) {
-            $this->Flash->error('Could not connect: ' . $failure);
-
-            return $this->redirect(['action' => 'settings']);
-        }
-
-        $entity->password_encrypted = $table->encryptPassword($password);
-        $entity->verified_at = new \DateTimeImmutable();
-
-        if (!$table->save($entity)) {
-            $this->Flash->error('The connection worked but the settings could not be saved.');
-
-            return $this->redirect(['action' => 'settings']);
-        }
-
-        $this->Flash->success(
-            'Email connected. A test message was sent to ' . $testRecipient . '.'
-        );
-
-        return $this->redirect(['action' => 'settings']);
+        $this->set('emailFields', \App\Model\Table\EmailContentsTable::FIELDS);
+        $this->set('emailValues', $this->fetchTable('EmailContents')->values());
+        $this->set('emailPlaceholders', \App\Model\Table\EmailContentsTable::PLACEHOLDERS);
     }
 
     /**
-     * Disconnects the outgoing mail account.
+     * Saves the rebooking reminder's wording, or restores the original.
      *
      * @return \Cake\Http\Response|null
      */
-    public function disconnectMailSettings()
+    public function saveEmailContent()
     {
-        $this->requireSuperAdmin();
+        $this->requireAdmin();
         $this->request->allowMethod(['post']);
 
-        $table = $this->fetchTable('MailSettings');
-        $existing = $table->getActive();
+        $table = $this->fetchTable('EmailContents');
 
-        if ($existing) {
-            $table->delete($existing);
+        if ($this->request->getData('reset')) {
+            $table->resetToDefaults();
+            $this->Flash->success('The reminder email is back to its original wording.', ['key' => 'email']);
+        } else {
+            $table->saveValues((array)$this->request->getData('email'));
+            $this->Flash->success('Reminder email saved.', ['key' => 'email']);
         }
 
-        $this->Flash->success('Email account disconnected. Messages will use the server default again.');
-
-        return $this->redirect(['action' => 'settings']);
+        return $this->redirect(['action' => 'settings', '#' => 'email-content']);
     }
-
-    /**
-     * Tries the supplied credentials by sending a message with them.
-     *
-     * @param array<string, mixed> $data
-     * @param string $password
-     * @return string|null The provider's error, or null when it worked.
-     */
-    protected function probeMailCredentials($settings, string $password, string $testRecipient): ?string
-    {
-        try {
-            /*
-             * Built from the same definition MailerFactory will use later,
-             * so a successful test cannot differ from what actually sends.
-             */
-            $config = \App\Service\MailerFactory::transportConfig($settings, $password);
-            $className = $config['className'];
-            unset($config['className']);
-
-            $transport = $className === 'Smtp'
-                ? new \Cake\Mailer\Transport\SmtpTransport($config)
-                : new $className($config);
-
-            $mailer = new Mailer();
-            $mailer->setTransport($transport);
-            $mailer
-                ->setFrom(
-                    $settings->from_name
-                        ? [$settings->from_email => $settings->from_name]
-                        : $settings->from_email
-                )
-                /*
-                 * Sent to the admin setting this up, not to the sending
-                 * address. With a provider's shared demo domain the sender
-                 * is not a mailbox anyone can read, so testing against it
-                 * would report success with nothing to look at.
-                 */
-                ->setTo($testRecipient)
-                ->setSubject('Willow and Sage - email connection test')
-                ->setEmailFormat('text')
-                ->deliver(
-                    "This is a test message confirming the studio's email settings work.\n\n"
-                    . "If you received it, password resets and verification codes will send correctly."
-                );
-
-            return null;
-        } catch (\Throwable $e) {
-            return $e->getMessage();
-        }
-    }
-
 }
-

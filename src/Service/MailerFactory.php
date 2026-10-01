@@ -11,16 +11,21 @@ use Cake\Mailer\TransportFactory;
 use Cake\ORM\TableRegistry;
 
 /**
- * Builds mailers that use whatever account the studio connected on the
- * settings page.
+ * Builds the mailer everything that sends mail goes through.
  *
- * Everything that sends mail goes through here rather than calling
- * `new Mailer('default')`, so connecting an account in the admin UI takes
- * effect everywhere without editing config files or restarting anything.
+ * The sending account is set by the developers in .env -
+ * EMAIL_TRANSPORT_DEFAULT_URL, EMAIL_FROM and EMAIL_FROM_NAME - and used
+ * through the `default` profile in config. It used to be connected from the
+ * settings page, which asked the studio for SMTP servers and API tokens;
+ * that page now only edits what emails say.
  *
- * With nothing connected it falls back to the transport in config, which on
- * a development machine is XAMPP's mailtodisk - messages land in
- * C:\xampp\mailtodisk rather than being delivered.
+ * An account connected the old way is still used while .env has no
+ * transport, so a site set up before the change keeps sending until its
+ * .env is filled in.
+ *
+ * With neither, the config default applies, which on a development machine
+ * is XAMPP's mailtodisk - messages land in C:\xampp\mailtodisk rather than
+ * being delivered.
  */
 class MailerFactory
 {
@@ -28,12 +33,16 @@ class MailerFactory
     protected const RUNTIME_TRANSPORT = 'studio';
 
     /**
-     * A mailer configured from the connected account, or the config default.
+     * A mailer using the account in .env, or one connected the old way.
      *
      * @return \Cake\Mailer\Mailer
      */
     public static function create(): Mailer
     {
+        if (env('EMAIL_TRANSPORT_DEFAULT_URL')) {
+            return new Mailer('default');
+        }
+
         $settings = static::activeSettings();
 
         if ($settings === null) {
@@ -74,9 +83,6 @@ class MailerFactory
     /**
      * The transport definition for a set of stored settings.
      *
-     * Shared with the settings page's connection test, so what gets proved
-     * before saving is exactly what will be used afterwards.
-     *
      * @param \Cake\Datasource\EntityInterface $settings
      * @param string $secret The decrypted password or API token.
      * @return array<string, mixed>
@@ -100,16 +106,6 @@ class MailerFactory
             'tls' => (bool)$settings->tls,
             'timeout' => 30,
         ];
-    }
-
-    /**
-     * True when an account has been connected on the settings page.
-     *
-     * @return bool
-     */
-    public static function isConfigured(): bool
-    {
-        return static::activeSettings() !== null;
     }
 
     /**

@@ -1382,6 +1382,18 @@ class DashboardController extends AppController
 
         try {
 
+            /*
+             * The wording is edited on the settings page, with {name} and
+             * {days} filled in for this customer.
+             */
+            $content =
+                $this->fetchTable('EmailContents')
+                    ->rebookingFor(
+                        $customerName,
+                        $daysSinceLastBooking
+                    );
+
+
             $mailer =
                 new Mailer(
                     'rebooking_test'
@@ -1396,14 +1408,11 @@ class DashboardController extends AppController
                     $recipientEmail
                 )
                 ->setSubject(
-                    'We’d love to see you again'
+                    $content['subject']
                 )
                 ->setViewVars([
-                    'customerName' =>
-                        $customerName,
-
-                    'daysSinceLastBooking' =>
-                        $daysSinceLastBooking,
+                    'content' =>
+                        $content,
                 ]);
 
 

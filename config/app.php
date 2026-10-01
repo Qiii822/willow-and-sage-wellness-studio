@@ -270,7 +270,10 @@ return [
     'Email' => [
         'default' => [
             'transport' => 'default',
-            'from' => 'you@localhost',
+            // The studio's sending address, set per environment in .env.
+            'from' => [
+                (env('EMAIL_FROM') ?: 'you@localhost') => (env('EMAIL_FROM_NAME') ?: 'Willow and Sage Wellness Studio'),
+            ],
             /*
              * Will by default be set to config value of App.encoding, if that exists otherwise to UTF-8.
              */

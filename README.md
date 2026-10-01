@@ -27,6 +27,8 @@ Copy `config/.env.example` to `config/.env` and fill in:
 | `SQUARE_SCOPE`                                | The OAuth scopes requested during connection.                                                 |
 | `TURNSTILE_SITE_KEY`                          | Cloudflare Turnstile site key for the CAPTCHA shown on the login page.                        |
 | `SMS_TRANSPORT`                               | How SMS verification codes are delivered (`log` or `none`); see `src/Service/SmsSender.php`.  |
+| `EMAIL_TRANSPORT_DEFAULT_URL`                 | The account password resets and verification codes are sent from, as a URL, e.g. `smtp://user:app-password@smtp.gmail.com:587?tls=true`. Set by developers - there is no email setup in the admin UI. |
+| `EMAIL_FROM` / `EMAIL_FROM_NAME`              | The sender address and name those emails show.                                                 |
 | `REBOOKING_SMTP_USERNAME` / `REBOOKING_SMTP_PASSWORD` | Gmail SMTP credentials used to send rebooking reminder emails.                       |
 | `REBOOKING_SEND_REAL`                         | Set to `true` to email the real customer; default `false` sends to `REBOOKING_TEST_EMAIL`.    |
 | `REBOOKING_TEST_EMAIL`                        | Test recipient for rebooking reminders when `REBOOKING_SEND_REAL` is `false`.                 |

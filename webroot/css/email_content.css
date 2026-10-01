@@ -1,0 +1,167 @@
+/* =========================================================
+   Reminder email editor (settings page)
+   =========================================================
+
+   The fields on the left, a live preview of the email on the right.
+   Builds on .settings-card and .settings-button from settings.css.
+   ========================================================= */
+
+/* Wider than the settings page's default, to fit the preview beside the form. */
+.settings-page {
+    width: min(1180px, calc(100% - 40px));
+}
+
+#email-content {
+    margin-top: 24px;
+}
+
+.email-editor {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    grid-template-areas:
+        "form preview"
+        "reset preview";
+    gap: 8px 32px;
+    align-items: start;
+}
+
+.email-form {
+    grid-area: form;
+}
+
+.email-reset-form {
+    grid-area: reset;
+}
+
+.email-preview {
+    grid-area: preview;
+
+    position: sticky;
+    top: 24px;
+}
+
+.email-placeholders {
+    margin: 0 0 18px;
+    padding: 10px 12px;
+
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.7;
+
+    background: var(--primary-light, #f4efe9);
+    border-radius: 10px;
+}
+
+.email-placeholders span {
+    margin-right: 12px;
+    white-space: nowrap;
+}
+
+.email-placeholders code {
+    padding: 1px 6px;
+
+    color: var(--text-primary);
+    font-size: 12.5px;
+
+    background: #fff;
+    border-radius: 6px;
+}
+
+.email-field {
+    margin-bottom: 14px;
+}
+
+.email-field label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.email-field input,
+.email-field textarea {
+    width: 100%;
+    padding: 10px 12px;
+
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.email-field textarea {
+    resize: vertical;
+}
+
+.email-field input:focus,
+.email-field textarea:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 126, 116, 0.15);
+}
+
+.email-hint {
+    margin: 4px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 12.5px;
+}
+
+.email-preview-label {
+    margin: 0 0 8px;
+
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.email-preview-subject {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+
+    font-size: 13.5px;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.email-preview-frame {
+    overflow: hidden;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+/* The email's own outer padding is sized for a full inbox, not a column. */
+.email-preview-frame > div {
+    padding: 20px 14px !important;
+}
+
+.email-preview-frame > div > div {
+    padding: 28px 24px !important;
+}
+
+@media (max-width: 960px) {
+    .email-editor {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "form"
+            "reset"
+            "preview";
+    }
+
+    .email-preview {
+        position: static;
+
+        margin-top: 16px;
+    }
+}
