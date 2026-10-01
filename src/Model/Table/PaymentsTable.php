@@ -94,6 +94,10 @@ class PaymentsTable extends Table
             ->allowEmptyString('total_amount');
 
         $validator
+            ->integer('refunded_amount')
+            ->allowEmptyString('refunded_amount');
+
+        $validator
             ->scalar('source_type')
             ->maxLength('source_type', 50)
             ->allowEmptyString('source_type');

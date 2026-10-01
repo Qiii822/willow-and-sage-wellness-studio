@@ -5,6 +5,7 @@ namespace App\Model\Table;
 
 use Cake\I18n\DateTime;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 
 /**
@@ -139,6 +140,129 @@ class BookingsTable extends Table
         return $this->find()
             ->where(['square_customer_id' => $squareCustomerId])
             ->orderByDesc('start_at');
+    }
+
+    /**
+     * Which bookings have been paid for, and which are owing.
+     *
+     * Paid means a payment that went through and was not undone, either:
+     * - recorded from the booking page, which tags it with the booking id, or
+     * - taken in Square itself (at the counter, say) from the same customer
+     *   on the day of the appointment. Square has no other link between a
+     *   payment and a booking, and without this every booking paid before
+     *   the booking page could take payments would show as owing.
+     *
+     * Owing means not paid, and either marked unpaid by staff or already
+     * over - an appointment that has happened should have been paid for.
+     *
+     * @param array<\App\Model\Entity\Booking> $bookings
+     * @return array{0: array<string, true>, 1: array<string, true>} Paid and
+     *  owing, each keyed by Square booking id.
+     */
+    public function paymentStates(array $bookings): array
+    {
+        if ($bookings === []) {
+            return [[], []];
+        }
+
+        $locator = TableRegistry::getTableLocator();
+        $paymentsTable = $locator->get('Payments');
+        $ids = array_map(fn($booking): string => $booking->square_booking_id, $bookings);
+
+        $paid = [];
+
+        foreach ($paymentsTable->find()->where(['reference_id IN' => $ids])->all() as $payment) {
+            if ($payment->is_paid) {
+                $paid[(string)$payment->reference_id] = true;
+            }
+        }
+
+        // Same customer, same day, for the bookings not already settled.
+        $unmatched = array_filter(
+            $bookings,
+            fn($booking): bool => !isset($paid[$booking->square_booking_id])
+                && $booking->square_customer_id !== null
+                && $booking->start_at !== null,
+        );
+
+        if ($unmatched !== []) {
+            $customerIds = array_unique(array_map(fn($booking) => $booking->square_customer_id, $unmatched));
+            $paidDays = [];
+
+            $payments = $paymentsTable->find()
+                ->where([
+                    'square_customer_id IN' => $customerIds,
+                    // One recorded for a booking settles that booking only.
+                    'reference_id IS' => null,
+                ])
+                ->all();
+
+            foreach ($payments as $payment) {
+                if ($payment->is_paid && $payment->square_created_at) {
+                    $paidDays[$payment->square_customer_id . '|' . $payment->square_created_at->format('Y-m-d')] = true;
+                }
+            }
+
+            foreach ($unmatched as $booking) {
+                if (isset($paidDays[$booking->square_customer_id . '|' . $booking->start_at->format('Y-m-d')])) {
+                    $paid[$booking->square_booking_id] = true;
+                }
+            }
+        }
+
+        $charges = $locator->get('BookingCharges')->forBookings($ids);
+        $owing = [];
+
+        foreach ($bookings as $booking) {
+            $squareId = $booking->square_booking_id;
+
+            if (isset($paid[$squareId])) {
+                continue;
+            }
+
+            if ($booking->is_finished || ($charges[$squareId]->unpaid ?? false)) {
+                $owing[$squareId] = true;
+            }
+        }
+
+        return [$paid, $owing];
+    }
+
+    /**
+     * Today's menu price of each booking, from the treatments in it.
+     *
+     * One query for the whole menu, however many bookings are priced. A
+     * treatment no longer on the menu counts as nothing rather than failing
+     * the whole booking.
+     *
+     * @param iterable<\App\Model\Entity\Booking> $bookings
+     * @return array<string, int> Cents, keyed by Square booking id.
+     */
+    public function menuPrices(iterable $bookings): array
+    {
+        $prices = [];
+
+        foreach (TableRegistry::getTableLocator()->get('Services')->find()
+            ->select(['square_variation_id', 'price_cents'])
+            ->where(['square_variation_id IS NOT' => null])
+            ->disableHydration()
+            ->all() as $row) {
+            $prices[(string)$row['square_variation_id']] = (int)$row['price_cents'];
+        }
+
+        $totals = [];
+
+        foreach ($bookings as $booking) {
+            $total = 0;
+
+            foreach ($booking->appointment_segments_array as $segment) {
+                $total += $prices[$segment['service_variation_id'] ?? ''] ?? 0;
+            }
+
+            $totals[$booking->square_booking_id] = $total;
+        }
+
+        return $totals;
     }
 
     /**

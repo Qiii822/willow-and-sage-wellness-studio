@@ -200,6 +200,20 @@
     color: var(--text-primary);
 }
 
+/* Marked as owing - red, so it stands out from the rest of the week. */
+.calendar-booking.is-unpaid,
+.calendar-booking.is-unpaid:hover,
+.calendar-booking.is-unpaid:focus-visible {
+    color: #fff;
+
+    background: #b3382c;
+    border: none;
+}
+
+.calendar-booking.is-unpaid .calendar-booking-paid {
+    color: #b3382c;
+}
+
 .calendar-booking-paid {
     display: inline-block;
 

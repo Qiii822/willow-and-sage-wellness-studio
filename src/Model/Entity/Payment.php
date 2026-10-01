@@ -17,6 +17,9 @@ use Cake\ORM\Entity;
  * @property string $status
  * @property int $amount
  * @property int|null $total_amount
+ * @property int|null $refunded_amount Amount refunded so far, in cents.
+ * @property-read bool $is_undone Fully refunded - for a booking payment, undone.
+ * @property-read bool $is_paid Went through and has not been undone.
  * @property string|null $source_type
  * @property string|null $square_customer_id
  * @property string|null $order_id
@@ -36,6 +39,7 @@ class Payment extends Entity
         'status' => true,
         'amount' => true,
         'total_amount' => true,
+        'refunded_amount' => true,
         'source_type' => true,
         'square_customer_id' => true,
         'order_id' => true,
@@ -48,4 +52,28 @@ class Payment extends Entity
         'created_at' => true,
         'updated_at' => true,
     ];
+
+    /** Square statuses for a payment that went through. */
+    public const PAID_STATUSES = ['completed', 'approved'];
+
+    /**
+     * Fully refunded. Undoing a payment recorded by mistake refunds all of
+     * it, since Square will not delete or cancel a completed payment.
+     *
+     * @return bool
+     */
+    protected function _getIsUndone(): bool
+    {
+        return $this->amount > 0 && (int)$this->refunded_amount >= $this->amount;
+    }
+
+    /**
+     * Went through and has not been undone.
+     *
+     * @return bool
+     */
+    protected function _getIsPaid(): bool
+    {
+        return in_array($this->status, self::PAID_STATUSES, true) && !$this->is_undone;
+    }
 }

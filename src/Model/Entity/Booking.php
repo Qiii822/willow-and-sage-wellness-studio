@@ -26,6 +26,8 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime|null $square_created_at
  * @property \Cake\I18n\DateTime $created_at
  * @property \Cake\I18n\DateTime $updated_at
+ * @property-read \Cake\I18n\DateTime|null $end_at
+ * @property-read bool $is_finished Accepted and already over.
  */
 class Booking extends Entity
 {
@@ -53,5 +55,40 @@ class Booking extends Entity
     protected function _getAppointmentSegmentsArray(): array
     {
         return $this->appointment_segments ? json_decode($this->appointment_segments, true) : [];
+    }
+
+    /**
+     * When the appointment finishes, from the treatment lengths Square sent.
+     *
+     * An hour when Square left the lengths off, the same assumption the
+     * calendar makes when drawing it.
+     *
+     * @return \Cake\I18n\DateTime|null
+     */
+    protected function _getEndAt(): ?\Cake\I18n\DateTime
+    {
+        if ($this->start_at === null) {
+            return null;
+        }
+
+        $minutes = 0;
+
+        foreach ($this->appointment_segments_array as $segment) {
+            $minutes += (int)($segment['duration_minutes'] ?? 0);
+        }
+
+        return $this->start_at->addMinutes($minutes > 0 ? $minutes : 60);
+    }
+
+    /**
+     * Over, and went ahead - the point from which it should have been paid.
+     *
+     * @return bool
+     */
+    protected function _getIsFinished(): bool
+    {
+        return $this->status === 'accepted'
+            && $this->end_at !== null
+            && $this->end_at->isPast();
     }
 }

@@ -7,10 +7,15 @@
  * @var \App\Model\Entity\Booking $booking
  * @var array<int, array{name: string, duration: int, price_cents: int}> $lines
  * @var array<\App\Model\Entity\Payment> $payments
+ * @var \App\Model\Entity\Payment|null $paidPayment
  * @var string $customerName
  * @var int $duration
- * @var int $suggestedCents
+ * @var int $suggestedCents Today's menu price, pre-filled as the amount.
+ * @var int $expectedCents The menu price the payment is compared against.
  * @var bool $isPaid
+ * @var bool $isPaidInSquare Paid at the counter in Square, matched by customer and day.
+ * @var bool $isUnpaid Owing - over without a payment, or marked by staff.
+ * @var bool $isMarkedUnpaid Marked by staff, and so clearable.
  * @var array<string, string> $statuses
  * @var array<string, string> $paymentMethods
  * @var bool $canTakePayment
@@ -142,13 +147,44 @@ if ($booking->start_at) {
                 </div>
             </div>
 
-            <div class="card table-card">
+            <div class="card table-card<?= $isUnpaid ? ' is-unpaid' : '' ?>">
                 <div class="table-header">
                     <div>
                         <h3>Payment</h3>
-                        <p><?= $isPaid ? 'Paid' : 'Not paid yet' ?></p>
+                        <p>
+                            <?php if ($isPaid): ?>
+                                Paid
+                            <?php elseif ($isPaidInSquare): ?>
+                                Paid in Square - a payment from this customer on the day of the appointment
+                            <?php elseif ($isUnpaid): ?>
+                                <span class="unpaid-badge">Unpaid</span>
+                                <?= $booking->is_finished ? 'Appointment is over, no payment recorded' : 'Marked as owing' ?>
+                                <?= $expectedCents ? '&middot; ' . h($formatMoney($expectedCents)) : '' ?>
+                            <?php else: ?>
+                                Not paid yet
+                            <?php endif; ?>
+                        </p>
                     </div>
                 </div>
+
+                <?php
+                /*
+                 * Said plainly when the money taken is not the menu price, so
+                 * a discount or an extra charge is visible rather than only
+                 * findable by adding up the treatments.
+                 */
+                $difference = $paidPayment && $expectedCents
+                    ? $paidPayment->amount - $expectedCents
+                    : 0;
+                ?>
+                <?php if ($difference !== 0): ?>
+                    <p class="price-difference">
+                        <strong>Charged <?= $difference < 0 ? 'less' : 'more' ?> than the menu price.</strong>
+                        Menu price <?= h($formatMoney($expectedCents)) ?>,
+                        received <?= h($formatMoney($paidPayment->amount)) ?>
+                        (<?= $difference < 0 ? '-' : '+' ?><?= h($formatMoney(abs($difference))) ?>).
+                    </p>
+                <?php endif; ?>
 
                 <?php if ($payments !== []): ?>
                     <div class="table-responsive">
@@ -171,9 +207,13 @@ if ($booking->start_at) {
                                     </td>
                                     <td><?= h($formatMoney($payment->amount)) ?></td>
                                     <td>
-                                        <span class="status-badge <?= h($payment->status) ?>">
-                                            <?= h(ucfirst($payment->status)) ?>
-                                        </span>
+                                        <?php if ($payment->is_undone): ?>
+                                            <span class="status-badge undone">Undone</span>
+                                        <?php else: ?>
+                                            <span class="status-badge <?= h($payment->status) ?>">
+                                                <?= h(ucfirst($payment->status)) ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?= h($payment->source_type === 'EXTERNAL' ? 'Card (studio card reader)' : ucfirst(strtolower((string)$payment->source_type))) ?></td>
                                 </tr>
@@ -183,7 +223,7 @@ if ($booking->start_at) {
                     </div>
                 <?php endif; ?>
 
-                <?php if (!$isPaid && $canTakePayment): ?>
+                <?php if (!$isPaid && !$isPaidInSquare && $canTakePayment): ?>
 
                     <?php /*
                      * Recorded once the customer has paid at the studio. The
@@ -228,7 +268,54 @@ if ($booking->start_at) {
 
                     <?= $this->Form->end() ?>
 
-                <?php elseif (!$isPaid): ?>
+                    <?php /*
+                     * Its own form, beside the payment one rather than in it,
+                     * so marking a booking as owing never sends an amount.
+                     *
+                     * Not offered once the appointment is over: it is owing
+                     * by then anyway, and only a payment clears it.
+                     */ ?>
+                    <?php if (!$booking->is_finished): ?>
+                        <?= $this->Form->create(null, [
+                            'url' => ['action' => 'unpaid', $booking->id],
+                            'class' => 'booking-secondary-action',
+                        ]) ?>
+                        <?= $this->Form->hidden('unpaid', ['value' => $isMarkedUnpaid ? 0 : 1]) ?>
+                        <?= $this->Form->button($isMarkedUnpaid ? 'Clear unpaid mark' : 'Mark as unpaid', [
+                            'class' => 'booking-link-button' . ($isMarkedUnpaid ? '' : ' is-danger'),
+                        ]) ?>
+                        <span class="booking-pay-help-inline">
+                            <?= $isMarkedUnpaid
+                                ? 'Recording a payment clears it too.'
+                                : 'For a customer who left without paying - it shows in red on the calendar and payments page.' ?>
+                        </span>
+                        <?= $this->Form->end() ?>
+                    <?php endif; ?>
+
+                <?php elseif ($isPaid && $canTakePayment): ?>
+
+                    <?php /*
+                     * For a payment recorded by mistake - the wrong booking, or
+                     * before the customer had actually paid. Square refunds it
+                     * in full, since it will not delete a completed payment.
+                     */ ?>
+                    <?= $this->Form->create(null, [
+                        'url' => ['action' => 'undo', $booking->id],
+                        'class' => 'booking-secondary-action',
+                    ]) ?>
+                    <?= $this->Form->button('Undo payment', [
+                        'class' => 'booking-link-button is-danger',
+                        'confirm' => sprintf(
+                            'Undo the %s payment? Square records it as refunded in full, and the booking goes back to not paid.',
+                            $formatMoney($paidPayment->amount),
+                        ),
+                    ]) ?>
+                    <span class="booking-pay-help-inline">
+                        <?= $this->Html->link('See it on the payments page', ['controller' => 'Payments', 'action' => 'index']) ?>
+                    </span>
+                    <?= $this->Form->end() ?>
+
+                <?php elseif (!$isPaid && !$isPaidInSquare): ?>
                     <p class="booking-pay-help">An admin can record the payment once the customer has paid.</p>
                 <?php else: ?>
                     <p class="booking-pay-help">

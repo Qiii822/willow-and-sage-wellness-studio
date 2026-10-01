@@ -134,6 +134,7 @@ class PaymentSyncService
             // Currency is always AUD for this account - not stored.
             'amount' => $amountMoney?->getAmount() ?? 0,
             'total_amount' => $totalMoney?->getAmount(),
+            'refunded_amount' => $squarePayment->getRefundedMoney()?->getAmount(),
             'source_type' => $squarePayment->getSourceType(),
             'square_customer_id' => $squarePayment->getCustomerId(),
             'order_id' => $squarePayment->getOrderId(),

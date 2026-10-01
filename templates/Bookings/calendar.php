@@ -144,13 +144,15 @@ $span = $weekStart->format('F') === $weekEnd->format('F')
                                     <?php // A link, so the details - and taking payment - are a click away. ?>
                                     <a
                                         href="<?= $this->Url->build(['action' => 'view', $entry['booking']->id]) ?>"
-                                        class="calendar-booking<?= $entry['booking']->status === 'pending' ? ' is-pending' : '' ?>"
+                                        class="calendar-booking<?= $entry['booking']->status === 'pending' ? ' is-pending' : '' ?><?= $entry['unpaid'] ? ' is-unpaid' : '' ?>"
                                         style="--start: <?= $offset ?>; --length: <?= $entry['duration'] ?>;"
                                     >
                                         <p class="calendar-booking-time">
                                             <?= h($entry['label']) ?>
                                             <?php if ($entry['paid']): ?>
                                                 <span class="calendar-booking-paid">Paid</span>
+                                            <?php elseif ($entry['unpaid']): ?>
+                                                <span class="calendar-booking-paid">Unpaid</span>
                                             <?php endif; ?>
                                         </p>
                                         <p class="calendar-booking-name"><?= h($entry['name']) ?></p>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\Entity\Booking;
+use App\Model\Entity\Payment;
 use App\Model\Table\BookingsTable;
 use App\Service\SquareApiService;
 use App\Service\Sync\PaymentSyncService;
@@ -24,12 +25,6 @@ class BookingsController extends AppController
     protected const DEFAULT_FIRST_HOUR = 8;
 
     protected const DEFAULT_LAST_HOUR = 19;
-
-    /**
-     * Payment statuses that mean the booking has been paid for. A failed or
-     * cancelled payment leaves it still owing.
-     */
-    protected const PAID_STATUSES = ['completed', 'approved'];
 
     /**
      * The most a single booking payment can be, in cents. Well above any
@@ -120,7 +115,7 @@ class BookingsController extends AppController
             ->all();
 
         $treatments = $this->treatmentNames();
-        $paid = $this->paidBookingIds($bookings->toList());
+        [$paid, $unpaid] = $this->fetchTable('Bookings')->paymentStates($bookings->toList());
         $days = array_fill(0, self::WEEK_DAYS, []);
         $earliest = self::DEFAULT_FIRST_HOUR * 60;
         $latest = self::DEFAULT_LAST_HOUR * 60;
@@ -148,6 +143,7 @@ class BookingsController extends AppController
                 'duration' => $duration,
                 'label' => $booking->start_at->format('g:i a'),
                 'paid' => isset($paid[$booking->square_booking_id]),
+                'unpaid' => isset($unpaid[$booking->square_booking_id]),
             ];
 
             // The grid stretches to whatever is actually booked, so an
@@ -185,17 +181,30 @@ class BookingsController extends AppController
 
         $lines = $this->lineItems($booking);
         $payments = $this->paymentsFor($booking);
+        $paidPayment = $this->paidPayment($payments);
+        $charge = $this->fetchTable('BookingCharges')->forBooking($booking->square_booking_id);
+        $menuCents = array_sum(array_column($lines, 'price_cents'));
 
-        $paid = array_filter(
-            $payments,
-            fn($payment): bool => in_array($payment->status, self::PAID_STATUSES, true),
-        );
-
-        $this->set(compact('booking', 'lines', 'payments'));
+        $this->set(compact('booking', 'lines', 'payments', 'paidPayment'));
         $this->set('customerName', $this->customerName($booking));
         $this->set('duration', $this->durationOf($booking));
-        $this->set('suggestedCents', array_sum(array_column($lines, 'price_cents')));
-        $this->set('isPaid', $paid !== []);
+        $this->set('suggestedCents', $menuCents);
+        /*
+         * What the payment is compared against: the menu price saved when it
+         * was taken, so a later price change on the menu does not make an
+         * old payment look short.
+         */
+        $this->set('expectedCents', $charge->price_cents ?? $menuCents);
+        [$paid, $owing] = $this->fetchTable('Bookings')->paymentStates([$booking]);
+
+        $this->set('isPaid', $paidPayment !== null);
+        // Paid at the counter in Square, matched by customer and day rather
+        // than recorded here - so there is nothing on this page to undo.
+        $this->set('isPaidInSquare', $paidPayment === null && isset($paid[$booking->square_booking_id]));
+        $this->set('isUnpaid', isset($owing[$booking->square_booking_id]));
+        // Only a mark staff set can be cleared; an appointment that is over
+        // stays owing until it is paid.
+        $this->set('isMarkedUnpaid', $charge->unpaid && !$booking->is_finished);
         $this->set('statuses', BookingsTable::STATUSES);
         $this->set('paymentMethods', SquareApiService::PAYMENT_METHODS);
         // Recording a payment is admin-only, like the payments page itself.
@@ -223,12 +232,12 @@ class BookingsController extends AppController
         $booking = $this->fetchTable('Bookings')->get($id, contain: ['Customers']);
         $back = ['action' => 'view', $booking->id];
 
-        foreach ($this->paymentsFor($booking) as $payment) {
-            if (in_array($payment->status, self::PAID_STATUSES, true)) {
-                $this->Flash->error('This booking has already been paid for.');
+        $existing = $this->paymentsFor($booking);
 
-                return $this->redirect($back);
-            }
+        if ($this->paidPayment($existing) !== null) {
+            $this->Flash->error('This booking has already been paid for.');
+
+            return $this->redirect($back);
         }
 
         $amount = $this->parseAmount((string)$this->request->getData('amount'));
@@ -254,6 +263,7 @@ class BookingsController extends AppController
                 $booking->square_customer_id,
                 $booking->location_id,
                 trim((string)$this->request->getData('note')),
+                count($existing),
             );
         } catch (Throwable $e) {
             Log::error('Recording booking payment failed: ' . $e->getMessage());
@@ -273,7 +283,24 @@ class BookingsController extends AppController
             return $this->redirect($back);
         }
 
+        /*
+         * Square answering with a payment that has already been refunded
+         * means it treated this as a repeat of an earlier one rather than a
+         * new payment. Saying "recorded" would be wrong - nothing new was.
+         */
+        $refunded = (int)$squarePayment->getRefundedMoney()?->getAmount();
+
+        if ($refunded > 0 && $refunded >= (int)$squarePayment->getAmountMoney()?->getAmount()) {
+            Log::error('Recording booking payment returned an already refunded payment: ' . $squarePayment->getId());
+            $this->Flash->error('Square did not take a new payment - please refresh the page and try again.');
+
+            return $this->redirect($back);
+        }
+
         $this->saveLocally($squarePayment);
+
+        // The menu price it was paid against, and no longer owing.
+        $this->saveCharge($booking, false);
 
         $this->Flash->success(sprintf(
             'Payment of $%s recorded for %s.',
@@ -282,6 +309,146 @@ class BookingsController extends AppController
         ));
 
         return $this->redirect(['controller' => 'Payments', 'action' => 'index']);
+    }
+
+    /**
+     * Undoes a payment recorded against the wrong booking, or before the
+     * customer had actually paid.
+     *
+     * Square will not delete a completed payment, so it is refunded in full
+     * there; the booking then reads as not paid again and can be paid for
+     * properly.
+     *
+     * @param string|null $id Local booking id.
+     * @return \Cake\Http\Response
+     */
+    public function undo(?string $id = null): Response
+    {
+        $this->request->allowMethod(['post']);
+        $this->requireAdmin();
+
+        $booking = $this->fetchTable('Bookings')->get($id);
+        $back = ['action' => 'view', $booking->id];
+        $payment = $this->paidPayment($this->paymentsFor($booking));
+
+        if ($payment === null) {
+            $this->Flash->error('There is no payment on this booking to undo.');
+
+            return $this->redirect($back);
+        }
+
+        try {
+            $squarePayment = (new SquareApiService())->undoBookingPayment(
+                $payment->square_payment_id,
+                $payment->amount,
+                $payment->source_type,
+            );
+        } catch (Throwable $e) {
+            Log::error('Undoing booking payment failed: ' . $e->getMessage());
+
+            $this->Flash->error(
+                'The payment could not be undone in Square just now. It is still recorded - please try again.',
+            );
+
+            return $this->redirect($back);
+        }
+
+        $this->saveLocally($squarePayment);
+
+        /*
+         * Square can report a refund as pending for a moment before it adds
+         * it to the payment. It has accepted it, so the local row shows it
+         * undone now rather than paid until the next sync.
+         */
+        $local = $this->fetchTable('Payments')->find()
+            ->where(['square_payment_id' => $payment->square_payment_id])
+            ->first();
+
+        if ($local && !$local->is_undone) {
+            $local->refunded_amount = $local->amount;
+            $this->fetchTable('Payments')->save($local);
+        }
+
+        $this->Flash->success(sprintf(
+            'Payment of $%s undone. The booking is not paid any more.',
+            number_format($payment->amount / 100, 2),
+        ));
+
+        return $this->redirect($back);
+    }
+
+    /**
+     * Marks a booking as owing - the customer left without paying, say - or
+     * clears that mark.
+     *
+     * Kept locally rather than in Square, which has nowhere to record it.
+     * It shows in red on the calendar and the payments page until a payment
+     * is recorded, which clears it.
+     *
+     * @param string|null $id Local booking id.
+     * @return \Cake\Http\Response
+     */
+    public function unpaid(?string $id = null): Response
+    {
+        $this->request->allowMethod(['post']);
+        $this->requireAdmin();
+
+        $booking = $this->fetchTable('Bookings')->get($id);
+        $owing = (bool)$this->request->getData('unpaid');
+
+        if ($owing && $this->paidPayment($this->paymentsFor($booking)) !== null) {
+            $this->Flash->error('This booking has been paid for. Undo the payment first if that was a mistake.');
+
+            return $this->redirect(['action' => 'view', $booking->id]);
+        }
+
+        $this->saveCharge($booking, $owing);
+
+        $this->Flash->success($owing ? 'Marked as unpaid.' : 'No longer marked as unpaid.');
+
+        return $this->redirect(['action' => 'view', $booking->id]);
+    }
+
+    /**
+     * Saves the booking's menu price and whether it is owing.
+     *
+     * @param \App\Model\Entity\Booking $booking
+     * @param bool $unpaid
+     * @return void
+     */
+    protected function saveCharge(Booking $booking, bool $unpaid): void
+    {
+        $charges = $this->fetchTable('BookingCharges');
+        $charge = $charges->forBooking($booking->square_booking_id);
+
+        $charge->unpaid = $unpaid;
+        $charge->price_cents = array_sum(array_column($this->lineItems($booking), 'price_cents'));
+
+        try {
+            $charges->saveOrFail($charge);
+        } catch (Throwable $e) {
+            // Losing this only loses the price comparison or the red mark,
+            // never the payment itself, so it is logged rather than shown.
+            Log::warning('Could not save booking charge: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * The payment that settles a booking, if any - one that went through
+     * and has not been undone.
+     *
+     * @param array<\App\Model\Entity\Payment> $payments
+     * @return \App\Model\Entity\Payment|null
+     */
+    protected function paidPayment(array $payments): ?Payment
+    {
+        foreach ($payments as $payment) {
+            if ($payment->is_paid) {
+                return $payment;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -311,40 +478,6 @@ class BookingsController extends AppController
             // Square has it, so it is not lost - the next sync fills it in.
             Log::warning('Booking payment saved in Square but not locally: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Which of these bookings have been paid for.
-     *
-     * One query for the whole week rather than one per block.
-     *
-     * @param array<\App\Model\Entity\Booking> $bookings
-     * @return array<string, true> Keyed by Square booking id.
-     */
-    protected function paidBookingIds(array $bookings): array
-    {
-        $ids = array_map(fn(Booking $booking): string => $booking->square_booking_id, $bookings);
-
-        if ($ids === []) {
-            return [];
-        }
-
-        $rows = $this->fetchTable('Payments')->find()
-            ->select(['reference_id'])
-            ->where([
-                'reference_id IN' => $ids,
-                'status IN' => self::PAID_STATUSES,
-            ])
-            ->disableHydration()
-            ->all();
-
-        $paid = [];
-
-        foreach ($rows as $row) {
-            $paid[(string)$row['reference_id']] = true;
-        }
-
-        return $paid;
     }
 
     /**
