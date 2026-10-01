@@ -45,6 +45,8 @@ class DashboardController extends AppController
             $this->request->getQuery('selected_year')
             ?? $this->request->getQuery('month_year');
 
+
+
         $selectedMonth =
             $this->request->getQuery('month');
 
@@ -112,6 +114,31 @@ class DashboardController extends AppController
 
             $selectedYear =
                 (int)$selectedYear;
+
+        }
+
+        /*
+         * Customer Growth has its own year filter.
+         */
+        $customerGrowthYear =
+            (int)(
+                $this->request->getQuery(
+                    'customer_growth_year'
+                )
+                ?? $defaultYear
+            );
+
+
+        if (
+            !in_array(
+                $customerGrowthYear,
+                $availableYears,
+                true
+            )
+        ) {
+
+            $customerGrowthYear =
+                $defaultYear;
 
         }
 
@@ -723,18 +750,17 @@ class DashboardController extends AppController
                 ->where([
                     'square_created_at >=' =>
                         new FrozenTime(
-                            $selectedYear .
+                            $customerGrowthYear .
                             '-01-01 00:00:00'
                         ),
 
                     'square_created_at <' =>
                         new FrozenTime(
-                            ($selectedYear + 1) .
+                            ($customerGrowthYear + 1) .
                             '-01-01 00:00:00'
                         ),
                 ])
                 ->all();
-
 
         foreach (
             $customersForGrowth
@@ -1057,6 +1083,7 @@ class DashboardController extends AppController
             'bookingTrendValues',
             'bookingStatusLabels',
             'bookingStatusValues',
+            'customerGrowthYear',
             'incomeRange'
         ));
 

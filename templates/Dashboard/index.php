@@ -550,10 +550,41 @@ $months = [
 
                                 <p>
                                     New customers added during
-                                    <?= h($selectedYear) ?>
+                                    <?= h($customerGrowthYear) ?>
                                 </p>
 
                             </div>
+
+                            <form
+                                method="get"
+                                action="<?= $this->Url->build([
+                                    'controller' => 'Dashboard',
+                                    'action' => 'index',
+                                ]) ?>"
+                            >
+
+                                <select
+                                    name="customer_growth_year"
+                                    class="dashboard-filter-select"
+                                    onchange="this.form.submit()"
+                                >
+
+                                    <?php foreach ($availableYears as $year): ?>
+
+                                        <option
+                                            value="<?= h($year) ?>"
+                                            <?= (int)$customerGrowthYear === (int)$year
+                                                ? 'selected'
+                                                : '' ?>
+                                        >
+                                            <?= h($year) ?>
+                                        </option>
+
+                                    <?php endforeach; ?>
+
+                                </select>
+
+                            </form>
 
                         </div>
 
