@@ -1,32 +1,97 @@
 <?php
-$rangeLabel = match ($range ?? 'day') {
+$incomeRangeLabel = match ($incomeRange ?? 'month') {
+    'day' => 'day',
     'week' => 'week',
-    'month' => 'month',
     'year' => 'year',
-    default => 'day',
+    default => 'month',
 };
 
-// Amounts are stored as integer minor units (e.g. cents) - currency is
-// always AUD, so this only needs to add the decimal point.
-$formattedIncome = '$' . number_format(($totalIncomeCents ?? 0) / 100, 2);
+// Amounts are stored as integer minor units (e.g. cents).
+$formattedIncome =
+    '$' . number_format(
+        ($totalIncomeCents ?? 0) / 100,
+        2
+    );
 ?>
 
 <div class="stat-card">
+
     <div class="stat-header">
+
         <div>
-            <p class="stat-title">Total Income</p>
+
+            <p class="stat-title">
+                Total Income
+            </p>
 
             <h2 class="stat-value">
                 <?= h($formattedIncome) ?>
             </h2>
 
             <span class="stat-badge">
-                as of selected <?= h($rangeLabel) ?>
+                This <?= h($incomeRangeLabel) ?>
             </span>
+
         </div>
 
         <div class="stat-icon stat-icon-purple">
             <i data-lucide="dollar-sign"></i>
         </div>
+
     </div>
+
+    <form
+        method="get"
+        action="<?= $this->Url->build([
+            'controller' => 'Dashboard',
+            'action' => 'index',
+        ]) ?>"
+    >
+
+        <select
+            name="income_range"
+            class="dashboard-filter-select"
+            onchange="this.form.submit()"
+        >
+
+            <option
+                value="day"
+                <?= $incomeRange === 'day'
+                    ? 'selected'
+                    : '' ?>
+            >
+                Day
+            </option>
+
+            <option
+                value="week"
+                <?= $incomeRange === 'week'
+                    ? 'selected'
+                    : '' ?>
+            >
+                Week
+            </option>
+
+            <option
+                value="month"
+                <?= $incomeRange === 'month'
+                    ? 'selected'
+                    : '' ?>
+            >
+                Month
+            </option>
+
+            <option
+                value="year"
+                <?= $incomeRange === 'year'
+                    ? 'selected'
+                    : '' ?>
+            >
+                Year
+            </option>
+
+        </select>
+
+    </form>
+
 </div>
