@@ -19,6 +19,9 @@
  * @var array $bookingStatusLabels
  * @var array $bookingStatusValues
  * @var int $inactiveMaximumDays
+ * @var int $rebookingPage
+ * @var int $rebookingTotalPages
+ * @var int $rebookingTotalCustomers
  */
 
 $this->assign('title', 'Dashboard');
@@ -832,8 +835,8 @@ $months = [
                             </div>
 
                             <span class="rebooking-count">
-                                <?= count($rebookingCustomers) ?>
-                                customer<?= count($rebookingCustomers) === 1 ? '' : 's' ?>
+                                <?= h($rebookingTotalCustomers) ?>
+                                customer<?= $rebookingTotalCustomers === 1 ? '' : 's' ?>
                             </span>
 
                         </div>
@@ -1020,6 +1023,68 @@ $months = [
                                 </table>
 
                             </div>
+
+                            <?php if ($rebookingTotalPages > 1): ?>
+
+                                <div class="rebooking-pagination">
+
+                                    <?php if ($rebookingPage > 1): ?>
+
+                                        <?= $this->Html->link(
+                                            'Previous',
+                                            [
+                                                'controller' => 'Dashboard',
+                                                'action' => 'index',
+                                                '?' => array_merge(
+                                                    $this->request->getQueryParams(),
+                                                    [
+                                                        'rebooking_page' =>
+                                                            $rebookingPage - 1,
+                                                    ]
+                                                ),
+                                            ],
+                                            [
+                                                'class' => 'rebooking-page-btn',
+                                            ]
+                                        ) ?>
+
+                                    <?php endif; ?>
+
+                                    <span class="rebooking-page-info">
+                                        Page
+                                        <?= h($rebookingPage) ?>
+                                        of
+                                        <?= h($rebookingTotalPages) ?>
+                                    </span>
+
+                                    <?php if (
+                                        $rebookingPage <
+                                        $rebookingTotalPages
+                                    ): ?>
+
+                                        <?= $this->Html->link(
+                                            'Next',
+                                            [
+                                                'controller' => 'Dashboard',
+                                                'action' => 'index',
+                                                '?' => array_merge(
+                                                    $this->request->getQueryParams(),
+                                                    [
+                                                        'rebooking_page' =>
+                                                            $rebookingPage + 1,
+                                                    ]
+                                                ),
+                                            ],
+                                            [
+                                                'class' => 'rebooking-page-btn',
+                                            ]
+                                        ) ?>
+
+                                    <?php endif; ?>
+
+                                </div>
+
+                            <?php endif; ?>
 
                         <?php endif; ?>
 

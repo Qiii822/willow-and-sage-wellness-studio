@@ -746,6 +746,53 @@ class DashboardController extends AppController
             }
         );
 
+        /*
+ * -------------------------------------------------
+ * CUSTOMER REBOOKING PAGINATION
+ * -------------------------------------------------
+ */
+
+        $rebookingPerPage = 10;
+
+        $rebookingTotalCustomers =
+            count($rebookingCustomers);
+
+        $rebookingTotalPages =
+            max(
+                1,
+                (int)ceil(
+                    $rebookingTotalCustomers
+                    / $rebookingPerPage
+                )
+            );
+
+        $rebookingPage =
+            max(
+                1,
+                (int)(
+                    $this->request->getQuery(
+                        'rebooking_page'
+                    )
+                    ?? 1
+                )
+            );
+
+        if ($rebookingPage > $rebookingTotalPages) {
+            $rebookingPage =
+                $rebookingTotalPages;
+        }
+
+        $rebookingOffset =
+            ($rebookingPage - 1)
+            * $rebookingPerPage;
+
+        $rebookingCustomers =
+            array_slice(
+                $rebookingCustomers,
+                $rebookingOffset,
+                $rebookingPerPage
+            );
+
 
         /*
          * -------------------------------------------------
@@ -1115,6 +1162,9 @@ class DashboardController extends AppController
             'customerGrowthYear',
             'bookingTrendYear',
             'inactiveMaximumDays',
+            'rebookingPage',
+            'rebookingTotalPages',
+            'rebookingTotalCustomers',
             'incomeRange'
         ));
 
