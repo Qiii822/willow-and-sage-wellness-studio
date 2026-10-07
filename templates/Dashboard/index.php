@@ -236,76 +236,8 @@ $months = [
 
                         </div>
 
-                        <!-- Main range selector -->
-                        <select
-                            name="range"
-                            id="dashboard-range-select"
-                            class="dashboard-range-select"
-                        >
 
-                            <option
-                                value="today"
-                                <?= ($range ?? 'today') === 'today'
-                                    ? 'selected'
-                                    : '' ?>
-                            >
-                                Today
-                            </option>
 
-                            <option
-                                value="day"
-                                <?= ($range ?? '') === 'day'
-                                    ? 'selected'
-                                    : '' ?>
-                            >
-                                Daily
-                            </option>
-
-                            <option
-                                value="week"
-                                <?= ($range ?? '') === 'week'
-                                    ? 'selected'
-                                    : '' ?>
-                            >
-                                Weekly
-                            </option>
-
-                            <option
-                                value="month"
-                                <?= ($range ?? '') === 'month'
-                                    ? 'selected'
-                                    : '' ?>
-                            >
-                                Monthly
-                            </option>
-
-                            <option
-                                value="year"
-                                <?= ($range ?? '') === 'year'
-                                    ? 'selected'
-                                    : '' ?>
-                            >
-                                Yearly
-                            </option>
-
-                            <option
-                                value="custom"
-                                <?= ($range ?? '') === 'custom'
-                                    ? 'selected'
-                                    : '' ?>
-                            >
-                                Custom
-                            </option>
-
-                        </select>
-
-                        <button
-                            type="submit"
-                            class="custom-date-apply"
-                            id="dashboard-filter-apply"
-                        >
-                            Apply
-                        </button>
 
                     </form>
 
