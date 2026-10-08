@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const addButton =
         document.getElementById('add-widget-btn');
 
+    const resetButton =
+        document.getElementById('reset-layout-btn');
+
     const modal =
         document.getElementById('widget-modal');
 
@@ -297,6 +300,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             refreshIcons();
+
+        }
+    );
+
+
+    /* =====================================================
+       Reset Layout
+       ===================================================== */
+
+    resetButton?.addEventListener(
+        'click',
+        function () {
+
+            const confirmed =
+                window.confirm(
+                    'Reset the dashboard layout back to the default ' +
+                    'arrangement? Your saved widget layout will be ' +
+                    'discarded.'
+                );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            localStorage.removeItem(
+                STORAGE_KEY
+            );
+
+
+            window.location.reload();
 
         }
     );
@@ -1025,6 +1062,13 @@ document.addEventListener('DOMContentLoaded', function () {
        ===================================================== */
 
     loadLayout();
+
+    if (resetButton && localStorage.getItem(STORAGE_KEY)) {
+
+        resetButton.hidden =
+            false;
+
+    }
 
     updateWidgetLibrary();
 

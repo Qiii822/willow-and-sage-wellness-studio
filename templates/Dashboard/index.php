@@ -261,6 +261,17 @@ $months = [
                         Edit layout
                     </button>
 
+                    <!-- Reset layout (shown only once a layout has been saved) -->
+                    <button
+                        type="button"
+                        class="dashboard-customise-btn"
+                        id="reset-layout-btn"
+                        hidden
+                    >
+                        <i data-lucide="rotate-ccw"></i>
+                        Reset layout
+                    </button>
+
                 </div>
 
             </div>

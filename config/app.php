@@ -284,7 +284,9 @@ return [
         'rebooking_test' => [
             'transport' => 'rebooking_test',
             'from' => [
-                env('REBOOKING_SMTP_USERNAME') => 'Willow and Sage Test',
+                // env() returns null when the variable is unset, and null is not a
+                // valid array key - PHP 8.5 deprecates it. Force the string form.
+                (string)env('REBOOKING_SMTP_USERNAME') => 'Willow and Sage Test',
             ],
         ],
     ],

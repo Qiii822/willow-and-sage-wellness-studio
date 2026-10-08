@@ -4,7 +4,7 @@ A CakePHP dashboard for **Willow and Sage Wellness** that syncs customer, bookin
 
 ## Installation
 
-1. Install [PHP 8.2+](https://www.php.net/) and [Composer](https://getcomposer.org/).
+1. Install [PHP 8.4](https://www.php.net/) and [Composer](https://getcomposer.org/). Developed and tested on PHP 8.4 and 8.5.
 2. Clone the repository and run `composer install`.
 3. Configure the database connection — either edit `config/app_local.php` (set `host`, `username`, `password`, `database`) or set `DATABASE_URL` in `config/.env`.
 4. Create `config/.env` by copying `config/.env.example` and fill in the Square credentials (see [Environment variables](#environment-variables)).
@@ -58,11 +58,15 @@ For development, use the built-in server:
 bin/cake server
 ```
 
-This serves the app at `http://localhost:8765`. You can also serve it through Apache (e.g. on port 8080) — but keep `SQUARE_REDIRECT_URI` consistent with the port you actually use.
+This serves the app at `http://localhost:8765`. You can also serve it through Apache (e.g. on port 8080) — but keep `SQUARE_REDIRECT_URI` consistent with the port you actually use. Connecting Square only works on the port that `SQUARE_REDIRECT_URI` names, so a mismatch will fail the OAuth callback.
+
+> **Use one PHP version across environments.** The built-in server and Apache can resolve to different PHP binaries (`php@8.4` for one, 8.5 for the other). Because deprecation notices are rendered into the page while `debug` is on, the same code can look different on each. Pin a single version for development, and make sure the deployment target matches it.
 
 ## Usage
 
-The default credentials are `wendy@example.com` / `admin123`.
+The seeded account is `wendy@example.com` with the password `admin123`.
+
+> **Change this before the app is used with real data.** The seeded account is a superadmin, and its password is recorded in this file and in `config/Seeds/UsersSeed.php` — anyone with the repository can sign in. Change the password, or remove the account, before connecting a live Square account.
 
 Log in and go to the dashboard, then connect Square and run a sync from **Settings**.
 
@@ -70,7 +74,8 @@ Log in and go to the dashboard, then connect Square and run a sync from **Settin
 
 - The **Services** screen is read-only except for a treatment's visibility and its order in the menu. The menu comes entirely from Square, so names, descriptions, prices, durations and categories are managed there and re-synced — edits made here would be overwritten on the next sync.
 - Customer **rebooking reminders** are sent from the dashboard. They use the `rebooking_*` variables above; with `REBOOKING_SEND_REAL` unset, they go to `REBOOKING_TEST_EMAIL` rather than the real customer.
-- The login page shows a Cloudflare **Turnstile** CAPTCHA (set `TURNSTILE_SITE_KEY`). The widget renders on the client; server-side verification of the token is not wired up yet.
+- The login page shows a Cloudflare **Turnstile** CAPTCHA (set `TURNSTILE_SITE_KEY`). The widget renders on the client and is also shown on the booking details step; server-side verification of the token is not wired up yet.
+- The **Dashboard** widget layout — which widgets are shown, and their order and size — is saved in the **browser's local storage**, not against the account. It is therefore per browser *and* per web address, so the same account on `localhost:8765` and `localhost:8080` keeps a separate layout for each. The **Reset layout** button on the dashboard toolbar discards the saved layout and returns to the default arrangement; it only appears once a layout has been saved.
 
 ## Connecting with Square in Sandbox
 
@@ -105,3 +110,5 @@ The Square access token must be refreshed periodically (Square recommends every 
 | `Merchant not onboarded to Appointments`     | Enable Square Appointments on the sandbox merchant.                                         |
 | `Invalid token` / `Invalid refresh token`  | The token was revoked or replaced — reconnect Square.                                      |
 | `Required option not passed: "access_token"` | Square rejected a token refresh (usually the refresh token is invalid) — reconnect Square. |
+| Dashboard widgets are missing, or arranged differently on another URL | The layout is saved per browser and per web address, not per account | Click **Reset layout** on the dashboard toolbar to discard the saved layout and return to the default arrangement. |
+| Deprecation notices printed at the top of pages | The server is running a newer PHP than the code was tested against | Match the PHP version between development and deployment. These notices only display while `debug` is on. |
