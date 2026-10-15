@@ -139,6 +139,79 @@
 }
 
 /* =========================================================
+   An offer you can book
+
+   The whole card is the target, but the thing being clicked is a real
+   link stretched over it - so the keyboard, the middle click and "open in
+   new tab" all keep working, and it is announced as a link rather than as
+   a div that happens to respond to a script.
+   ========================================================= */
+
+.offer-card.is-bookable {
+    position: relative;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.offer-card.is-bookable:hover {
+    transform: translateY(-2px);
+
+    border-color: rgba(143, 63, 44, 0.25);
+    box-shadow: 0 10px 28px rgba(24, 20, 17, 0.09);
+}
+
+.offer-book {
+    margin: 16px 0 0;
+}
+
+.offer-book-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #8f3f2c;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.offer-book-link::after {
+    content: "\2192";
+
+    transition: transform 0.2s ease;
+}
+
+/*
+ * Stretched over the whole card. The link keeps its own box for focus and
+ * for the pointer, and this pseudo-element is what catches a click
+ * anywhere else on the card.
+ */
+.offer-book-link::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    border-radius: inherit;
+}
+
+.offer-card.is-bookable:hover .offer-book-link::after {
+    transform: translateX(3px);
+}
+
+.offer-book-link:hover {
+    text-decoration: underline;
+}
+
+/* Keyboard focus lands on the link, so the outline belongs on the card. */
+.offer-card.is-bookable:focus-within {
+    outline: 2px solid #8f3f2c;
+    outline-offset: 3px;
+}
+
+/* =========================================================
    Picture beside text
    ========================================================= */
 

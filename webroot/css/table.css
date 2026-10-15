@@ -177,6 +177,56 @@
     font-weight: 700;
 }
 
+/*
+ * The offer that was running when a booking was made, named on its line,
+ * and the amount it took off. Same red as the badge on the offer card, so
+ * the two read as the same thing.
+ */
+.booking-offer {
+    display: inline-block;
+
+    margin-left: 7px;
+    padding: 2px 9px;
+
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    vertical-align: middle;
+
+    background: #8f3f2c;
+    border-radius: 999px;
+}
+
+.booking-discount td {
+    color: #8f3f2c;
+    font-weight: 650;
+}
+
+/*
+ * The actions beside an appointment's name: cancelling it, and getting back
+ * to the week it is in.
+ */
+.booking-top-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* The form is only a wrapper for the button; it should not add a line. */
+.booking-cancel-form {
+    margin: 0;
+}
+
+/* The menu price an offer replaced, kept quiet beside what was charged. */
+.dashboard-table td s {
+    margin-right: 5px;
+
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
 .filter-clear {
     display: inline-flex;
     align-items: center;
@@ -815,6 +865,9 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 999px;
+
+    /* It is a <button>, which does not get the hand on its own. */
+    cursor: pointer;
 }
 
 .booking-link-button.is-danger {

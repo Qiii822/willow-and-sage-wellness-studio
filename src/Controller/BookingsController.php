@@ -7,6 +7,7 @@ use App\Model\Entity\Booking;
 use App\Model\Entity\Payment;
 use App\Model\Table\BookingsTable;
 use App\Service\SquareApiService;
+use App\Service\Sync\BookingSyncService;
 use App\Service\Sync\PaymentSyncService;
 use Cake\Http\Response;
 use Cake\I18n\DateTime;
@@ -78,6 +79,18 @@ class BookingsController extends AppController
         $this->set(compact('bookings', 'status', 'startDate', 'endDate'));
         $this->set('statuses', BookingsTable::STATUSES);
 
+        /*
+         * Which of these the studio cancelled itself. Square says the
+         * customer did, for every one of them, so without this the list
+         * blames the customer for Wendy's own cancellations.
+         */
+        $this->set('cancelledByStaff', array_keys(array_filter(
+            $this->fetchTable('BookingCharges')->forBookings(
+                array_filter($bookings->extract('square_booking_id')->toList()),
+            ),
+            fn($charge): bool => (bool)$charge->cancelled_by_staff,
+        )));
+
         return $this->render();
     }
 
@@ -91,12 +104,25 @@ class BookingsController extends AppController
      * Everything comes from the local mirror of Square, so this is as
      * current as the last sync - it is not a second, competing calendar.
      *
+     * The week on screen is refreshed from Square on the way in, which is
+     * what makes an appointment booked a minute ago actually appear. Only
+     * that week: a full sync is nineteen requests and the best part of
+     * half a minute, which is a page load nobody would wait for.
+     *
      * @return \Cake\Http\Response
      */
     public function calendar(): Response
     {
         $weekStart = $this->weekStart($this->request->getQuery('from'));
         $weekEnd = $weekStart->addDays(self::WEEK_DAYS);
+
+        /*
+         * Before reading, so the page shows what it just fetched. It
+         * reports failure rather than throwing: an unreachable Square
+         * should leave the studio looking at a slightly stale week, said
+         * so on the page, not at an error.
+         */
+        $fresh = (new BookingSyncService())->refreshWindow($weekStart, $weekEnd);
 
         $bookings = $this->fetchTable('Bookings')
             ->find()
@@ -162,6 +188,7 @@ class BookingsController extends AppController
         $this->set('next', $weekStart->addDays(self::WEEK_DAYS)->format('Y-m-d'));
         $this->set('today', DateTime::now()->format('Y-m-d'));
         $this->set('count', count($bookings));
+        $this->set('fresh', $fresh);
 
         return $this->render();
     }
@@ -185,16 +212,26 @@ class BookingsController extends AppController
         $charge = $this->fetchTable('BookingCharges')->forBooking($booking->square_booking_id);
         $menuCents = array_sum(array_column($lines, 'price_cents'));
 
+        /*
+         * What an offer took off when this was booked. Zero for a booking
+         * made over the phone, or made before the offer started - the
+         * figures are the draft's own, not today's offers.
+         */
+        $discountCents = array_sum(array_column($lines, 'discount_cents'));
+        $payableCents = max(0, $menuCents - $discountCents);
+
         $this->set(compact('booking', 'lines', 'payments', 'paidPayment'));
         $this->set('customerName', $this->customerName($booking));
         $this->set('duration', $this->durationOf($booking));
-        $this->set('suggestedCents', $menuCents);
+        $this->set(compact('menuCents', 'discountCents'));
+        // What the amount box starts at: what they were actually quoted.
+        $this->set('suggestedCents', $payableCents);
         /*
-         * What the payment is compared against: the menu price saved when it
-         * was taken, so a later price change on the menu does not make an
-         * old payment look short.
+         * What the payment is compared against: the price saved when it was
+         * taken, so a later price change on the menu does not make an old
+         * payment look short.
          */
-        $this->set('expectedCents', $charge->price_cents ?? $menuCents);
+        $this->set('expectedCents', $charge->price_cents ?? $payableCents);
         [$paid, $owing] = $this->fetchTable('Bookings')->paymentStates([$booking]);
 
         $this->set('isPaid', $paidPayment !== null);
@@ -206,9 +243,14 @@ class BookingsController extends AppController
         // stays owing until it is paid.
         $this->set('isMarkedUnpaid', $charge->unpaid && !$booking->is_finished);
         $this->set('statuses', BookingsTable::STATUSES);
+        $this->set('statusLabel', BookingsTable::statusLabel($booking->status, (bool)$charge->cancelled_by_staff));
+        $this->set('statusClass', BookingsTable::statusClass($booking->status, (bool)$charge->cancelled_by_staff));
         $this->set('paymentMethods', SquareApiService::PAYMENT_METHODS);
         // Recording a payment is admin-only, like the payments page itself.
         $this->set('canTakePayment', $this->isAdminIdentity($this->request->getAttribute('identity')));
+        // Offered only when Square would actually accept it, so the button
+        // is absent rather than there and refused.
+        $this->set('canCancel', $this->isCancellable($booking));
 
         return $this->render();
     }
@@ -410,6 +452,116 @@ class BookingsController extends AppController
     }
 
     /**
+     * Cancels an appointment in Square, and here.
+     *
+     * Square is told first and only then the local row, so the calendar
+     * never shows an appointment cancelled that Square still has booked -
+     * and the next sync, which rebuilds this table from Square, agrees.
+     *
+     * Square decides what may be cancelled, and refuses an appointment that
+     * is over or already cancelled. Both are checked here first so the
+     * studio gets a sentence about their booking rather than an API error.
+     *
+     * @param string|null $id Local booking id.
+     * @return \Cake\Http\Response
+     */
+    public function cancel(?string $id = null): Response
+    {
+        $this->request->allowMethod(['post']);
+        $this->requireAdmin();
+
+        $booking = $this->fetchTable('Bookings')->get($id);
+        $back = ['action' => 'view', $booking->id];
+
+        if (!$this->isCancellable($booking)) {
+            $past = $booking->start_at !== null && $booking->start_at->isPast();
+
+            $this->Flash->error($past
+                ? 'That appointment has already started, so Square will not cancel it.'
+                : sprintf(
+                    'That appointment is already %s, so there is nothing to cancel.',
+                    strtolower(BookingsTable::STATUSES[$booking->status] ?? $booking->status),
+                ));
+
+            return $this->redirect($back);
+        }
+
+        try {
+            $status = (new SquareApiService())->cancelBooking($booking->square_booking_id);
+        } catch (Throwable $e) {
+            Log::error('Booking cancellation failed: ' . $e->getMessage());
+
+            $this->Flash->error(
+                'Square would not cancel that appointment. It may have been changed '
+                . 'elsewhere - sync and try again.',
+            );
+
+            return $this->redirect($back);
+        }
+
+        /*
+         * Whatever Square recorded, not what this screen would have called
+         * it. Square files it under the customer unless the call carries
+         * seller-level permissions, and those need an Appointments
+         * subscription the studio does not have - so a status invented here
+         * would be quietly rewritten by the next sync, and the booking would
+         * show one thing today and another tomorrow.
+         */
+        $booking->status = $status ?? 'cancelled_by_customer';
+        $this->fetchTable('Bookings')->save($booking);
+
+        /*
+         * Which leaves Square saying the customer did it. The truth is kept
+         * on this side, on the one table a sync never touches, so the
+         * screens can say who really cancelled.
+         */
+        $charges = $this->fetchTable('BookingCharges');
+        $charge = $charges->forBooking($booking->square_booking_id);
+        $charge->cancelled_by_staff = true;
+
+        try {
+            $charges->saveOrFail($charge);
+        } catch (Throwable $e) {
+            // The appointment is cancelled either way; losing this only
+            // loses the note about who did it.
+            Log::error('Could not record who cancelled a booking: ' . $e->getMessage());
+        }
+
+        $this->fetchTable('BookingDrafts')->updateAll(
+            ['status' => 'cancelled'],
+            ['square_booking_id' => $booking->square_booking_id],
+        );
+
+        $this->Flash->success('That appointment has been cancelled.');
+
+        /*
+         * Back to the calendar rather than the booking. A cancelled one is
+         * left off the calendar, so landing there shows the slot freed up -
+         * which is what someone cancelling wanted to see.
+         */
+        return $this->redirect(['action' => 'calendar']);
+    }
+
+    /**
+     * Whether Square would accept a cancellation for this appointment.
+     *
+     * Only one still standing and still to come. Square refuses to cancel
+     * an appointment that has already happened, and there is nothing to
+     * cancel about one that was called off already.
+     *
+     * @param \App\Model\Entity\Booking $booking
+     * @return bool
+     */
+    protected function isCancellable(Booking $booking): bool
+    {
+        if (!in_array($booking->status, ['accepted', 'pending'], true)) {
+            return false;
+        }
+
+        return $booking->start_at !== null && $booking->start_at->isFuture();
+    }
+
+    /**
      * Saves the booking's menu price and whether it is owing.
      *
      * @param \App\Model\Entity\Booking $booking
@@ -526,6 +678,14 @@ class BookingsController extends AppController
      */
     protected function lineItems(Booking $booking): array
     {
+        /*
+         * What the draft recorded, when the booking was made on this site.
+         * That is where an offer's discount is kept, and it is the price the
+         * customer was actually quoted - the menu may have been repriced in
+         * Square since, and the offer may be over.
+         */
+        $quoted = $this->quotedItems($booking);
+
         $rows = $this->fetchTable('Services')->find()
             ->select(['square_variation_id', 'name', 'price_cents'])
             ->where(['square_variation_id IS NOT' => null])
@@ -541,18 +701,59 @@ class BookingsController extends AppController
         $lines = [];
 
         foreach ($booking->appointment_segments_array as $segment) {
-            $service = $services[$segment['service_variation_id'] ?? ''] ?? null;
+            $variationId = (string)($segment['service_variation_id'] ?? '');
+            $service = $services[$variationId] ?? null;
+            $item = $quoted[$variationId] ?? null;
 
             $lines[] = [
                 // A treatment since taken off the menu still took up the
                 // time, so it is listed rather than silently dropped.
-                'name' => $service ? (string)$service['name'] : 'Treatment no longer on the menu',
+                'name' => $item['name'] ?? ($service ? (string)$service['name'] : 'Treatment no longer on the menu'),
                 'duration' => (int)($segment['duration_minutes'] ?? 0),
-                'price_cents' => (int)($service['price_cents'] ?? 0),
+                'price_cents' => (int)($item['price_cents'] ?? $service['price_cents'] ?? 0),
+                // Zero for a booking taken over the phone, or made before
+                // offers existed: neither had an offer applied to it.
+                'discount_cents' => (int)($item['discount_cents'] ?? 0),
+                'offer_label' => $item['offer_label'] ?? null,
             ];
         }
 
         return $lines;
+    }
+
+    /**
+     * The treatments as the draft recorded them, by Square variation id.
+     *
+     * Empty for a booking that did not come through this site's own flow -
+     * one Wendy took over the phone, or made in Square herself - which has
+     * no draft and so was never quoted a price here.
+     *
+     * @param \App\Model\Entity\Booking $booking
+     * @return array<string, array<string, mixed>>
+     */
+    protected function quotedItems(Booking $booking): array
+    {
+        if (empty($booking->square_booking_id)) {
+            return [];
+        }
+
+        $draft = $this->fetchTable('BookingDrafts')->find()
+            ->where(['square_booking_id' => $booking->square_booking_id])
+            ->first();
+
+        if ($draft === null) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ((array)$draft->items as $item) {
+            if (!empty($item['variation_id'])) {
+                $items[(string)$item['variation_id']] = $item;
+            }
+        }
+
+        return $items;
     }
 
     /**

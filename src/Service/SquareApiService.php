@@ -494,6 +494,73 @@ class SquareApiService
     }
 
     /**
+     * Fetches the discounts from Square's catalogue.
+     *
+     * These are what the studio sets up in Square under Discounts, and they
+     * are the closest Square has to an offer. They are deliberately thin:
+     * a discount knows its name and how much it takes off, and nothing else.
+     * There is no description, no small print, no picture and no end date on
+     * the object itself, so an offer card has to get those from here.
+     *
+     * A discount also does not say what it applies to. That lives on a
+     * separate PRICING_RULE object, which the studio has to create in Square
+     * and may well not have, so nothing here depends on one existing.
+     *
+     * Square expresses the amount two ways and an offer can be either:
+     * `FIXED_PERCENTAGE` fills `percentage` (as a string, e.g. "10.0"), and
+     * `FIXED_AMOUNT` fills `amount_money`. The variable kinds leave both
+     * empty - those are discounts a staff member types an amount into at the
+     * till, so there is no figure to advertise.
+     *
+     * @return array<int, array{square_catalog_id: string, name: string, discount_percent: int|null, discount_amount_cents: int|null}>
+     */
+    public function listDiscounts(): array
+    {
+        $client = $this->getClient();
+        $discounts = [];
+
+        $pager = $client->catalog->list(new ListCatalogRequest(['types' => 'DISCOUNT']));
+
+        foreach ($pager as $object) {
+            if (!$object->isDiscount()) {
+                continue;
+            }
+
+            // asDiscount() returns the wrapper; the fields are one level down.
+            $discount = $object->asDiscount()->getDiscountData();
+
+            if ($discount === null) {
+                continue;
+            }
+
+            $name = trim((string)$discount->getName());
+
+            // Nothing to put on a card, and a blank title fails validation.
+            if ($name === '') {
+                continue;
+            }
+
+            $percentage = $discount->getPercentage();
+
+            $discounts[] = [
+                'square_catalog_id' => $this->catalogObjectId($object),
+                'name' => $name,
+                /*
+                 * Rounded to whole percent: the badge reads "10% off", and
+                 * Square's own editor only offers whole numbers for the kind
+                 * of discount a studio advertises.
+                 */
+                'discount_percent' => $percentage === null
+                    ? null
+                    : (int)round((float)$percentage),
+                'discount_amount_cents' => $discount->getAmountMoney()?->getAmount(),
+            ];
+        }
+
+        return $discounts;
+    }
+
+    /**
      * The studio's location: the id every booking is made against, and the
      * timezone its opening hours are expressed in.
      *
@@ -781,13 +848,20 @@ class SquareApiService
      * @param string $startAt RFC 3339, UTC.
      * @param array<int, array<string, mixed>> $segments
      * @param string|null $note What the customer told us.
+     * @param string|null $attemptKey Something that identifies this attempt
+     *  to book - the draft it came from. Two submissions of the same draft
+     *  must share it, and a fresh attempt must not. Null falls back to the
+     *  customer and the time, which is only safe for a one-off call.
      * @return string The Square booking id.
+     * @throws \RuntimeException If Square answers with a booking that is not
+     *  actually booked.
      */
     public function createBooking(
         string $customerId,
         string $startAt,
         array $segments,
         ?string $note = null,
+        ?string $attemptKey = null,
     ): string {
         $location = $this->getPrimaryLocation();
 
@@ -803,11 +877,22 @@ class SquareApiService
 
         $response = $this->getClient()->bookings->create(new CreateBookingRequest([
             /*
-             * Keyed on the draft plus the time, so a customer who submits
-             * twice - a double click, a retry after a slow response - gets
-             * the same booking back rather than two.
+             * Keyed on the attempt, so a customer who submits twice - a
+             * double click, a retry after a slow response - gets the same
+             * booking back rather than two.
+             *
+             * It must be the attempt and not the customer and time. Keyed on
+             * those, the key never expired: a customer who booked a slot,
+             * cancelled it, and booked the same slot again was handed the
+             * cancelled booking back. Square answered with an id, the site
+             * said "you're booked in", and the studio's calendar stayed
+             * empty - the worst kind of failure, because it looked fine.
              */
-            'idempotencyKey' => substr(sha1($customerId . $startAt), 0, 40),
+            'idempotencyKey' => substr(
+                sha1($attemptKey ?? $customerId . $startAt),
+                0,
+                40,
+            ),
             'booking' => new Booking([
                 'locationId' => $location['id'],
                 'customerId' => $customerId,
@@ -821,6 +906,23 @@ class SquareApiService
 
         if ($booking === null || $booking->getId() === null) {
             throw new RuntimeException('Square did not return a booking.');
+        }
+
+        /*
+         * An id is not the same as an appointment. An idempotent replay
+         * hands back whatever that key created before, which may since have
+         * been cancelled - and a cancelled booking is not on anybody's
+         * calendar. Checked here rather than trusted, so the one thing that
+         * must never happen - telling a customer they are booked in when
+         * they are not - cannot happen quietly.
+         */
+        $status = strtoupper((string)$booking->getStatus());
+
+        if ($status !== '' && !in_array($status, ['ACCEPTED', 'PENDING'], true)) {
+            throw new RuntimeException(sprintf(
+                'Square returned a booking that is not live (%s).',
+                $status,
+            ));
         }
 
         return (string)$booking->getId();
@@ -847,9 +949,14 @@ class SquareApiService
      * is what should happen if the studio has already moved it.
      *
      * @param string $bookingId
-     * @return void
+     * @return string|null The status Square ended up recording, lowercased
+     *  the way this app stores it - e.g. `cancelled_by_customer`. Null if
+     *  Square's reply carried no booking. Worth having rather than assuming:
+     *  the CancelBooking endpoint does not let the caller say who called it
+     *  off, and a status guessed here would be silently corrected by the
+     *  next sync, which copies Square's.
      */
-    public function cancelBooking(string $bookingId): void
+    public function cancelBooking(string $bookingId): ?string
     {
         $booking = $this->getBooking($bookingId);
 
@@ -857,21 +964,28 @@ class SquareApiService
             throw new RuntimeException('That booking no longer exists.');
         }
 
-        $this->getClient()->bookings->cancel(new CancelBookingRequest([
+        $response = $this->getClient()->bookings->cancel(new CancelBookingRequest([
             'bookingId' => $bookingId,
             'bookingVersion' => $booking->getVersion(),
             'idempotencyKey' => Text::uuid(),
         ]));
+
+        $status = $response->getBooking()?->getStatus();
+
+        return $status === null ? null : strtolower($status);
     }
 
     /**
      * Moves a booking to a different time.
      *
-     * Only the time is sent. Square refuses to take appointment_segments on
-     * an update without APPOINTMENTS_ALL_WRITE - a scope that would let this
-     * app rewrite every booking in the business, including ones it never
-     * made - so the treatments stay exactly as they were booked and the new
-     * time has to be one the same team member is free for.
+     * Only the time is sent, so the treatments stay exactly as they were
+     * booked and the new time has to be one the same team member is free
+     * for. This began as a limitation - Square refuses appointment_segments
+     * on an update without APPOINTMENTS_ALL_WRITE, which the app did not
+     * have - and is kept now that it does, because it is the right
+     * behaviour for the screen it serves: a customer moving their own
+     * appointment is changing when it is, not what it is or who does it.
+     * Changing those is a different job and would want its own flow.
      *
      * @param string $bookingId
      * @param string $startAt RFC 3339, UTC.

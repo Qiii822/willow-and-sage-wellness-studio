@@ -138,6 +138,149 @@ class BookingSyncService
     }
 
     /**
+     * Brings one stretch of the calendar up to date, and nothing else.
+     *
+     * run() replaces the whole table from an eighteen-month pull, which is
+     * right for a sync someone asked for and far too slow for a page load -
+     * it is nineteen requests and the best part of half a minute. This is
+     * for the calendar, which only ever shows one week: a single request,
+     * and only the rows inside that week are touched.
+     *
+     * No Import row either. Those are the record of deliberate syncs, and
+     * one per page load would bury that record - and would trip run()'s own
+     * "a sync is already running" guard while the page was loading.
+     *
+     * Quiet about failure, by design. The calendar reads from the local
+     * mirror and renders perfectly well without this; Square being
+     * unreachable should leave the studio looking at a slightly stale week,
+     * not at an error page.
+     *
+     * @param \DateTimeInterface $from Start of the window, inclusive.
+     * @param \DateTimeInterface $to End of the window, exclusive.
+     * @return bool Whether Square answered.
+     */
+    public function refreshWindow(\DateTimeInterface $from, \DateTimeInterface $to): bool
+    {
+        if (!$this->squareAuth->getActiveIdentity()) {
+            return false;
+        }
+
+        /*
+         * Skipped while a full sync is mid-run: that one empties the table
+         * before refilling it, and writing into the gap would leave rows
+         * behind that its own transaction never accounted for.
+         */
+        if ($this->importsTable->hasRunningImport('bookings')) {
+            return false;
+        }
+
+        try {
+            $fetched = [];
+
+            foreach ($this->squareApi->listBookingsBetween($from, $to) as $squareBooking) {
+                /** @var \Square\Types\Booking $squareBooking */
+                $fetched[] = $this->mapBooking($squareBooking);
+            }
+        } catch (\Throwable $e) {
+            \Cake\Log\Log::warning('Calendar refresh failed, showing the last sync: ' . $e->getMessage());
+
+            return false;
+        }
+
+        $this->bookingsTable->getConnection()->transactional(
+            function () use ($fetched, $from, $to): void {
+                $seen = [];
+
+                foreach ($fetched as $data) {
+                    $existing = $this->bookingsTable->find()
+                        ->where(['square_booking_id' => $data['square_booking_id']])
+                        ->first();
+
+                    /*
+                     * Updated in place rather than deleted and remade, so a
+                     * booking keeps its local id - the booking page is
+                     * reached by it, and a changed id would break a link
+                     * someone had open.
+                     */
+                    $entity = $existing
+                        ? $this->bookingsTable->patchEntity($existing, $data)
+                        : $this->bookingsTable->newEntity($data);
+
+                    $this->bookingsTable->saveOrFail($entity);
+
+                    $seen[] = $data['square_booking_id'];
+                }
+
+                /*
+                 * Anything in this week that Square did not return has been
+                 * deleted there. Scoped to the window: rows outside it were
+                 * never asked about, and must not be judged missing.
+                 */
+                $conditions = [
+                    'start_at >=' => $from->format('Y-m-d H:i:s'),
+                    'start_at <' => $to->format('Y-m-d H:i:s'),
+                ];
+
+                if ($seen !== []) {
+                    $conditions['square_booking_id NOT IN'] = $seen;
+                }
+
+                $this->bookingsTable->deleteAll($conditions);
+            },
+        );
+
+        $this->fetchMissingCustomers($fetched);
+
+        return true;
+    }
+
+    /**
+     * Pulls in the customers behind these bookings, if they are new.
+     *
+     * Without this a booking made minutes ago arrives on the calendar as
+     * "Customer": the booking is there, but the person who made it has not
+     * been synced yet and the block has no name to show. Usually nothing to
+     * do - only a first-time customer is missing, and only until the next
+     * full sync would have fetched them anyway.
+     *
+     * @param array<int, array<string, mixed>> $bookings
+     * @return void
+     */
+    protected function fetchMissingCustomers(array $bookings): void
+    {
+        $customers = TableRegistry::getTableLocator()->get('Customers');
+
+        $wanted = array_filter(array_unique(array_column($bookings, 'square_customer_id')));
+
+        if ($wanted === []) {
+            return;
+        }
+
+        $known = $customers->find()
+            ->select(['square_customer_id'])
+            ->where(['square_customer_id IN' => $wanted])
+            ->all()
+            ->extract('square_customer_id')
+            ->toList();
+
+        foreach (array_diff($wanted, $known) as $squareCustomerId) {
+            try {
+                $customer = $this->squareApi->getCustomerById((string)$squareCustomerId);
+
+                if ($customer !== null) {
+                    $customers->saveOrFail(
+                        $customers->newEntity((new CustomerSyncService())->mapCustomer($customer)),
+                    );
+                }
+            } catch (\Throwable $e) {
+                // A missing name is a cosmetic problem; the booking itself
+                // is already on the calendar either way.
+                \Cake\Log\Log::warning('Could not fetch a customer for the calendar: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
      * Maps a Square booking to the local `bookings` row shape.
      *
      * @param \Square\Types\Booking $squareBooking

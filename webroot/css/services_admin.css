@@ -116,6 +116,12 @@
     font-style: italic;
 }
 
+/*
+ * An .offer-source badge was here, marking the offers that came from Square
+ * rather than from this screen. They all do now, so a badge on every row
+ * said nothing.
+ */
+
 /* Thumbnail in the offer list, so a row is recognisable at a glance. */
 .offer-thumb {
     flex: none;

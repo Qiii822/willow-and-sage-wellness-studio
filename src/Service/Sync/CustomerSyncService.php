@@ -130,10 +130,15 @@ class CustomerSyncService
     /**
      * Maps a Square customer to the local `customers` row shape.
      *
+     * Public because the calendar's quick refresh fetches the odd customer
+     * on its own - the one who booked a minute ago and would otherwise
+     * appear on the calendar as "Customer" - and the two must agree on the
+     * shape of a row.
+     *
      * @param \Square\Types\Customer $squareCustomer
      * @return array
      */
-    protected function mapCustomer(SquareCustomer $squareCustomer): array
+    public function mapCustomer(SquareCustomer $squareCustomer): array
     {
         return [
             'square_customer_id' => (string)$squareCustomer->getId(),

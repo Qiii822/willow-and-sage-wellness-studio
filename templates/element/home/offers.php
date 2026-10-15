@@ -41,7 +41,24 @@ $intro = $this->SiteContent->raw('offers.intro');
 
             <?php foreach ($offers as $offer): ?>
 
-                <article class="offer-card">
+                <?php
+                /*
+                 * An offer about one treatment is a way into booking it, not
+                 * just something to read - so the whole card is the link,
+                 * which is the part people actually aim at. An offer with no
+                 * treatment behind it has nowhere to send them and stays a
+                 * plain card.
+                 */
+                $bookUrl = $offer->service_id
+                    ? $this->Url->build([
+                        'controller' => 'Book',
+                        'action' => 'index',
+                        '?' => ['service' => $offer->service_id],
+                    ])
+                    : null;
+                ?>
+
+                <article class="offer-card<?= $bookUrl ? ' is-bookable' : '' ?>">
 
                     <?php if ($offer->image): ?>
                         <?php /*
@@ -95,6 +112,24 @@ $intro = $this->SiteContent->raw('offers.intro');
 
                         <?php if (!empty($offer->terms)): ?>
                             <p class="offer-terms"><?= h($offer->terms) ?></p>
+                        <?php endif; ?>
+
+                        <?php /*
+                         * A real link, stretched over the card by CSS rather
+                         * than the card being made clickable with a script.
+                         * It keeps the keyboard, the middle click and "open
+                         * in new tab" working, and it reads as a link to a
+                         * screen reader because it is one.
+                         */ ?>
+                        <?php if ($bookUrl): ?>
+                            <p class="offer-book">
+                                <a class="offer-book-link" href="<?= h($bookUrl) ?>">
+                                    Book this
+                                    <span class="visually-hidden">
+                                        - <?= h($offer->title) ?>
+                                    </span>
+                                </a>
+                            </p>
                         <?php endif; ?>
 
                     </div>

@@ -5,20 +5,25 @@
  *
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Booking $booking
- * @var array<int, array{name: string, duration: int, price_cents: int}> $lines
+ * @var array<int, array{name: string, duration: int, price_cents: int, discount_cents: int, offer_label: string|null}> $lines
  * @var array<\App\Model\Entity\Payment> $payments
  * @var \App\Model\Entity\Payment|null $paidPayment
  * @var string $customerName
  * @var int $duration
- * @var int $suggestedCents Today's menu price, pre-filled as the amount.
- * @var int $expectedCents The menu price the payment is compared against.
+ * @var int $menuCents The treatments at full menu price.
+ * @var int $discountCents What an offer took off when this was booked.
+ * @var int $suggestedCents What they were quoted, pre-filled as the amount.
+ * @var int $expectedCents The price the payment is compared against.
  * @var bool $isPaid
  * @var bool $isPaidInSquare Paid at the counter in Square, matched by customer and day.
  * @var bool $isUnpaid Owing - over without a payment, or marked by staff.
  * @var bool $isMarkedUnpaid Marked by staff, and so clearable.
  * @var array<string, string> $statuses
+ * @var string $statusLabel What to call this booking's status on screen.
+ * @var string $statusClass The badge class that goes with it.
  * @var array<string, string> $paymentMethods
  * @var bool $canTakePayment
+ * @var bool $canCancel Still to come, and not already called off.
  */
 
 $this->assign('title', 'Booking');
@@ -60,11 +65,43 @@ if ($booking->start_at) {
                     </p>
                 </div>
 
-                <?= $this->Html->link(
-                    '&larr; Back to calendar',
-                    $calendarLink,
-                    ['escape' => false, 'class' => 'table-action']
-                ) ?>
+                <div class="booking-top-actions">
+
+                    <?php /*
+                     * Up here with the appointment itself rather than down in
+                     * the payment card: calling off an appointment is about
+                     * the booking, not about the money, and the calendar
+                     * sends people straight to this page to do it.
+                     *
+                     * Only while Square would take it - once the appointment
+                     * has started, or it has been called off already, there
+                     * is nothing to offer.
+                     */ ?>
+                    <?php if ($canCancel && $canTakePayment): ?>
+                        <?= $this->Form->create(null, [
+                            'url' => ['action' => 'cancel', $booking->id],
+                            'class' => 'booking-cancel-form',
+                        ]) ?>
+                        <?= $this->Form->button('Cancel appointment', [
+                            'class' => 'booking-link-button is-danger',
+                            'confirm' => sprintf(
+                                "Cancel %s's appointment%s? Square is told straight away and the slot is freed up. This cannot be undone.",
+                                $customerName,
+                                $booking->start_at
+                                    ? ' on ' . $booking->start_at->format('j F, g:i a')
+                                    : '',
+                            ),
+                        ]) ?>
+                        <?= $this->Form->end() ?>
+                    <?php endif; ?>
+
+                    <?= $this->Html->link(
+                        '&larr; Back to calendar',
+                        $calendarLink,
+                        ['escape' => false, 'class' => 'table-action']
+                    ) ?>
+
+                </div>
             </div>
 
             <div class="card table-card">
@@ -79,8 +116,8 @@ if ($booking->start_at) {
                     <tr>
                         <th>Status</th>
                         <td>
-                            <span class="status-badge <?= h(str_replace('_', '-', $booking->status)) ?>">
-                                <?= h($statuses[$booking->status] ?? ucfirst($booking->status)) ?>
+                            <span class="status-badge <?= h($statusClass) ?>">
+                                <?= h($statusLabel) ?>
                             </span>
                         </td>
                     </tr>
@@ -132,11 +169,49 @@ if ($booking->start_at) {
                         <?php endif; ?>
                         <?php foreach ($lines as $line): ?>
                             <tr>
-                                <td><?= h($line['name']) ?></td>
+                                <td>
+                                    <?= h($line['name']) ?>
+
+                                    <?php /*
+                                     * The offer that was running when this
+                                     * was booked, named on the line it
+                                     * applies to - so a total lower than the
+                                     * menu has its reason beside it.
+                                     */ ?>
+                                    <?php if (!empty($line['offer_label'])): ?>
+                                        <span class="booking-offer"><?= h($line['offer_label']) ?></span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= h($line['duration'] ? $formatMinutes($line['duration']) : '-') ?></td>
-                                <td><?= $line['price_cents'] ? h($formatMoney($line['price_cents'])) : '-' ?></td>
+                                <td>
+                                    <?php if (!$line['price_cents']): ?>
+                                        -
+                                    <?php elseif (!empty($line['discount_cents'])): ?>
+                                        <s><?= h($formatMoney($line['price_cents'])) ?></s>
+                                        <?= h($formatMoney($line['price_cents'] - $line['discount_cents'])) ?>
+                                    <?php else: ?>
+                                        <?= h($formatMoney($line['price_cents'])) ?>
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
+
+                        <?php if ($lines !== [] && $discountCents > 0): ?>
+                            <?php /*
+                             * Spelled out rather than only showing the lower
+                             * total, so the figure can be checked against the
+                             * menu without opening the offers screen.
+                             */ ?>
+                            <tr>
+                                <td colspan="2">Menu price</td>
+                                <td><?= h($formatMoney($menuCents)) ?></td>
+                            </tr>
+                            <tr class="booking-discount">
+                                <td colspan="2">Offer applied</td>
+                                <td>- <?= h($formatMoney($discountCents)) ?></td>
+                            </tr>
+                        <?php endif; ?>
+
                         <?php if ($lines !== []): ?>
                             <tr class="booking-total">
                                 <th colspan="2">Total</th>

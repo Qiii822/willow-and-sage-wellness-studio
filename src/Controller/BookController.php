@@ -72,6 +72,14 @@ class BookController extends AppController
         $services = $this->fetchTable('Services');
 
         /*
+         * The running offers, by the treatment each is about. Used twice:
+         * to price the menu below with the discount already taken off, and
+         * to write that price into the draft when one is started, so the
+         * booking keeps what the customer was actually quoted.
+         */
+        $offers = $this->fetchTable('Offers')->currentByServiceId();
+
+        /*
          * Cached, and null when Square cannot be reached - the menu is a
          * local-database page and must not start failing because of a
          * warning it can do without.
@@ -129,7 +137,7 @@ class BookController extends AppController
                         Duration::label($longestDayMinutes),
                     );
                 } else {
-                    $draft = $this->BookingDrafts->start(array_values($bookable));
+                    $draft = $this->BookingDrafts->start(array_values($bookable), $offers);
 
                     return $this->redirect(['action' => 'staff', $draft->token]);
                 }
@@ -138,7 +146,7 @@ class BookController extends AppController
 
         $this->set('menu', $services->menu());
         $this->set('preselectedService', $this->request->getQuery('service'));
-        $this->set(compact('cartError', 'longestDayMinutes'));
+        $this->set(compact('cartError', 'longestDayMinutes', 'offers'));
     }
 
     /**
@@ -487,6 +495,14 @@ class BookController extends AppController
                 (string)$draft->startAtUtc()?->format(DATE_RFC3339),
                 $draft->segments,
                 $draft->customer_note,
+                /*
+                 * This attempt, not this customer and time. The draft is
+                 * made fresh each time someone starts booking, so a double
+                 * click on Confirm is the same attempt and makes one
+                 * booking, while coming back next week to rebook the slot
+                 * they cancelled is a new one and really books it.
+                 */
+                $draft->token . '|' . $draft->startAtUtc()?->format(DATE_RFC3339),
             );
         } catch (Throwable $e) {
             \Cake\Log\Log::error('Booking confirmation failed: ' . $e->getMessage());

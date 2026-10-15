@@ -28,12 +28,40 @@ $offers = iterator_to_array($offers);
                 the order set here, and the block disappears by itself when
                 nothing is showing.
             </p>
+
+            <?php /*
+             * Said plainly and up front, because the alternative is someone
+             * hunting for an Add button that is not there, or renaming an
+             * offer and finding Square's name back after the next sync with
+             * nothing to explain why.
+             */ ?>
+            <p class="content-notice">
+                <strong>Offers come from Square.</strong>
+                Each one is a discount set up in Square, and its name and
+                percentage are replaced by Square's every time a sync runs.
+                Add a discount in Square and it appears here; delete it there
+                and it goes. A new one arrives hidden, so nothing reaches the
+                home page until you say so.
+            </p>
+
+            <?php /*
+             * Square keeps none of this, so it has to be written here or the
+             * card is a heading and a badge. Worth saying beside the warning
+             * above, which otherwise reads as "nothing here is yours".
+             */ ?>
+            <p class="content-notice">
+                <strong>The rest of the card is yours.</strong>
+                Square has nowhere to keep a description, small print, a
+                picture or a before-and-after price, so those are written
+                here with Edit and a sync never touches them.
+            </p>
         </div>
 
+        <?php /*
+         * No "Add offer" any more. An offer made here had no Square discount
+         * behind it and disappeared at the next sync.
+         */ ?>
         <div class="services-admin-actions">
-            <?= $this->Html->link('Add offer', ['action' => 'add'], [
-                'class' => 'content-button',
-            ]) ?>
             <?= $this->Html->link('View home page', ['controller' => 'Home', 'action' => 'index'], [
                 'class' => 'content-button secondary',
                 'target' => '_blank',
@@ -51,8 +79,9 @@ $offers = iterator_to_array($offers);
 
         <section class="content-card">
             <p class="services-admin-empty">
-                No offers yet. Add one and it appears on the home page straight
-                away; until then the home page leaves the section out.
+                No offers yet. Set up a discount in Square and it arrives here
+                at the next sync, hidden until you show it; until then the home
+                page leaves the section out.
             </p>
         </section>
 
@@ -114,13 +143,23 @@ $offers = iterator_to_array($offers);
                                 'class' => 'services-admin-link',
                             ]) ?>
 
-                            <?= $this->Form->postLink('Delete', ['action' => 'delete', $offer->id], [
-                                'class' => 'services-admin-link is-danger',
-                                'confirm' => 'Remove "' . $offer->title . '"? Its picture is deleted too.',
-                                // Its own request, so it cannot be swallowed
-                                // by the reorder form wrapping this list.
-                                'block' => true,
-                            ]) ?>
+                            <?php /*
+                             * Hide rather than Delete. The discount is still
+                             * in Square, so a deleted offer comes back at the
+                             * next sync - the button would be offering
+                             * something it cannot keep.
+                             */ ?>
+                            <?= $this->Form->postLink(
+                                $offer->visible ? 'Hide' : 'Show',
+                                ['action' => 'toggleVisibility', $offer->id],
+                                [
+                                    'class' => 'services-admin-link',
+                                    // Its own request, so it cannot be
+                                    // swallowed by the reorder form wrapping
+                                    // this list.
+                                    'block' => true,
+                                ]
+                            ) ?>
 
                         </div>
 
@@ -155,10 +194,11 @@ $offers = iterator_to_array($offers);
 
         <p class="content-side-note">
             <?php if ($offers === []): ?>
-                Nothing to order yet. Add an offer to get started.
+                Nothing to order yet. Offers arrive from Square at the next
+                sync.
             <?php else: ?>
-                Move offers with the arrows, then save. Edit and Delete work
-                on their own and do not need saving.
+                Move offers with the arrows, then save. Edit and Hide work on
+                their own and do not need saving.
             <?php endif; ?>
         </p>
 

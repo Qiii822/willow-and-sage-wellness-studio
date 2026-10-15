@@ -120,24 +120,50 @@ class BookingDraftsTable extends Table
     /**
      * Starts a new draft for the treatments chosen.
      *
+     * Any offer running on a treatment is written into the draft here, as a
+     * figure, rather than looked up again later. What the customer was
+     * quoted is a fact about this booking: the offer may be over, or
+     * changed, or the treatment repriced in Square by the time anyone looks
+     * at it, and none of that should move the price someone was promised.
+     *
      * @param array<int, \App\Model\Entity\Service> $services
+     * @param array<string, \App\Model\Entity\Offer> $offers The running
+     *  offers, by the treatment each is about.
      * @return \App\Model\Entity\BookingDraft
      */
-    public function start(array $services): BookingDraft
+    public function start(array $services, array $offers = []): BookingDraft
     {
         $items = [];
         $subtotal = 0;
+        $discount = 0;
+        $offerTitles = [];
 
         foreach ($services as $service) {
+            $menuCents = (int)$service->price_cents;
+
+            $offer = $offers[$service->id] ?? null;
+            $saving = 0;
+
+            if ($offer !== null && $offer->has_saving) {
+                $saving = max(0, $menuCents - (int)$offer->after_cents);
+                $offerTitles[] = (string)$offer->title;
+            }
+
             $items[] = [
                 'service_id' => $service->id,
                 'variation_id' => $service->square_variation_id,
                 'name' => $service->name,
+                // Still the menu price. The saving is kept beside it rather
+                // than folded in, so the booking can show what it was before.
                 'price_cents' => $service->price_cents,
                 'duration_minutes' => $service->duration_minutes,
+                'discount_cents' => $saving,
+                'offer_title' => $saving > 0 ? (string)$offer->title : null,
+                'offer_label' => $saving > 0 ? (string)$offer->discount_label : null,
             ];
 
-            $subtotal += (int)$service->price_cents;
+            $subtotal += $menuCents;
+            $discount += $saving;
         }
 
         /** @var \App\Model\Entity\BookingDraft $draft */
@@ -147,8 +173,16 @@ class BookingDraftsTable extends Table
         $draft->status = 'timing';
         $draft->items = $items;
         $draft->subtotal_cents = $subtotal;
-        $draft->discount_cents = 0;
-        $draft->total_cents = $subtotal;
+        $draft->discount_cents = $discount;
+        $draft->total_cents = $subtotal - $discount;
+
+        /*
+         * Named when one offer is responsible, so the line reads "The Willow
+         * Ritual" rather than a bare "Discount". Two or more and there is no
+         * single name to give it, and listing them would not fit the line.
+         */
+        $unique = array_unique($offerTitles);
+        $draft->discount_code = count($unique) === 1 ? reset($unique) : null;
 
         $this->saveOrFail($draft);
 

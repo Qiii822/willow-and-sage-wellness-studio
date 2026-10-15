@@ -1,17 +1,18 @@
 <?php
 /**
- * Add or edit one offer.
+ * Fill in the half of an offer that Square has no room for.
  *
- * Shared by both actions: the only difference is the heading and where the
- * form posts, so keeping one file keeps the two from drifting apart.
+ * There is no adding here any more. Which offers exist is Square's, so this
+ * form only ever edits one that a sync has already brought across - and only
+ * the fields a Square discount cannot carry.
  *
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Offer $offer
+ * @var array<string, array<string, string>> $treatments Pickable treatments,
+ *  grouped by category.
  */
 
-$isEdit = !$offer->isNew();
-
-$this->assign('title', $isEdit ? 'Edit Offer' : 'Add Offer');
+$this->assign('title', 'Edit Offer');
 
 $this->Html->css('site_contents', ['block' => true]);
 $this->Html->css('services_admin', ['block' => true]);
@@ -26,7 +27,7 @@ $currentImage = $offer->image
 
     <div class="content-header">
         <div>
-            <h1><?= $isEdit ? 'Edit offer' : 'Add offer' ?></h1>
+            <h1>Edit offer</h1>
             <p>Offers appear on the home page while they are set to show.</p>
         </div>
 
@@ -44,15 +45,52 @@ $currentImage = $offer->image
 
     <section class="content-card">
 
+        <?php /*
+         * The name and the percentage come from the Square discount, and the
+         * sync writes both back over anything typed here. They are shown
+         * read-only rather than hidden, so the card can still be read in full
+         * on one screen.
+         */ ?>
+        <p class="content-notice">
+            <strong>This offer comes from Square.</strong>
+            Its name and discount are set on the discount in Square and are
+            replaced every time a sync runs. Everything else below is yours to
+            write.
+        </p>
+
         <div class="content-field">
             <label for="offer-title">Offer name</label>
             <?= $this->Form->text('title', [
                 'id' => 'offer-title',
                 'class' => 'content-input',
-                'required' => true,
                 'maxlength' => 150,
+                'readonly' => true,
             ]) ?>
+            <p class="content-help">Change this in Square.</p>
             <?= $this->Form->error('title') ?>
+        </div>
+
+        <?php /*
+         * Square cannot say what a discount is for - that lives on a pricing
+         * rule most accounts never create - so it is chosen here. It is what
+         * makes the offer card a way into booking, and what lets the menu
+         * price that treatment with the discount already taken off.
+         */ ?>
+        <div class="content-field">
+            <label for="offer-service">Which treatment is this for?</label>
+            <?= $this->Form->select('service_id', $treatments, [
+                'id' => 'offer-service',
+                'class' => 'content-input',
+                'empty' => 'No single treatment',
+            ]) ?>
+            <p class="content-help">
+                Pick one and the offer card becomes a link straight into
+                booking it, and the treatment is priced with the discount
+                already taken off wherever it is listed. Leave it on "No
+                single treatment" for a general offer like 10% off everything
+                in June - the card then just says what it says.
+            </p>
+            <?= $this->Form->error('service_id') ?>
         </div>
 
         <div class="content-field">
@@ -64,6 +102,24 @@ $currentImage = $offer->image
             ]) ?>
             <?= $this->Form->error('description') ?>
         </div>
+
+        <?php /*
+         * Both prices work themselves out from the chosen treatment and the
+         * Square discount, so these two boxes are an override rather than
+         * something to fill in. Said here once, above both, instead of twice
+         * underneath them.
+         */ ?>
+        <?php if ($offer->service_id && $offer->price_before_label !== null): ?>
+            <p class="content-help">
+                Leave both prices blank and this offer shows
+                <strong><?= h((string)$offer->price_before_label) ?></strong>
+                crossed out, then
+                <strong><?= h((string)$offer->price_after_label) ?></strong> -
+                worked out from the treatment's price in Square and the
+                discount. Fill them in only for an offer that is not simply
+                that treatment at a discount.
+            </p>
+        <?php endif; ?>
 
         <div class="services-admin-row">
 
@@ -105,14 +161,19 @@ $currentImage = $offer->image
                 'id' => 'offer-discount',
                 'class' => 'content-input',
                 'min' => 1,
-                'max' => 99,
+                'max' => 100,
                 'placeholder' => '20',
+                'readonly' => true,
             ]) ?>
             <p class="content-help">
-                A percentage, shown as "20% off". Only needed for an offer with
-                no set prices, like 20% off every facial - when both prices
-                above are filled in, the badge is worked out from them so the
-                two cannot disagree.
+                Taken from the discount in Square. Change it there.
+                <?php if ($offer->discount_amount_cents !== null): ?>
+                    Square has this one as a fixed amount off, which shows on
+                    the card as
+                    <strong><?= h($offer->discount_label ?? '') ?></strong>.
+                <?php endif; ?>
+                Fill in both prices above and the badge is worked out from
+                them instead, so the two cannot disagree.
             </p>
             <?= $this->Form->error('discount_percent') ?>
         </div>
@@ -196,14 +257,14 @@ $currentImage = $offer->image
      */ ?>
     <aside class="content-side">
 
-        <h2><?= $isEdit ? 'Save your changes' : 'Add this offer' ?></h2>
+        <h2>Save your changes</h2>
 
         <p class="content-side-note">
             It shows on the home page once saved, if "Show on the home
             page" is ticked.
         </p>
 
-        <?= $this->Form->button($isEdit ? 'Save offer' : 'Add offer', [
+        <?= $this->Form->button('Save offer', [
             'class' => 'content-button',
         ]) ?>
 

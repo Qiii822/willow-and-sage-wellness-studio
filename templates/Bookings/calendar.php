@@ -16,6 +16,7 @@
  * @var string $next
  * @var string $today
  * @var int $count
+ * @var bool $fresh Whether Square answered when this week was refreshed.
  */
 
 $this->assign('title', 'Bookings calendar');
@@ -87,6 +88,19 @@ $span = $weekStart->format('F') === $weekEnd->format('F')
                     <p class="calendar-note">
                         Cancelled and declined appointments are left off.
                     </p>
+
+                    <?php /*
+                     * Only said when it is not true. The week is refreshed
+                     * from Square on the way into this page, so saying so
+                     * every time would be noise - but a week that quietly
+                     * failed to refresh looks exactly like one that did,
+                     * and that is worth a word.
+                     */ ?>
+                    <?php if (!$fresh): ?>
+                        <p class="calendar-stale">
+                            Could not reach Square just now - showing the last sync.
+                        </p>
+                    <?php endif; ?>
 
                 </div>
 

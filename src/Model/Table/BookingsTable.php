@@ -45,6 +45,51 @@ class BookingsTable extends Table
         'no_show' => 'No Show',
     ];
 
+    /**
+     * What to call a booking's status on screen.
+     *
+     * Square files every cancellation this app makes under the customer,
+     * whoever really did it: saying otherwise needs seller-level
+     * permissions, and those need an Appointments subscription the studio
+     * does not have. So when the dashboard was the one that cancelled it,
+     * that is remembered on this side and said here - otherwise the
+     * studio cancels an appointment and the screen blames the customer.
+     *
+     * One place for it, because the list and the booking page both show
+     * this and the two must not end up saying different things.
+     *
+     * @param string $status
+     * @param bool $cancelledByStaff Whether the studio cancelled it here.
+     * @return string
+     */
+    public static function statusLabel(string $status, bool $cancelledByStaff = false): string
+    {
+        if ($cancelledByStaff && str_starts_with($status, 'cancelled')) {
+            return 'Cancelled By Studio';
+        }
+
+        return self::STATUSES[$status] ?? ucwords(str_replace('_', ' ', $status));
+    }
+
+    /**
+     * The badge class that goes with that label.
+     *
+     * Cancelled is cancelled whoever did it, so a studio cancellation
+     * borrows the seller styling rather than needing one of its own.
+     *
+     * @param string $status
+     * @param bool $cancelledByStaff
+     * @return string
+     */
+    public static function statusClass(string $status, bool $cancelledByStaff = false): string
+    {
+        if ($cancelledByStaff && str_starts_with($status, 'cancelled')) {
+            return 'cancelled-by-seller';
+        }
+
+        return str_replace('_', '-', $status);
+    }
+
     public function initialize(array $config): void
     {
         parent::initialize($config);

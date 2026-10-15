@@ -68,6 +68,24 @@
     font-size: 12.5px;
 }
 
+/*
+ * Shown only when the week could not be refreshed from Square. Amber
+ * rather than red: what is on screen is still the studio's real calendar,
+ * just possibly a few minutes behind.
+ */
+.calendar-stale {
+    margin: 0;
+    padding: 4px 11px;
+
+    color: #8a6415;
+    font-size: 12.5px;
+    font-weight: 600;
+
+    background: #faf0d7;
+    border: 1px solid #eddca3;
+    border-radius: 999px;
+}
+
 /* =========================================================
    The grid
    ========================================================= */

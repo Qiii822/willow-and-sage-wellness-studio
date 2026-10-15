@@ -9,9 +9,11 @@ use Cake\Validation\Validator;
 /**
  * BookingCharges Model
  *
- * The studio's own record of a booking's bill: the menu price it was
- * charged against, and whether it has been marked as owing. Unlike
- * Bookings and Payments this is not a mirror of Square and is never
+ * What the studio knows about a booking that Square does not keep: the
+ * menu price it was charged against, whether it has been marked as owing,
+ * and whether the studio was the one who cancelled it.
+ *
+ * Unlike Bookings and Payments this is not a mirror of Square and is never
  * touched by a sync - rows are keyed on the Square booking id so they
  * line up with the booking again after every reimport.
  *
@@ -52,6 +54,9 @@ class BookingChargesTable extends Table
 
         $validator
             ->boolean('unpaid');
+
+        $validator
+            ->boolean('cancelled_by_staff');
 
         return $validator;
     }

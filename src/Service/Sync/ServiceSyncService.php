@@ -16,17 +16,24 @@ use Throwable;
 /**
  * Syncs the local `services` treatment menu against Square's catalogue.
  *
- * Like the customer, booking and payment syncs, every run is a full
- * reimport: the local table is emptied and reloaded from Square, so after a
- * completed run it matches Square exactly. A treatment typed in by hand,
- * or edited in the dashboard, is replaced by whatever Square says.
+ * After a completed run the menu matches Square exactly: a treatment typed
+ * in by hand, or edited in the dashboard, is replaced by whatever Square
+ * says, and one Square does not have is removed.
  *
- * Two columns survive that replacement, keyed by the Square id: `visible`
- * and `position`. Square has no way to express "keep this off the website"
- * or "show this one first" - those are decisions about the site, not about
- * the catalogue. Resetting them every run would unhide a treatment the
- * studio had deliberately taken down, and reshuffle an order someone had
- * arranged, with no way to say otherwise in Square.
+ * It gets there by matching on the Square id rather than by emptying the
+ * table and reloading it. That matters because a row's id is not only its
+ * own: an offer points at the treatment it is about, and a booking draft
+ * records the treatments it was started for. Deleting and recreating gave
+ * every treatment a new id on every sync, which quietly broke those links -
+ * an offer would stop finding its treatment the first time anyone pressed
+ * Sync. Keeping the row keeps the id, and anything pointing at it.
+ *
+ * Two columns are left alone entirely: `visible` and `position`. Square has
+ * no way to express "keep this off the website" or "show this one first" -
+ * those are decisions about the site, not about the catalogue. Resetting
+ * them every run would unhide a treatment the studio had deliberately taken
+ * down, and reshuffle an order someone had arranged, with no way to say
+ * otherwise in Square.
  */
 class ServiceSyncService
 {
@@ -92,39 +99,59 @@ class ServiceSyncService
             $services = $this->squareApi->listServiceItems();
             $squareCategories = $this->squareApi->listServiceCategoryNames();
 
-            $presentation = $this->currentPresentation();
-
             $this->servicesTable->getConnection()->transactional(
-                function () use ($services, $presentation): void {
-                    $this->servicesTable->deleteAll([]);
-
+                function () use ($services): void {
+                    $existing = $this->existingBySquareId();
                     $position = 0;
 
                     foreach ($services as $service) {
                         $id = $service['square_catalog_id'];
+                        $entity = $existing[$id] ?? null;
 
-                        $entity = $this->servicesTable->newEntity([
-                            'category' => $service['category'] ?? self::UNFILED_CATEGORY,
-                            'name' => $service['name'],
-                            'description' => $service['description'],
-                            'price_cents' => $service['price_cents'],
-                            'currency' => 'AUD',
-                            'duration_minutes' => $service['duration_minutes'],
-                        ]);
+                        if ($entity === null) {
+                            $entity = $this->servicesTable->newEmptyEntity();
+                            $entity->square_catalog_id = $id;
 
-                        /*
-                         * Both are off-limits to a submitted form, so they
-                         * are set here rather than passed through newEntity.
-                         */
-                        $entity->square_catalog_id = $id;
+                            /*
+                             * Only a treatment that has never been here
+                             * takes its place from Square's order and
+                             * arrives shown. One already on the menu keeps
+                             * wherever the studio put it.
+                             */
+                            $entity->position = $position;
+                            $entity->visible = true;
+                        }
+
+                        $entity->category = $service['category'] ?? self::UNFILED_CATEGORY;
+                        $entity->name = $service['name'];
+                        $entity->description = $service['description'];
+                        $entity->price_cents = $service['price_cents'];
+                        $entity->currency = 'AUD';
+                        $entity->duration_minutes = $service['duration_minutes'];
+
+                        // Off-limits to a submitted form, so set directly.
                         $entity->square_variation_id = $service['square_variation_id'] ?? null;
-                        $entity->position = $presentation[$id]['position'] ?? $position;
-                        $entity->visible = $presentation[$id]['visible'] ?? true;
 
                         $this->servicesTable->saveOrFail($entity);
 
+                        unset($existing[$id]);
                         $position++;
                     }
+
+                    /*
+                     * What is left was on the menu and is not in Square's
+                     * catalogue any more, so it has been deleted there.
+                     */
+                    foreach ($existing as $gone) {
+                        $this->servicesTable->delete($gone);
+                    }
+
+                    /*
+                     * And anything that never came from Square - typed in by
+                     * hand before the menu was Square's. The dashboard has
+                     * no way to add or remove one, so nothing else would.
+                     */
+                    $this->servicesTable->deleteAll(['square_catalog_id IS' => null]);
                 },
             );
 
@@ -169,31 +196,29 @@ class ServiceSyncService
     }
 
     /**
-     * The show/hide and ordering choices currently in force, keyed by the
-     * Square id they belong to.
+     * The treatments already on the menu, keyed by their Square id.
+     *
+     * These are the rows a sync updates in place, which is what keeps a
+     * treatment's id - and so keeps the offers and booking drafts pointing
+     * at it - across a run.
      *
      * Rows with no Square id are hand-entered ones about to be removed, and
-     * have nothing for a synced treatment to inherit.
+     * there is nothing in Square for them to be matched against.
      *
-     * @return array<string, array{visible: bool, position: int}>
+     * @return array<string, \App\Model\Entity\Service>
      */
-    protected function currentPresentation(): array
+    protected function existingBySquareId(): array
     {
         $rows = $this->servicesTable->find()
-            ->select(['square_catalog_id', 'visible', 'position'])
             ->where(['square_catalog_id IS NOT' => null])
-            ->disableHydration()
             ->all();
 
-        $presentation = [];
+        $bySquareId = [];
 
         foreach ($rows as $row) {
-            $presentation[(string)$row['square_catalog_id']] = [
-                'visible' => (bool)$row['visible'],
-                'position' => (int)$row['position'],
-            ];
+            $bySquareId[(string)$row->square_catalog_id] = $row;
         }
 
-        return $presentation;
+        return $bySquareId;
     }
 }

@@ -110,9 +110,28 @@ $this->Html->script('services', ['block' => true]);
 
                         <?php foreach ($services as $service): ?>
 
+                            <?php
+                            /*
+                             * Priced with any running offer already taken
+                             * off, the same as the booking page. The menu is
+                             * where someone decides what to book, so it has
+                             * to be quoting what they will actually pay.
+                             */
+                            $offer = $offers[$service->id] ?? null;
+                            $discounted = $offer !== null && $offer->has_saving;
+                            ?>
+
                             <li class="service-item">
 
-                                <h3><?= h($service->name) ?></h3>
+                                <h3>
+                                    <?= h($service->name) ?>
+
+                                    <?php if ($discounted): ?>
+                                        <span class="service-offer">
+                                            <?= h((string)$offer->discount_label) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </h3>
 
                                 <?php if (!empty($service->description)): ?>
                                     <p class="service-description">
@@ -120,19 +139,25 @@ $this->Html->script('services', ['block' => true]);
                                     </p>
                                 <?php endif; ?>
 
-                                <?php
-                                // Only the parts that are actually set.
-                                $meta = array_filter([
-                                    $service->price_label,
-                                    $service->duration_label,
-                                ]);
-                                ?>
+                                <p class="service-meta">
+                                    <?php if ($discounted): ?>
+                                        <?php /*
+                                         * The strike-through is styling, so
+                                         * the words carry the meaning for
+                                         * anyone who cannot see it.
+                                         */ ?>
+                                        <span class="visually-hidden">Usual price</span>
+                                        <s><?= h((string)$offer->price_before_label) ?></s>
+                                        <span class="visually-hidden">Offer price</span>
+                                        <strong><?= h((string)$offer->price_after_label) ?></strong>
+                                    <?php else: ?>
+                                        <?= h($service->price_label) ?>
+                                    <?php endif; ?>
 
-                                <?php if ($meta !== []): ?>
-                                    <p class="service-meta">
-                                        <?= h(implode('  •  ', $meta)) ?>
-                                    </p>
-                                <?php endif; ?>
+                                    <?php if ($service->duration_label !== null): ?>
+                                        &nbsp;&bull;&nbsp; <?= h($service->duration_label) ?>
+                                    <?php endif; ?>
+                                </p>
 
                                 <?php /*
                                  * Only for treatments that can be booked

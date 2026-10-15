@@ -14,7 +14,9 @@
  * @var \App\View\AppView $this
  * @var array<string, array<int, \App\Model\Entity\Service>> $menu
  * @var string|null $preselectedService Id of a treatment pre-ticked from a
- *  "book this" link on the menu page.
+ *  "book this" link on the menu page, or from an offer card.
+ * @var array<string, \App\Model\Entity\Offer> $offers The running offers,
+ *  by the treatment each is about.
  */
 
 $this->assign('title', 'Book - ' . $this->SiteContent->raw('site.title'));
@@ -63,13 +65,27 @@ $this->Html->script('book_cart', ['block' => true]);
                                 <?php
                                 $bookable = !empty($service->square_variation_id);
                                 $fieldId = 'treatment-' . h($service->id);
+
+                                /*
+                                 * An offer running on this treatment. Its
+                                 * price is what the customer actually pays,
+                                 * so it is the one the cart adds up as well
+                                 * as the one printed here - a cart totalling
+                                 * the full prices under a menu showing
+                                 * discounted ones would be its own bug.
+                                 */
+                                $offer = $offers[$service->id] ?? null;
+                                $discounted = $offer !== null && $offer->has_saving;
+                                $payable = $discounted
+                                    ? $offer->after_cents
+                                    : (int)$service->price_cents;
                                 ?>
 
                                 <li
                                     class="book-choice<?= $bookable ? '' : ' is-unavailable' ?>"
                                     data-treatment
                                     data-name="<?= h($service->name) ?>"
-                                    data-price="<?= (int)$service->price_cents ?>"
+                                    data-price="<?= (int)$payable ?>"
                                     data-duration="<?= (int)$service->duration_minutes ?>"
                                 >
 
@@ -91,7 +107,15 @@ $this->Html->script('book_cart', ['block' => true]);
 
                                     <div class="book-choice-body">
 
-                                        <p class="book-choice-name"><?= h($service->name) ?></p>
+                                        <p class="book-choice-name">
+                                            <?= h($service->name) ?>
+
+                                            <?php if ($discounted): ?>
+                                                <span class="book-choice-offer">
+                                                    <?= h((string)$offer->discount_label) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </p>
 
                                         <?php if (!empty($service->description)): ?>
                                             <p class="book-choice-description">
@@ -100,7 +124,21 @@ $this->Html->script('book_cart', ['block' => true]);
                                         <?php endif; ?>
 
                                         <p class="book-choice-meta">
-                                            <?= h($service->price_label) ?>
+                                            <?php if ($discounted): ?>
+                                                <?php /*
+                                                 * The strike-through is
+                                                 * styling, so the words carry
+                                                 * the meaning for anyone who
+                                                 * cannot see it.
+                                                 */ ?>
+                                                <span class="visually-hidden">Usual price</span>
+                                                <s><?= h((string)$offer->price_before_label) ?></s>
+                                                <span class="visually-hidden">Offer price</span>
+                                                <strong><?= h((string)$offer->price_after_label) ?></strong>
+                                            <?php else: ?>
+                                                <?= h($service->price_label) ?>
+                                            <?php endif; ?>
+
                                             <?php if ($service->duration_label !== null): ?>
                                                 &middot; <?= h($service->duration_label) ?>
                                             <?php endif; ?>

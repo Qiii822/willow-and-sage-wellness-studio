@@ -6,6 +6,8 @@
  * @var string|null $status
  * @var string|null $startDate
  * @var string|null $endDate
+ * @var array<int, string> $cancelledByStaff Square booking ids the studio
+ *  cancelled itself, which Square still files under the customer.
  */
 
 $this->assign('title', 'Bookings');
@@ -13,10 +15,13 @@ $this->setLayout('dashboard');
 
 $hasActiveFilters = $status || $startDate || $endDate;
 
-// Square's enum values (e.g. "cancelled_by_customer") map to a
-// "Cancelled By Customer" label and a "cancelled-by-customer" badge class.
-$statusLabel = fn (string $status): string => ucwords(str_replace('_', ' ', $status));
-$statusClass = fn (string $status): string => str_replace('_', '-', $status);
+/*
+ * Square's enum values (e.g. "cancelled_by_customer") map to a "Cancelled
+ * By Customer" label and a "cancelled-by-customer" badge class - except
+ * where the studio cancelled it here, which Square still files under the
+ * customer and which only this side knows about.
+ */
+$byStaff = fn ($booking): bool => in_array($booking->square_booking_id, $cancelledByStaff, true);
 ?>
 
 <div class="container-fluid p-0">
@@ -149,8 +154,8 @@ $statusClass = fn (string $status): string => str_replace('_', '-', $status);
                                 </td>
 
                                 <td>
-                                    <span class="status-badge <?= h($statusClass($booking->status)) ?>">
-                                        <?= h($statusLabel($booking->status)) ?>
+                                    <span class="status-badge <?= h(\App\Model\Table\BookingsTable::statusClass($booking->status, $byStaff($booking))) ?>">
+                                        <?= h(\App\Model\Table\BookingsTable::statusLabel($booking->status, $byStaff($booking))) ?>
                                     </span>
                                 </td>
 

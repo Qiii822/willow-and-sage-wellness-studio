@@ -14,6 +14,17 @@ use Cake\Http\Response;
  * Staff only throughout: offers are shown to the public as a block on the
  * home page, so there is no public page here to gate separately.
  *
+ * Which offers exist is Square's decision. Every offer mirrors a discount
+ * in Square's catalogue, so there is no Add - one made here would belong to
+ * nothing and be removed at the next sync - and no Delete, because the
+ * discount would still be in Square and the sync would put the offer
+ * straight back. Taking one off the site is Hide.
+ *
+ * Editing stays, because a Square discount is only a name and a percentage.
+ * The description, the small print, the picture and the before-and-after
+ * prices have nowhere to live in Square, so they are written here and the
+ * sync leaves them alone.
+ *
  * @property \App\Model\Table\OffersTable $Offers
  */
 class OffersController extends AppController
@@ -43,48 +54,15 @@ class OffersController extends AppController
         return $this->render();
     }
 
-    /**
-     * @return \Cake\Http\Response|null|void
+    /*
+     * add() was here. Every offer mirrors a Square discount now, so one
+     * created here had no discount behind it and was removed by the next
+     * sync - the button offered something the app could not keep.
      */
-    public function add()
-    {
-        $this->requireAdmin();
-
-        $offer = $this->Offers->newEmptyEntity();
-
-        if ($this->request->is('post')) {
-            $offer = $this->Offers->patchEntity($offer, $this->normalise($this->request->getData()));
-            $offer->position = $this->Offers->nextPosition();
-
-            /*
-             * The picture is dealt with only once the words are known to be
-             * valid, so a rejected form does not leave an orphaned file on
-             * disk that nothing points at.
-             */
-            $imageError = null;
-
-            if (!$offer->getErrors()) {
-                $imageError = $this->applyImage($offer);
-            }
-
-            if ($imageError === null && $this->Offers->save($offer)) {
-                $this->Flash->success('The offer has been added.');
-
-                return $this->redirect(['action' => 'manage']);
-            }
-
-            if ($imageError !== null) {
-                // Keyed so it renders beside the file field that caused it.
-                $this->Flash->error($imageError, ['key' => 'offerImage']);
-            } else {
-                $this->Flash->error('The offer could not be saved. Please check the fields below.');
-            }
-        }
-
-        $this->set('offer', $offer);
-    }
 
     /**
+     * Fills in the half of an offer that Square has no room for.
+     *
      * @param string|null $id
      * @return \Cake\Http\Response|null|void
      */
@@ -92,11 +70,18 @@ class OffersController extends AppController
     {
         $this->requireAdmin();
 
-        $offer = $this->Offers->get($id);
+        // Contained so the form can show the prices the offer works out from
+        // its treatment, rather than two blank boxes.
+        $offer = $this->Offers->get($id, contain: ['Services']);
 
         if ($this->request->is(['post', 'put', 'patch'])) {
             $offer = $this->Offers->patchEntity($offer, $this->normalise($this->request->getData()));
 
+            /*
+             * The picture is dealt with only once the words are known to be
+             * valid, so a rejected form does not leave an orphaned file on
+             * disk that nothing points at.
+             */
             $imageError = null;
 
             if (!$offer->getErrors()) {
@@ -118,34 +103,74 @@ class OffersController extends AppController
         }
 
         $this->set('offer', $offer);
-
-        // Same form as adding; only the heading and target differ.
-        $this->viewBuilder()->setTemplate('add');
+        $this->set('treatments', $this->treatmentChoices());
     }
 
     /**
+     * The treatments an offer can be about, for the picker.
+     *
+     * Hidden ones are included. A treatment can be off the public menu and
+     * still be what a discount is for, and leaving it out would silently
+     * clear the choice the next time anyone saved the offer.
+     *
+     * @return array<string, string>
+     */
+    protected function treatmentChoices(): array
+    {
+        $choices = [];
+
+        $services = $this->fetchTable('Services')->find()
+            ->orderBy(['category' => 'ASC', 'position' => 'ASC', 'name' => 'ASC'])
+            ->all();
+
+        foreach ($services as $service) {
+            // Grouped by category, the way the menu itself reads.
+            $choices[$service->category][$service->id] = $service->name
+                . ($service->price_label === 'Price varies' ? '' : ' - ' . $service->price_label);
+        }
+
+        return $choices;
+    }
+
+    /**
+     * Shows or hides one offer on the home page.
+     *
+     * This is what Delete used to be. The discount lives in Square, so a
+     * deleted offer came straight back at the next sync; hiding is the
+     * decision that actually sticks, and the one thing about an offer this
+     * screen really decides.
+     *
      * @param string|null $id
      * @return \Cake\Http\Response|null
      */
-    public function delete(?string $id = null): ?Response
+    public function toggleVisibility(?string $id = null): ?Response
     {
         $this->requireAdmin();
-        $this->request->allowMethod(['post', 'delete']);
+        $this->request->allowMethod(['post']);
 
         $offer = $this->Offers->get($id);
-        $image = $offer->image;
+        $offer->visible = !$offer->visible;
 
-        if ($this->Offers->delete($offer)) {
-            // Only after the row is gone, so a failed delete keeps its picture.
-            (new ImageUploadService())->delete($image);
-
-            $this->Flash->success('The offer has been removed.');
+        if ($this->Offers->save($offer)) {
+            $this->Flash->success(sprintf(
+                '%s is now %s on the home page.',
+                $offer->title,
+                $offer->visible ? 'shown' : 'hidden',
+            ));
         } else {
-            $this->Flash->error('The offer could not be removed.');
+            $this->Flash->error('That could not be changed.');
         }
 
         return $this->redirect(['action' => 'manage']);
     }
+
+    /*
+     * delete() was here. The offer is only this site's copy of a discount in
+     * Square, so removing it changed nothing: the discount was still there
+     * and the next sync recreated the offer. Deleting the discount in Square
+     * is what removes an offer, and the sync then takes this copy with it.
+     * Hiding is for taking one off the home page while keeping it.
+     */
 
     /**
      * Stores a new order for the offers.
@@ -219,7 +244,6 @@ class OffersController extends AppController
      */
     protected function normalise(array $data): array
     {
-        $data['title'] = trim((string)($data['title'] ?? ''));
         $data['terms'] = trim((string)($data['terms'] ?? ''));
         $data['visible'] = !empty($data['visible']);
 
@@ -230,10 +254,21 @@ class OffersController extends AppController
         $data['price_before_cents'] = $this->toCents($data['price_before'] ?? null);
         $data['price_after_cents'] = $this->toCents($data['price_after'] ?? null);
 
-        $percent = trim((string)($data['discount_percent'] ?? ''));
-        $data['discount_percent'] = $percent === '' ? null : (int)$percent;
-
-        unset($data['image'], $data['image_remove'], $data['price_before'], $data['price_after']);
+        /*
+         * The name and the percentage are Square's and are shown read-only,
+         * but a read-only field is a hint to the browser, not a rule - so
+         * they are dropped here as well. Keeping them would let an edit
+         * overwrite Square's until the next sync put them back, which reads
+         * as the site losing the change at random.
+         */
+        unset(
+            $data['title'],
+            $data['discount_percent'],
+            $data['image'],
+            $data['image_remove'],
+            $data['price_before'],
+            $data['price_after'],
+        );
 
         return $data;
     }

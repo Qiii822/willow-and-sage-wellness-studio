@@ -79,6 +79,13 @@ class ServicesController extends AppController
         $this->set('categories', $categories);
         $this->set('activeCategory', $active);
 
+        /*
+         * So a treatment with an offer running on it is quoted at the offer
+         * price here too, and the menu cannot end up disagreeing with the
+         * booking page about what something costs.
+         */
+        $this->set('offers', $this->fetchTable('Offers')->currentByServiceId());
+
         return $this->render();
     }
 

@@ -5,6 +5,7 @@ namespace App\Service;
 
 use App\Service\Sync\CustomerSyncService;
 use App\Service\Sync\BookingSyncService;
+use App\Service\Sync\OfferSyncService;
 use App\Service\Sync\PaymentSyncService;
 use App\Service\Sync\ServiceSyncService;
 
@@ -30,6 +31,18 @@ class SyncService
         $this->syncBookings($source);
         $this->syncPayments($source);
         $this->syncServices($source);
+        $this->syncOffers($source);
+    }
+
+    /**
+     * Runs only the offers sync.
+     *
+     * @param string $source One of: oauth_callback, cron, manual, webhook.
+     * @return \App\Model\Entity\Import
+     */
+    public function syncOffers(string $source): \App\Model\Entity\Import
+    {
+        return (new OfferSyncService())->run($source);
     }
 
     /**
