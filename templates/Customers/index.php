@@ -13,15 +13,10 @@
  * @var int $maxPage
  * @var int $first
  * @var int $last
- * @var array<string, string|null> $filters
- * @var array<string, string> $query The filters in use, carried on page links.
- * @var array<string, string> $bookingFilters
  */
 
 $this->assign('title', 'Customers');
 $this->setLayout('dashboard');
-
-$hasActiveFilters = $query !== [];
 ?>
 
 <div class="container-fluid p-0">
@@ -47,80 +42,13 @@ $hasActiveFilters = $query !== [];
                         <h3>Customers</h3>
                         <p>
                             <?php if ($total === 0): ?>
-                                <?= $hasActiveFilters ? 'No matches' : 'No customers yet' ?>
+                                No customers yet
                             <?php else: ?>
                                 Showing <?= $first ?>&ndash;<?= $last ?> of <?= $total ?>
                             <?php endif; ?>
                         </p>
                     </div>
                 </div>
-
-                <form
-                        class="customers-filter-form"
-                        method="get"
-                        action="<?= $this->Url->build(['action' => 'index']) ?>"
-                >
-                    <div class="filter-field">
-                        <label for="customer-search">Search</label>
-                        <input
-                                type="search"
-                                name="q"
-                                id="customer-search"
-                                placeholder="Name, email or phone"
-                                value="<?= h($filters['q']) ?>"
-                        >
-                    </div>
-
-                    <div class="filter-field">
-                        <label for="customer-bookings">Bookings</label>
-                        <select
-                                name="bookings"
-                                id="customer-bookings"
-                                onchange="this.form.submit()"
-                        >
-                            <option value="">Any</option>
-                            <?php foreach ($bookingFilters as $value => $label): ?>
-                                <option
-                                        value="<?= h($value) ?>"
-                                        <?= $filters['bookings'] === $value ? 'selected' : '' ?>
-                                >
-                                    <?= h($label) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="filter-field">
-                        <label for="customer-start-date">First seen from</label>
-                        <input
-                                type="date"
-                                name="start_date"
-                                id="customer-start-date"
-                                value="<?= h($filters['start_date'] ?? '') ?>"
-                        >
-                    </div>
-
-                    <div class="filter-field">
-                        <label for="customer-end-date">To</label>
-                        <input
-                                type="date"
-                                name="end_date"
-                                id="customer-end-date"
-                                value="<?= h($filters['end_date'] ?? '') ?>"
-                        >
-                    </div>
-
-                    <button class="table-action" type="submit">Filter</button>
-
-                    <?php if ($hasActiveFilters): ?>
-                        <a
-                                class="filter-clear"
-                                href="<?= $this->Url->build(['action' => 'index']) ?>"
-                        >
-                            Clear filters
-                        </a>
-                    <?php endif; ?>
-                </form>
 
                 <div class="table-responsive">
                     <table class="dashboard-table">
@@ -140,12 +68,8 @@ $hasActiveFilters = $query !== [];
                         <?php if ($people === []): ?>
                             <tr>
                                 <td colspan="6">
-                                    <?php if ($hasActiveFilters): ?>
-                                        No customers match the selected filters.
-                                    <?php else: ?>
-                                        Nobody has booked yet. Customers appear here
-                                        after a sync with Square.
-                                    <?php endif; ?>
+                                    Nobody has booked yet. Customers appear here
+                                    after a sync with Square.
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -223,7 +147,7 @@ $hasActiveFilters = $query !== [];
                                 <li>
                                     <?= $this->Html->link('&larr; Previous', [
                                         'action' => 'index',
-                                        '?' => $query + ['page' => $page - 1],
+                                        '?' => ['page' => $page - 1],
                                     ], ['escape' => false]) ?>
                                 </li>
                             <?php endif; ?>
@@ -234,7 +158,7 @@ $hasActiveFilters = $query !== [];
                                         ? '<a href="#">' . $number . '</a>'
                                         : $this->Html->link((string)$number, [
                                             'action' => 'index',
-                                            '?' => $query + ['page' => $number],
+                                            '?' => ['page' => $number],
                                         ]) ?>
                                 </li>
                             <?php endforeach; ?>
@@ -243,7 +167,7 @@ $hasActiveFilters = $query !== [];
                                 <li>
                                     <?= $this->Html->link('Next &rarr;', [
                                         'action' => 'index',
-                                        '?' => $query + ['page' => $page + 1],
+                                        '?' => ['page' => $page + 1],
                                     ], ['escape' => false]) ?>
                                 </li>
                             <?php endif; ?>

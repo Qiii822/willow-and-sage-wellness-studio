@@ -80,16 +80,6 @@ select {
     margin-top: 10px;
 }
 
-/*
- * The dashboard layout prints messages at the top of <body>, but the
- * sidebar is fixed over the left edge - so they move over by its width and
- * line up with the page content below them rather than slipping under it.
- */
-body > .message {
-    margin-right: 42px;
-    margin-left: calc(var(--sidebar-width) + 42px);
-}
-
 /* Clicking dismisses it - that is what the elements' own onclick does. */
 .message.hidden {
     display: none;
@@ -1422,39 +1412,6 @@ body > .message {
     line-height: 1.5;
 }
 
-
-.rebooking-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.rebooking-page-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #fff;
-    color: #333;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.rebooking-page-btn:hover {
-    background: #f5f5f5;
-    color: #333;
-    text-decoration: none;
-}
-
-.rebooking-page-info {
-    font-size: 14px;
-    color: #666;
-}
 
 /* =========================================================
    Customer Growth Widget

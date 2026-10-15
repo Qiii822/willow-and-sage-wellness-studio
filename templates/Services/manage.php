@@ -15,7 +15,7 @@ $this->Html->script('site_contents', ['block' => true]);
 $services = iterator_to_array($services);
 ?>
 
-<div class="content-page content-page-with-side">
+<div class="content-page">
 
     <?= $this->element('website_tabs') ?>
 
@@ -60,10 +60,6 @@ $services = iterator_to_array($services);
         </div>
 
     </div>
-
-    <div class="content-layout">
-
-    <div class="content-main">
 
     <?php /*
      * Categories live here rather than inside the treatment form. One is
@@ -133,7 +129,6 @@ $services = iterator_to_array($services);
     <?php else: ?>
 
         <?= $this->Form->create(null, [
-            'id' => 'services-order-form',
             'url' => ['action' => 'reorder'],
             'class' => 'content-form',
         ]) ?>
@@ -205,6 +200,10 @@ $services = iterator_to_array($services);
 
             </ul>
 
+            <div class="content-actions">
+                <?= $this->Form->button('Save order', ['class' => 'content-button']) ?>
+            </div>
+
         </section>
 
         <?= $this->Form->end() ?>
@@ -217,36 +216,5 @@ $services = iterator_to_array($services);
         <?= $this->fetch('postLink') ?>
 
     <?php endif; ?>
-
-    </div>
-
-    <?php /*
-     * Beside the list and sticky, like the page content editor, so saving
-     * the order does not mean scrolling past every treatment first. The
-     * button reaches the reorder form through its `form` attribute.
-     */ ?>
-    <aside class="content-side">
-
-        <h2>Save the order</h2>
-
-        <p class="content-side-note">
-            <?php if ($services === []): ?>
-                Nothing to order until treatments arrive from Square.
-            <?php else: ?>
-                Move treatments with the arrows, then save. Show and Hide
-                take effect straight away.
-            <?php endif; ?>
-        </p>
-
-        <?php if ($services !== []): ?>
-            <?= $this->Form->button('Save order', [
-                'class' => 'content-button',
-                'form' => 'services-order-form',
-            ]) ?>
-        <?php endif; ?>
-
-    </aside>
-
-    </div>
 
 </div>

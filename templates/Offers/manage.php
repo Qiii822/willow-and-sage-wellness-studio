@@ -15,7 +15,7 @@ $this->Html->script('site_contents', ['block' => true]);
 $offers = iterator_to_array($offers);
 ?>
 
-<div class="content-page content-page-with-side">
+<div class="content-page">
 
     <?= $this->element('website_tabs') ?>
 
@@ -43,10 +43,6 @@ $offers = iterator_to_array($offers);
 
     </div>
 
-    <div class="content-layout">
-
-    <div class="content-main">
-
     <?php if ($offers === []): ?>
 
         <section class="content-card">
@@ -59,7 +55,6 @@ $offers = iterator_to_array($offers);
     <?php else: ?>
 
         <?= $this->Form->create(null, [
-            'id' => 'offers-order-form',
             'url' => ['action' => 'reorder'],
             'class' => 'content-form',
         ]) ?>
@@ -130,6 +125,10 @@ $offers = iterator_to_array($offers);
 
             </ul>
 
+            <div class="content-actions">
+                <?= $this->Form->button('Save order', ['class' => 'content-button']) ?>
+            </div>
+
         </section>
 
         <?= $this->Form->end() ?>
@@ -142,35 +141,5 @@ $offers = iterator_to_array($offers);
         <?= $this->fetch('postLink') ?>
 
     <?php endif; ?>
-
-    </div>
-
-    <?php /*
-     * Beside the list and sticky, like the page content editor. The button
-     * reaches the reorder form through its `form` attribute.
-     */ ?>
-    <aside class="content-side">
-
-        <h2>Save the order</h2>
-
-        <p class="content-side-note">
-            <?php if ($offers === []): ?>
-                Nothing to order yet. Add an offer to get started.
-            <?php else: ?>
-                Move offers with the arrows, then save. Edit and Delete work
-                on their own and do not need saving.
-            <?php endif; ?>
-        </p>
-
-        <?php if ($offers !== []): ?>
-            <?= $this->Form->button('Save order', [
-                'class' => 'content-button',
-                'form' => 'offers-order-form',
-            ]) ?>
-        <?php endif; ?>
-
-    </aside>
-
-    </div>
 
 </div>

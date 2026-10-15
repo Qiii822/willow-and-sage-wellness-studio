@@ -176,58 +176,9 @@
     overflow: hidden;
 
     color: var(--on-primary);
-    text-decoration: none;
 
     background: var(--primary);
     border-radius: 8px;
-
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-/* Each block opens the booking, so it should look like it can be clicked. */
-.calendar-booking:hover,
-.calendar-booking:focus-visible {
-    z-index: 1;
-
-    color: var(--on-primary);
-
-    box-shadow: 0 6px 16px rgba(72, 64, 58, 0.3);
-    transform: translateY(-1px);
-}
-
-.calendar-booking.is-pending:hover,
-.calendar-booking.is-pending:focus-visible {
-    color: var(--text-primary);
-}
-
-/* Marked as owing - red, so it stands out from the rest of the week. */
-.calendar-booking.is-unpaid,
-.calendar-booking.is-unpaid:hover,
-.calendar-booking.is-unpaid:focus-visible {
-    color: #fff;
-
-    background: #b3382c;
-    border: none;
-}
-
-.calendar-booking.is-unpaid .calendar-booking-paid {
-    color: #b3382c;
-}
-
-.calendar-booking-paid {
-    display: inline-block;
-
-    margin-left: 4px;
-    padding: 0 6px;
-
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-
-    color: var(--primary);
-    background: var(--surface);
-    border-radius: 999px;
 }
 
 /* Not yet accepted, so it reads as provisional rather than settled. */
