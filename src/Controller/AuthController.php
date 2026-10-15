@@ -230,6 +230,71 @@ class AuthController extends AppController
     }
 
     /**
+     * Deletes the customer, booking and payment records copied from Square,
+     * along with the sync history.
+     *
+     * Only available once Square is disconnected: while it is connected the
+     * next sync would just refill the tables, and the button would look as
+     * if it had done nothing. Left alone on purpose are the treatment menu
+     * (its visibility and order are choices made here, not in Square), staff
+     * and customer login accounts, offers, site content and mail settings.
+     *
+     * All four tables go together or not at all, so a failure part-way does
+     * not leave bookings pointing at customers that are gone.
+     *
+     * @return \Cake\Http\Response Redirect to the Settings page.
+     */
+    public function clearData(): Response
+    {
+        $this->request->allowMethod(['post']);
+
+        $back = ['controller' => 'Users', 'action' => 'settings'];
+
+        if ($this->squareAuth->getActiveIdentity() !== null) {
+            $this->Flash->error('Disconnect Square before clearing its data.', ['key' => 'square']);
+
+            return $this->redirect($back);
+        }
+
+        $imports = $this->fetchTable('Imports');
+
+        if ($imports->hasRunningImport()) {
+            $this->Flash->error(
+                'Cannot clear data while a sync is running - try again shortly.',
+                ['key' => 'square'],
+            );
+
+            return $this->redirect($back);
+        }
+
+        // Payments and bookings first, customers after, sync history last.
+        $names = ['Payments', 'Bookings', 'Customers', 'Imports'];
+        $counts = [];
+
+        try {
+            $imports->getConnection()->transactional(function () use ($names, &$counts): void {
+                foreach ($names as $name) {
+                    $counts[$name] = $this->fetchTable($name)->deleteAll([]);
+                }
+            });
+        } catch (\Throwable $e) {
+            \Cake\Log\Log::error('Clearing Square data failed: ' . $e->getMessage());
+            $this->Flash->error('Could not clear the data. Nothing was deleted.', ['key' => 'square']);
+
+            return $this->redirect($back);
+        }
+
+        $this->Flash->success(sprintf(
+            'Cleared %d customers, %d bookings and %d payments.',
+            $counts['Customers'],
+            $counts['Bookings'],
+            $counts['Payments'],
+        ), ['key' => 'square']);
+
+        return $this->redirect($back);
+    }
+
+    /**
      * Manually triggers a full sync (customers, bookings, and payments) from Square.
      *
      * @return \Cake\Http\Response Redirect to the Settings page.

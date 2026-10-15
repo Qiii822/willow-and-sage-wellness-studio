@@ -141,18 +141,27 @@ $span = $weekStart->format('F') === $weekEnd->format('F')
                                     $offset = $entry['start_minutes'] - ($firstHour * 60);
                                     ?>
 
-                                    <article
-                                        class="calendar-booking<?= $entry['booking']->status === 'pending' ? ' is-pending' : '' ?>"
+                                    <?php // A link, so the details - and taking payment - are a click away. ?>
+                                    <a
+                                        href="<?= $this->Url->build(['action' => 'view', $entry['booking']->id]) ?>"
+                                        class="calendar-booking<?= $entry['booking']->status === 'pending' ? ' is-pending' : '' ?><?= $entry['unpaid'] ? ' is-unpaid' : '' ?>"
                                         style="--start: <?= $offset ?>; --length: <?= $entry['duration'] ?>;"
                                     >
-                                        <p class="calendar-booking-time"><?= h($entry['label']) ?></p>
+                                        <p class="calendar-booking-time">
+                                            <?= h($entry['label']) ?>
+                                            <?php if ($entry['paid']): ?>
+                                                <span class="calendar-booking-paid">Paid</span>
+                                            <?php elseif ($entry['unpaid']): ?>
+                                                <span class="calendar-booking-paid">Unpaid</span>
+                                            <?php endif; ?>
+                                        </p>
                                         <p class="calendar-booking-name"><?= h($entry['name']) ?></p>
                                         <?php if ($entry['treatments'] !== []): ?>
                                             <p class="calendar-booking-treatment">
                                                 <?= h(implode(', ', $entry['treatments'])) ?>
                                             </p>
                                         <?php endif; ?>
-                                    </article>
+                                    </a>
 
                                 <?php endforeach; ?>
 

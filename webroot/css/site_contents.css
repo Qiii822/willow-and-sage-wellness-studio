@@ -478,6 +478,55 @@ select.content-input {
 }
 
 /*
+ * The content editor: form on the left, a sticky card with the save and
+ * reset buttons on the right - the same arrangement as the basket on the
+ * booking page, so the save button stays in view down the whole form.
+ */
+.content-page-with-side {
+    width: min(1220px, 100%);
+}
+
+.content-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 32px;
+    align-items: start;
+}
+
+.content-side {
+    position: sticky;
+    top: 24px;
+
+    padding: 24px;
+
+    background: #fffdfa;
+    border: 1px solid rgba(24, 20, 17, 0.07);
+    border-radius: 16px;
+
+    box-shadow: 0 8px 22px rgba(24, 20, 17, 0.04);
+}
+
+.content-side h2 {
+    margin: 0 0 8px;
+
+    color: #2f2d2b;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.content-side-note {
+    margin: 0 0 18px;
+
+    color: #6b6259;
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+.content-side .content-button {
+    width: 100%;
+}
+
+/*
  * Laid out as a flex box rather than relying on the centring a <button>
  * gets for free, because this class is worn by both <button> and <a>. The
  * height comes from min-height with no vertical padding, so on an anchor
@@ -551,10 +600,22 @@ select.content-input {
 
 /* Set apart from the save action, so the two are not clicked by mistake. */
 .content-reset {
-    margin-top: 34px;
-    padding-top: 22px;
+    margin-top: 18px;
+    padding-top: 18px;
 
     border-top: 1px solid rgba(24, 20, 17, 0.08);
+}
+
+/* Too narrow for two columns: the card drops below the form. */
+@media (max-width: 1100px) {
+    .content-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .content-side {
+        position: static;
+    }
 }
 
 @media (max-width: 640px) {
@@ -568,5 +629,4 @@ select.content-input {
 
     .content-actions .content-button {
         width: 100%;
-    }
-}
+    }}
