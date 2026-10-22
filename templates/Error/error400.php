@@ -46,9 +46,9 @@ else :
             <div class="error-actions">
 
                 <?= $this->Html->link(
-                    'Back to Dashboard',
+                    'Home',
                     [
-                        'controller' => 'Dashboard',
+                        'controller' => 'Home',
                         'action' => 'index'
                     ],
                     [
