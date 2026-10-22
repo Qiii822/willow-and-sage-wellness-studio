@@ -119,14 +119,13 @@ $byStaff = fn ($booking): bool => in_array($booking->square_booking_id, $cancell
                             <th>Customer</th>
                             <th>Start</th>
                             <th>Status</th>
-                            <th>Location</th>
                         </tr>
                         </thead>
 
                         <tbody>
                         <?php if (count($bookings) === 0): ?>
                             <tr>
-                                <td colspan="4">
+                                <td colspan="3">
                                     No bookings match the selected filters.
                                 </td>
                             </tr>
@@ -157,10 +156,6 @@ $byStaff = fn ($booking): bool => in_array($booking->square_booking_id, $cancell
                                     <span class="status-badge <?= h(\App\Model\Table\BookingsTable::statusClass($booking->status, $byStaff($booking))) ?>">
                                         <?= h(\App\Model\Table\BookingsTable::statusLabel($booking->status, $byStaff($booking))) ?>
                                     </span>
-                                </td>
-
-                                <td>
-                                    <?= h($booking->location_id ?? '-') ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
