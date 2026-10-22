@@ -136,6 +136,19 @@
             var input = row.querySelector('.book-choice-input');
 
             if (input) {
+                row.addEventListener('click', function (event) {
+                    if (event.target.closest('label, input, button, a, select, textarea')) {
+                        return;
+                    }
+
+                    if (input.disabled) {
+                        return;
+                    }
+
+                    input.checked = !input.checked;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+
                 input.addEventListener('change', function () {
                     /*
                      * Cleared on any change, not once the cart is non-empty:
