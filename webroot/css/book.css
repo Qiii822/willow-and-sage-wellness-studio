@@ -345,15 +345,35 @@
 }
 
 .book-cart-items li {
+    border-bottom: 1px solid var(--border);
+}
+
+.book-cart-remove {
     display: flex;
     justify-content: space-between;
     gap: 14px;
 
+    width: 100%;
     padding: 9px 0;
 
+    color: inherit;
+    font: inherit;
     font-size: 14.5px;
+    text-align: left;
 
-    border-bottom: 1px solid var(--border);
+    background: transparent;
+    border: 0;
+
+    cursor: pointer;
+}
+
+.book-cart-remove:hover .book-cart-name {
+    color: var(--gold-dark);
+}
+
+.book-cart-remove:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 2px;
 }
 
 .book-cart-name {

@@ -88,8 +88,19 @@
                 // and inventing one here would be worse than saying so.
                 cost.textContent = price > 0 ? money(price) : 'Price varies';
 
-                item.appendChild(name);
-                item.appendChild(cost);
+                var remove = document.createElement('button');
+                var input = row.querySelector('.book-choice-input');
+
+                remove.type = 'button';
+                remove.className = 'book-cart-remove';
+                remove.dataset.serviceId = input.value;
+                remove.setAttribute(
+                    'aria-label',
+                    'Remove ' + row.dataset.name + ' from your treatments'
+                );
+                remove.appendChild(name);
+                remove.appendChild(cost);
+                item.appendChild(remove);
                 list.appendChild(item);
 
                 row.classList.add('is-chosen');
@@ -165,6 +176,29 @@
                     render();
                 });
             }
+        });
+
+        list.addEventListener('click', function (event) {
+            var remove = event.target.closest('.book-cart-remove');
+
+            if (!remove || !list.contains(remove)) {
+                return;
+            }
+
+            var row = rows.find(function (treatment) {
+                var input = treatment.querySelector('.book-choice-input');
+
+                return input && input.value === remove.dataset.serviceId;
+            });
+
+            if (!row) {
+                return;
+            }
+
+            var input = row.querySelector('.book-choice-input');
+
+            input.checked = false;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
         /*
