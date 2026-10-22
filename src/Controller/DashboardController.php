@@ -883,6 +883,34 @@ class DashboardController extends AppController
                 $customerGrowthData
             );
 
+        /*
+         * Hide future months in Customer Growth.
+         */
+        $currentYear = (int)$today->format('Y');
+        $currentMonth = (int)$today->format('n');
+
+        if ($customerGrowthYear >= $currentYear) {
+
+            $visibleMonths =
+                $customerGrowthYear === $currentYear
+                    ? $currentMonth
+                    : 0;
+
+            $customerGrowthLabels =
+                array_slice(
+                    $customerGrowthLabels,
+                    0,
+                    $visibleMonths
+                );
+
+            $customerGrowthValues =
+                array_slice(
+                    $customerGrowthValues,
+                    0,
+                    $visibleMonths
+                );
+        }
+
 
         /*
          * -------------------------------------------------
@@ -966,11 +994,35 @@ class DashboardController extends AppController
             'Dec',
         ];
 
-
         $bookingTrendValues =
             array_values(
                 $bookingTrendData
             );
+
+        /*
+         * Hide future months in Booking Trends.
+         */
+        if ($bookingTrendYear >= $currentYear) {
+
+            $visibleMonths =
+                $bookingTrendYear === $currentYear
+                    ? $currentMonth
+                    : 0;
+
+            $bookingTrendLabels =
+                array_slice(
+                    $bookingTrendLabels,
+                    0,
+                    $visibleMonths
+                );
+
+            $bookingTrendValues =
+                array_slice(
+                    $bookingTrendValues,
+                    0,
+                    $visibleMonths
+                );
+        }
 
 
         /*
