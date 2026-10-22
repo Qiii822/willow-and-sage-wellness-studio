@@ -37,8 +37,16 @@ $this->Html->css('services', ['block' => true]);
             <?php foreach ($menu as $category => $services): ?>
 
                 <?php $count = count($services); ?>
+                <?php $slug = \App\Model\Table\ServicesTable::categorySlug($category); ?>
 
-                <article class="services-overview-card">
+                <a
+                    class="services-overview-card"
+                    href="<?= h($this->Url->build([
+                        'controller' => 'Services',
+                        'action' => 'index',
+                        '?' => ['category' => $slug],
+                    ])) ?>"
+                >
 
                     <h3><?= h($category) ?></h3>
 
@@ -55,7 +63,7 @@ $this->Html->css('services', ['block' => true]);
                         <?= $count ?> treatment<?= $count === 1 ? '' : 's' ?>
                     </p>
 
-                </article>
+                </a>
 
             <?php endforeach; ?>
 
