@@ -345,6 +345,7 @@ $isSuperAdmin = $role === 'superadmin';
             <?= $this->Form->button('Restore original wording', [
                 'class' => 'settings-button secondary',
                 'confirm' => 'Put every part of the reminder email back to its original wording?',
+                'data-confirm-label' => 'Restore wording',
             ]) ?>
             <?= $this->Form->end() ?>
 

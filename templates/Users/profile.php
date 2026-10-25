@@ -87,6 +87,7 @@ $this->Html->css('profile', ['block' => true]);
                 ],
                 [
                     'confirm' => __('Are you sure you want to logout?'),
+                    'data-confirm-label' => __('Log out'),
                     'class' => 'button logout-button'
                 ]
             ) ?>

@@ -41,6 +41,7 @@ rel="stylesheet"
 
 <?= $this->fetch('meta') ?>
 <?= $this->fetch('css') ?>
+<?= $this->Html->css('site_dialog') ?>
 
 <!-- Lucide Icons -->
 <script src="https://unpkg.com/lucide@1.32.0/dist/umd/lucide.min.js"
@@ -61,6 +62,7 @@ src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.j
 </script>
 
 <!-- Page-specific scripts -->
+<?= $this->Html->script('site_dialog') ?>
 <?= $this->fetch('script') ?>
 
 <?= $this->Html->script('dashboard') ?>

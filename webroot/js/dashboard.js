@@ -311,14 +311,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     resetButton?.addEventListener(
         'click',
-        function () {
+        async function () {
 
-            const confirmed =
-                window.confirm(
-                    'Reset the dashboard layout back to the default ' +
-                    'arrangement? Your saved widget layout will be ' +
-                    'discarded.'
-                );
+            /*
+             * The site's own dialog (site_dialog.js) rather than the
+             * browser's box, falling back to it on a page without one.
+             */
+            const ask = window.siteConfirm
+                || ((message) => Promise.resolve(window.confirm(message)));
+
+            const confirmed = await ask(
+                'Reset the dashboard layout back to the default ' +
+                'arrangement? Your saved widget layout will be ' +
+                'discarded.',
+                {confirmLabel: 'Reset layout', danger: true}
+            );
 
 
             if (!confirmed) {

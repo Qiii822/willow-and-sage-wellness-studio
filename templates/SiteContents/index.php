@@ -260,6 +260,8 @@ $this->Html->script('site_contents', ['block' => true]);
         <?= $this->Form->button('Restore original wording', [
             'class' => 'content-button danger',
             'confirm' => 'This replaces every field with the original text. Continue?',
+            'data-confirm-label' => 'Restore original wording',
+            'data-confirm-danger' => true,
         ]) ?>
         <?= $this->Form->end() ?>
 

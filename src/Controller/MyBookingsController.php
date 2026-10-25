@@ -4,9 +4,12 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\AustralianMobile;
+use App\Model\Table\BookingAccessCodesTable;
 use App\Service\BookingNotifier;
 use App\Service\CustomerBookingLookup;
 use App\Service\SquareApiService;
+use App\Service\Sync\BookingSyncService;
+use App\Service\TwilioVerify;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 use Cake\I18n\DateTime;
@@ -84,8 +87,21 @@ class MyBookingsController extends AppController
         $phone = $this->verifiedPhone();
 
         if ($phone !== null) {
+            /*
+             * The next month brought up to date from Square first, the way
+             * the staff calendar refreshes its week: the list reads the local
+             * copy, and without this an appointment Wendy just took over the
+             * phone, or moved in Square, would not be here until someone
+             * synced. One request; if Square cannot be reached the list is
+             * simply the last copy.
+             */
+            (new BookingSyncService())->refreshWindow(DateTime::now(), DateTime::now()->addDays(30));
+
+            $lookup = new CustomerBookingLookup();
+
             $this->set('phone', $phone);
-            $this->set('bookings', (new CustomerBookingLookup())->upcoming($phone));
+            $this->set('bookings', $lookup->upcoming($phone));
+            $this->set('past', $lookup->past($phone));
             $this->set('timezone', $this->timezone());
 
             return $this->render('list');
@@ -125,8 +141,25 @@ class MyBookingsController extends AppController
             }
 
             $code = (string)$this->request->getData('code');
+            $notifier = new BookingNotifier();
 
-            if ($this->BookingAccessCodes->verify($phone, $code)) {
+            // Twilio Verify's own code when it sent one, otherwise the site's.
+            $result = $notifier->checksCodes()
+                ? $notifier->checkAccessCode($phone, $code)
+                : ($this->BookingAccessCodes->verify($phone, $code) ? TwilioVerify::APPROVED : TwilioVerify::WRONG);
+
+            if ($result === TwilioVerify::SPENT) {
+                /*
+                 * Not "that code was not right": Twilio has stopped taking
+                 * this one at all - too many tries, or it ran out - so even
+                 * the right code would fail now, and saying it was wrong
+                 * sends them back to retype the one in their texts.
+                 */
+                $this->Flash->error(
+                    'That code cannot be used any more - too many tries, or it has run out. '
+                    . 'Press "Send another code" for a new one.',
+                );
+            } elseif ($result === TwilioVerify::APPROVED) {
                 $session = $this->request->getSession();
                 $session->write(self::SESSION_KEY, $phone);
                 $session->write(
@@ -137,9 +170,9 @@ class MyBookingsController extends AppController
                 $session->delete('MyBookings.shownCode');
 
                 return $this->redirect(['action' => 'index']);
+            } else {
+                $this->Flash->error('That code was not right, or it has expired. Ask for a new one.');
             }
-
-            $this->Flash->error('That code was not right, or it has expired. Ask for a new one.');
         }
 
         $this->set('phone', $phone);
@@ -183,9 +216,15 @@ class MyBookingsController extends AppController
         } catch (Throwable $e) {
             Log::error('Booking cancellation failed: ' . $e->getMessage());
 
-            $this->Flash->error(
-                'We could not cancel that appointment. Please call the studio on (08) 8395 5966.',
-            );
+            /*
+             * The studio's number as edited on the website screen, the one
+             * the footer shows - not one written in here, which went stale.
+             */
+            $phone = trim((string)($this->fetchTable('SiteContents')->values()['footer.phone'] ?? ''));
+
+            $this->Flash->error($phone === ''
+                ? 'We could not cancel that appointment. Please call the studio.'
+                : sprintf('We could not cancel that appointment. Please call the studio on %s.', $phone));
 
             return $this->redirect(['action' => 'index']);
         }
@@ -355,10 +394,31 @@ class MyBookingsController extends AppController
             return $this->redirect(['action' => 'verify']);
         }
 
-        $shown = (new BookingNotifier())->sendAccessCode($phone, $issued['code']);
+        $delivery = (new BookingNotifier())->sendAccessCode($phone, $issued['code']);
 
-        // Null in production: there the code only exists in the text message.
-        $session->write('MyBookings.shownCode', $shown);
+        // Null once texts are really sent: the code then only exists in the message.
+        $session->write('MyBookings.shownCode', $delivery['shown']);
+
+        if (!$delivery['sent']) {
+            /*
+             * Said plainly rather than "we have sent a code", which would
+             * leave them waiting on a text that is not coming. Twilio's own
+             * limit on texts to one number is named for what it is: asking
+             * again before it lifts is only refused again.
+             */
+            $this->Flash->error($delivery['too_many']
+                ? sprintf(
+                    'That number has been sent too many codes in a short time. '
+                    . 'Please wait %d minutes, then ask for a new one.',
+                    TwilioVerify::SEND_WINDOW_MINUTES,
+                )
+                : sprintf(
+                    'We could not send a text to that number just now. Please check it and try again in %d seconds.',
+                    BookingAccessCodesTable::RESEND_SECONDS,
+                ));
+
+            return $this->redirect(['action' => 'index']);
+        }
 
         $this->Flash->success('We have sent a code to that number.');
 

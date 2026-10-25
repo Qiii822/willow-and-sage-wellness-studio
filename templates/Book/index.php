@@ -13,8 +13,8 @@
  *
  * @var \App\View\AppView $this
  * @var array<string, array<int, \App\Model\Entity\Service>> $menu
- * @var string|null $preselectedService Id of a treatment pre-ticked from a
- *  "book this" link on the menu page, or from an offer card.
+ * @var array<int, string> $preselectedServices Treatments pre-ticked from a
+ *  "book this" link on the menu page, an offer card, or "Book again".
  * @var array<string, \App\Model\Entity\Offer> $offers The running offers,
  *  by the treatment each is about.
  */
@@ -101,7 +101,7 @@ $this->Html->script('book_cart', ['block' => true]);
                                         'id' => $fieldId,
                                         'hiddenField' => false,
                                         'disabled' => !$bookable,
-                                        'checked' => $bookable && $service->id === $preselectedService,
+                                        'checked' => $bookable && in_array($service->id, $preselectedServices, true),
                                         'class' => 'book-choice-input',
                                     ]) ?>
 

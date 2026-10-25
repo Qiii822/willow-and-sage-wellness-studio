@@ -952,6 +952,7 @@ $months = [
                                                             'Send a TEST reminder email for '
                                                             . $customerName
                                                             . '?',
+                                                        'data-confirm-label' => 'Send email',
                                                     ]
                                                 ) ?>
 

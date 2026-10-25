@@ -87,6 +87,10 @@ if ($booking->start_at) {
                         ]) ?>
                         <?= $this->Form->button('Cancel appointment', [
                             'class' => 'booking-link-button is-danger',
+                            // The words on the site's own dialog (site_dialog.js).
+                            'data-confirm-label' => 'Cancel appointment',
+                            'data-cancel-label' => 'Keep it',
+                            'data-confirm-danger' => true,
                             'confirm' => sprintf(
                                 "Cancel %s's appointment%s? Square is told straight away and the slot is freed up. This cannot be undone.",
                                 $customerName,
@@ -373,6 +377,7 @@ if ($booking->start_at) {
                     <?= $this->Form->button('Complete payment', [
                         'class' => 'table-action',
                         'confirm' => 'Record this payment in Square? It shows on the payments page straight away.',
+                        'data-confirm-label' => 'Record payment',
                     ]) ?>
 
                     <?= $this->Form->end() ?>
@@ -414,6 +419,8 @@ if ($booking->start_at) {
                     ]) ?>
                     <?= $this->Form->button('Refund payment', [
                         'class' => 'booking-link-button is-danger',
+                        'data-confirm-label' => 'Refund payment',
+                        'data-confirm-danger' => true,
                         'confirm' => sprintf(
                             'Refund the %s payment? Square records it as refunded in full, and the booking goes back to not paid.',
                             $formatMoney($paidPayment->amount),

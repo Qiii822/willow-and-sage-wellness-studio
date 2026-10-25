@@ -31,10 +31,11 @@ $this->Html->css('book', ['block' => true]);
         <?php if ($shownCode !== null): ?>
             <?php /*
              * Development only. The notifier hands the code back just here,
-             * so the flow can be walked without an SMS service existing yet.
+             * while texts are only being logged (SMS_TRANSPORT is not
+             * twilio), so the flow can be walked without a phone.
              */ ?>
             <p class="book-empty">
-                No SMS service is connected yet, so here is the code:
+                Texts are not being sent on this copy of the site, so here is the code:
                 <strong><?= h($shownCode) ?></strong>
             </p>
         <?php endif; ?>

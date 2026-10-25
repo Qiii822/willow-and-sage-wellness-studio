@@ -1,0 +1,119 @@
+/*
+ * The site's own confirm dialog (site_dialog.js), used on every layout - the
+ * public pages and the staff dashboard alike - so it leans only on the
+ * shared variables, with fallbacks for a layout that does not load them.
+ */
+
+.site-dialog {
+    width: min(420px, calc(100vw - 32px));
+    padding: 26px 26px 22px;
+
+    color: var(--text-primary, #2f2d2b);
+    font-family: inherit;
+
+    background: var(--panel, #fbfaf8);
+    border: 1px solid var(--border, #e5dfd9);
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(47, 45, 43, 0.22);
+}
+
+.site-dialog::backdrop {
+    background: rgba(47, 45, 43, 0.38);
+}
+
+.site-dialog[open] {
+    animation: site-dialog-in 0.16s ease-out;
+}
+
+@keyframes site-dialog-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-dialog[open] {
+        animation: none;
+    }
+}
+
+.site-dialog-message {
+    margin: 0 0 22px;
+
+    font-size: 16.5px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.site-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.site-dialog-actions button {
+    min-height: 44px;
+    padding: 0 22px;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.site-dialog-cancel {
+    color: var(--text-primary, #2f2d2b);
+
+    background: transparent;
+    border: 1px solid var(--border, #e5dfd9);
+}
+
+.site-dialog-cancel:hover {
+    border-color: var(--gold-dark, #9a7b52);
+}
+
+.site-dialog-confirm {
+    color: #fff;
+
+    background: var(--gold-dark, #9a7b52);
+    border: 1px solid var(--gold-dark, #9a7b52);
+}
+
+.site-dialog-confirm:hover {
+    background: #7f653f;
+}
+
+/* For a yes that cannot be undone - cancelling, refunding. */
+.site-dialog-confirm.is-danger {
+    background: #b3382c;
+    border-color: #b3382c;
+}
+
+.site-dialog-confirm.is-danger:hover {
+    background: #962c22;
+}
+
+.site-dialog-actions button:focus-visible {
+    outline: 2px solid var(--gold-dark, #9a7b52);
+    outline-offset: 2px;
+}
+
+/* On a phone the buttons stack full width, the safe one nearest the thumb. */
+@media (max-width: 480px) {
+    .site-dialog-actions {
+        flex-direction: column-reverse;
+    }
+
+    .site-dialog-actions button {
+        width: 100%;
+    }
+}

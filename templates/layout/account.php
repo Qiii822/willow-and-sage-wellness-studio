@@ -30,6 +30,7 @@
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
+    <?= $this->Html->css('site_dialog') ?>
 
     <script src="https://unpkg.com/lucide@1.32.0/dist/umd/lucide.min.js"
         integrity="sha384-tiWC3xExiSLdtFfMgETUmXUaC8RevUW8QlVQIH7p2XzwWAeYgnGiqSKD3KOLS7qk"
@@ -43,6 +44,7 @@
 
 <?= $this->fetch('content') ?>
 
+<?= $this->Html->script('site_dialog') ?>
 <?= $this->fetch('script') ?>
 
 </body>

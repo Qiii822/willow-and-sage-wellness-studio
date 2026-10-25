@@ -1,12 +1,19 @@
 <?php
 /**
- * What this number has booked.
+ * What this number has booked: what is coming up, and what has been.
+ *
+ * Laid out the way Square's own list of a customer's appointments is - the
+ * upcoming ones to change or cancel, the past ones to book again - as cards
+ * like the rest of the booking pages.
  *
  * @var \App\View\AppView $this
  * @var string $phone
- * @var array<int, array<string, mixed>> $bookings
+ * @var array<int, array<string, mixed>> $bookings Upcoming, soonest first.
+ * @var array<int, array<string, mixed>> $past Latest first.
  * @var string $timezone
  */
+
+use App\Model\AustralianMobile;
 
 $this->assign('title', 'My bookings - ' . $this->SiteContent->raw('site.title'));
 
@@ -16,108 +23,128 @@ $this->Html->css('book', ['block' => true]);
 $this->Html->script('local_times', ['block' => true]);
 
 $zone = new DateTimeZone($timezone);
+
+// "0451 663 613", the way people say their own number.
+$normalised = AustralianMobile::normalise($phone);
+$shownPhone = $normalised === null
+    ? $phone
+    : vsprintf('0%s %s %s', [substr($normalised, 3, 3), substr($normalised, 6, 3), substr($normalised, 9, 3)]);
 ?>
 
 <?= $this->element('site_header') ?>
 
 <main class="site-main">
 
-    <section class="book-page">
+    <section class="book-page mybookings-page">
 
-        <header class="book-header">
-            <h1>My bookings</h1>
-            <p>
-                Everything booked with <strong><?= h($phone) ?></strong>.
-                <span data-zone-note="<?= h($timezone) ?>">
-                    All times are
-                    <?= h(str_replace('_', ' ', explode('/', $timezone)[1] ?? $timezone)) ?>
-                    time, where the studio is.
-                </span>
-            </p>
+        <header class="book-header mybookings-header">
+            <div>
+                <h1>My bookings</h1>
+                <p>
+                    Signed in as <strong><?= h($shownPhone) ?></strong>.
+                    <span data-zone-note="<?= h($timezone) ?>">
+                        All times are
+                        <?= h(str_replace('_', ' ', explode('/', $timezone)[1] ?? $timezone)) ?>
+                        time, where the studio is.
+                    </span>
+                </p>
+            </div>
+
+            <?= $this->Html->link('Sign out', ['action' => 'signOut'], ['class' => 'book-secondary']) ?>
         </header>
+
+        <h2 class="mybooking-section">Upcoming</h2>
 
         <?php if ($bookings === []): ?>
 
-            <p class="book-empty">
-                Nothing booked with that number yet.
+            <div class="mybooking-empty">
+                <p class="mybooking-empty-title">No upcoming appointments</p>
+                <p>When you book a treatment, it will be waiting for you here.</p>
                 <?= $this->Html->link('Book a treatment', [
                     'controller' => 'Book',
                     'action' => 'index',
-                ]) ?>.
-            </p>
+                ], ['class' => 'mybooking-cta']) ?>
+            </div>
 
         <?php else: ?>
 
-            <?php foreach ($bookings as $booking): ?>
+            <div class="mybooking-list">
+                <?php foreach ($bookings as $booking): ?>
 
-                <?php
-                /*
-                 * Already a correct instant, carrying the server's timezone -
-                 * so it is converted, never relabelled. The two are both
-                 * Adelaide today, but converting keeps this right if the
-                 * server's zone and Square's location ever differ.
-                 */
-                $local = $booking['start_at']->setTimezone($zone);
-                ?>
+                    <?php
+                    $actions = [];
 
-                <article class="mybooking">
+                    /*
+                     * Only a booking made here can be moved: Square needs the
+                     * treatment's duration to search for a free slot, and one
+                     * taken over the phone has no draft holding it.
+                     */
+                    if ($booking['draft'] !== null) {
+                        $actions[] = $this->Html->link('Change time', [
+                            'action' => 'reschedule',
+                            $booking['square_booking_id'],
+                        ], ['class' => 'book-secondary']);
+                    }
 
-                    <div class="mybooking-when">
-                        <p
-                            class="mybooking-date"
-                            data-local-time="<?= h($local->format(DATE_RFC3339)) ?>"
-                            data-local-format="date"
-                        ><?= h($local->format('l j F')) ?></p>
-                        <p
-                            class="mybooking-time"
-                            data-local-time="<?= h($local->format(DATE_RFC3339)) ?>"
-                        ><?= h($local->format('g:i a')) ?></p>
-                    </div>
+                    $actions[] = $this->Form->postLink('Cancel', [
+                        'action' => 'cancel',
+                        $booking['square_booking_id'],
+                    ], [
+                        'class' => 'mybooking-cancel',
+                        'confirm' => 'Cancel this appointment?',
+                        // The words on the site's own dialog (site_dialog.js).
+                        'data-confirm-label' => 'Cancel appointment',
+                        'data-cancel-label' => 'Keep it',
+                        'data-confirm-danger' => true,
+                    ]);
+                    ?>
 
-                    <div class="mybooking-what">
+                    <?= $this->element('my_bookings/card', compact('booking', 'zone', 'actions')) ?>
 
-                        <ul class="mybooking-treatments">
-                            <?php foreach ($booking['treatments'] as $treatment): ?>
-                                <li><?= h($treatment) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
+                <?php endforeach; ?>
+            </div>
 
-                        <div class="mybooking-actions">
-
-                            <?php /*
-                             * Only a booking made here can be moved: Square
-                             * needs the treatment's duration to search for a
-                             * free slot, and one taken over the phone has no
-                             * draft holding it.
-                             */ ?>
-                            <?php if ($booking['draft'] !== null): ?>
-                                <?= $this->Html->link('Change time', [
-                                    'action' => 'reschedule',
-                                    $booking['square_booking_id'],
-                                ], ['class' => 'book-secondary']) ?>
-                            <?php endif; ?>
-
-                            <?= $this->Form->postLink('Cancel', [
-                                'action' => 'cancel',
-                                $booking['square_booking_id'],
-                            ], [
-                                'class' => 'mybooking-cancel',
-                                'confirm' => 'Cancel this appointment?',
-                            ]) ?>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-            <?php endforeach; ?>
+            <?php /*
+             * Someone checking on an appointment is often about to book the
+             * next one, so the way in sits right under what they have.
+             */ ?>
+            <p class="mybooking-more">
+                <?= $this->Html->link('Book another treatment', [
+                    'controller' => 'Book',
+                    'action' => 'index',
+                ], ['class' => 'mybooking-cta']) ?>
+            </p>
 
         <?php endif; ?>
 
-        <p class="book-back">
-            <?= $this->Html->link('Sign out', ['action' => 'signOut']) ?>
-        </p>
+        <?php if ($past !== []): ?>
+
+            <h2 class="mybooking-section">Past</h2>
+
+            <div class="mybooking-list">
+                <?php foreach ($past as $booking): ?>
+
+                    <?php
+                    /*
+                     * The same treatments, ticked and waiting in the cart.
+                     * Left off when none of them is on the menu any more -
+                     * there would be nothing to book.
+                     */
+                    $actions = $booking['rebook_service_ids'] === [] ? [] : [
+                        $this->Html->link('Book again', [
+                            'controller' => 'Book',
+                            'action' => 'index',
+                            '?' => ['service' => $booking['rebook_service_ids']],
+                        ], ['class' => 'mybooking-cta is-small']),
+                    ];
+                    ?>
+
+                    <?= $this->element('my_bookings/card', compact('booking', 'zone', 'actions') + ['isPast' => true]) ?>
+
+                <?php endforeach; ?>
+            </div>
+
+        <?php endif; ?>
 
     </section>
 

@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Model\Duration;
 use App\Service\SquareApiService;
+use App\Service\Sync\BookingSyncService;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 use DateTimeImmutable;
@@ -145,7 +146,14 @@ class BookController extends AppController
         }
 
         $this->set('menu', $services->menu());
-        $this->set('preselectedService', $this->request->getQuery('service'));
+        /*
+         * One treatment from a "Book this" link, or several from "Book
+         * again" on My bookings, which repeats a whole visit.
+         */
+        $this->set('preselectedServices', array_map(
+            'strval',
+            array_filter((array)$this->request->getQuery('service'), 'is_string'),
+        ));
         $this->set(compact('cartError', 'longestDayMinutes', 'offers'));
     }
 
@@ -522,6 +530,19 @@ class BookController extends AppController
         $draft->failure_reason = null;
 
         $this->BookingDrafts->saveOrFail($draft);
+
+        /*
+         * Copied into the local bookings straight away, by refreshing the
+         * day it is on. My bookings and the staff calendar both read that
+         * copy, which otherwise waits for someone to sync - so a customer
+         * who went to check what they had just booked found nothing there.
+         * In the server's zone, which is how those rows are stored.
+         */
+        $day = $draft->startAtUtc()?->setTimezone(new DateTimeZone(date_default_timezone_get()))->setTime(0, 0);
+
+        if ($day !== null) {
+            (new BookingSyncService())->refreshWindow($day, $day->modify('+1 day'));
+        }
 
         return true;
     }

@@ -54,6 +54,22 @@
 
             return p.weekday + ' ' + p.day + ' ' + p.month;
         },
+        // 'D', 'j' and 'M' - the three lines of a date badge.
+        weekday: function (date) {
+            return parts(date, {weekday: 'short'}).weekday;
+        },
+        day: function (date) {
+            return parts(date, {day: 'numeric'}).day;
+        },
+        month: function (date) {
+            return parts(date, {month: 'short'}).month;
+        },
+        // 'D j M Y'
+        shortdate: function (date) {
+            var p = parts(date, {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'});
+
+            return p.weekday + ' ' + p.day + ' ' + p.month + ' ' + p.year;
+        },
         // 'l j F, g:i a'
         long: function (date) {
             return formats.date(date) + ', ' + clock(date);

@@ -1307,59 +1307,163 @@
     margin-top: 30px;
 }
 
-.mybooking {
+/* =========================================================
+   My bookings
+   ========================================================= */
+
+/* Who is signed in on one side, the way out on the other. */
+.mybookings-header {
     display: flex;
-    gap: 26px;
-
-    padding: 22px 0;
-
-    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 
-/* Fixed, so the dates line up down the page rather than each column
-   being as wide as its own longest day name. */
-.mybooking-when {
-    flex: 0 0 168px;
+.mybookings-header .book-secondary {
+    flex: none;
 }
 
-.mybooking-date {
+/* "Upcoming" and "Past", as Square's own appointment list splits them. */
+.mybooking-section {
+    margin: 36px 0 14px;
+
+    color: var(--text-primary);
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.mybooking-list {
+    display: grid;
+    gap: 14px;
+}
+
+.mybooking-card {
+    display: flex;
+    gap: 22px;
+    align-items: flex-start;
+
+    padding: 22px 24px;
+
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* Past ones step back, so what is coming up leads the page. */
+.mybooking-card.is-past {
+    box-shadow: none;
+}
+
+/* The date at a glance, like a page torn off a desk calendar. */
+.mybooking-badge {
+    display: flex;
+    flex: 0 0 64px;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 8px 0 9px;
+
+    color: var(--gold-dark);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    line-height: 1.2;
+    text-transform: uppercase;
+
+    background: var(--primary-light);
+    border-radius: 14px;
+}
+
+.mybooking-badge-day {
+    color: var(--text-primary);
+    font-size: 26px;
+    letter-spacing: -0.5px;
+}
+
+.mybooking-card.is-past .mybooking-badge {
+    color: var(--text-secondary);
+
+    background: rgba(139, 126, 116, 0.1);
+}
+
+.mybooking-card.is-past .mybooking-badge-day {
+    color: var(--text-secondary);
+}
+
+/* From nothing, so on a narrow card it shrinks beside the badge rather
+   than wrapping under it - only the price and buttons drop below. */
+.mybooking-body {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.mybooking-title {
     margin: 0;
 
     color: var(--text-primary);
-    font-size: 15.5px;
+    font-size: 17px;
     font-weight: 600;
+    line-height: 1.4;
 }
 
-.mybooking-time {
+/* One that did not go ahead reads as such at a glance. */
+.mybooking-card.is-off .mybooking-title {
+    color: var(--text-secondary);
+}
+
+.mybooking-when {
+    margin: 6px 0 0;
+
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.mybooking-details {
     margin: 4px 0 0;
 
-    color: var(--gold);
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.mybooking-what {
-    flex: 1 1 auto;
-}
-
-.mybooking-treatments {
-    margin: 0;
-    padding: 0;
-
     color: var(--text-secondary);
-    font-size: 15.5px;
-    line-height: 1.8;
+    font-size: 14.5px;
+}
 
-    list-style: none;
+/* Why a past appointment did not go ahead - cancelled, missed. */
+.mybooking-status {
+    display: inline-block;
+
+    margin: 0 0 8px;
+    padding: 2px 10px;
+
+    color: var(--text-primary);
+    font-size: 12.5px;
+    font-weight: 600;
+
+    background: rgba(139, 126, 116, 0.14);
+    border-radius: 999px;
+}
+
+.mybooking-side {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.mybooking-price {
+    margin: 0;
+
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 700;
 }
 
 .mybooking-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
-
-    margin-top: 14px;
+    justify-content: flex-end;
 }
 
 /* Cancelling is the one thing here that cannot be undone, so it is a
@@ -1367,6 +1471,74 @@
 .mybooking-cancel {
     color: #b3382c;
     font-size: 14.5px;
+    font-weight: 600;
+}
+
+/*
+ * The one thing the page is asking for - book - in the studio's gold, the
+ * same as the site's main buttons but sized to sit in a card.
+ */
+.mybooking-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 46px;
+    padding: 0 24px;
+
+    color: var(--on-primary);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+
+    background: var(--gold);
+    border-radius: 999px;
+
+    transition: background 0.15s ease;
+}
+
+.mybooking-cta:hover {
+    background: var(--gold-dark);
+}
+
+.mybooking-cta:focus-visible {
+    outline: 2px solid var(--gold-dark);
+    outline-offset: 3px;
+}
+
+.mybooking-cta.is-small {
+    min-height: 40px;
+    padding: 0 18px;
+
+    font-size: 14px;
+}
+
+.mybooking-more {
+    margin: 18px 0 0;
+}
+
+.mybooking-empty {
+    padding: 30px 28px;
+
+    text-align: center;
+
+    background: var(--panel);
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+}
+
+.mybooking-empty p {
+    margin: 0 0 18px;
+
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+.mybooking-empty .mybooking-empty-title {
+    margin-bottom: 6px;
+
+    color: var(--text-primary);
+    font-size: 17px;
     font-weight: 600;
 }
 
@@ -1448,12 +1620,23 @@
         grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
     }
 
-    .mybooking {
-        flex-direction: column;
-        gap: 12px;
+    /* The price and buttons drop under the details, across the card. */
+    .mybooking-card {
+        flex-wrap: wrap;
+        gap: 16px;
+
+        padding: 18px;
     }
 
-    .mybooking-when {
-        flex: none;
+    .mybooking-badge {
+        flex-basis: 56px;
+    }
+
+    .mybooking-side {
+        flex: 1 1 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
     }
 }

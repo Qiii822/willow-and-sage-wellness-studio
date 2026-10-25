@@ -30,6 +30,7 @@
 
 <?= $this->fetch('meta') ?>
 <?= $this->fetch('css') ?>
+<?= $this->Html->css('site_dialog') ?>
 
 <!-- Lucide Icons -->
 <script src="https://unpkg.com/lucide@1.32.0/dist/umd/lucide.min.js"
@@ -49,6 +50,7 @@
  */ ?>
 <?= $this->fetch('content') ?>
 
+<?= $this->Html->script('site_dialog') ?>
 <?= $this->fetch('script') ?>
 
 <script>
