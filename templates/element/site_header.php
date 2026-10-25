@@ -18,12 +18,10 @@ $this->Html->css('landing', ['block' => true]);
  * home page, for someone who wants to know what is on offer before they
  * commit to choosing.
  *
- * The remaining nav entries are still inert buttons until the pages behind
- * them exist.
+ * Gift cards are sold on the studio's own Square page: buying one needs an
+ * order and a card payment, and this site takes neither.
  */
-$navItems = [
-    'Gift card',
-];
+$giftCardUrl = 'https://app.squareup.com/gift/MLSQXVHV5DVN8/order';
 
 /*
  * Offers are a section of the home page rather than a page of their own, so
@@ -39,6 +37,17 @@ $showOffers = $locator->get('Offers')->current() !== []
         array_column($locator->get('SiteSections')->visibleLayout(), 'key'),
         true
     );
+
+/*
+ * The link for the section the visitor is in stays lit, so they can see
+ * where they are. By controller rather than by page: every step of booking
+ * is still "Book", and every My bookings screen is still "My bookings".
+ */
+$current = $this->request->getParam('controller');
+
+$navLink = static fn(string $controller): array => $current === $controller
+    ? ['class' => 'site-nav-link is-current', 'aria-current' => 'page']
+    : ['class' => 'site-nav-link'];
 ?>
 
 <header class="site-header">
@@ -64,7 +73,7 @@ $showOffers = $locator->get('Offers')->current() !== []
             <?= $this->Html->link(
                 'Book',
                 ['controller' => 'Book', 'action' => 'index'],
-                ['class' => 'site-nav-link']
+                $navLink('Book')
             ) ?>
 
             <?php /*
@@ -74,14 +83,15 @@ $showOffers = $locator->get('Offers')->current() !== []
             <?= $this->Html->link(
                 'My bookings',
                 ['controller' => 'MyBookings', 'action' => 'index'],
-                ['class' => 'site-nav-link']
+                $navLink('MyBookings')
             ) ?>
 
-            <?php foreach ($navItems as $item) : ?>
-                <button type="button" class="site-nav-link">
-                    <?= h($item) ?>
-                </button>
-            <?php endforeach; ?>
+            <?php // A new tab, so the studio's site is still there after buying. ?>
+            <?= $this->Html->link('Gift card', $giftCardUrl, [
+                'class' => 'site-nav-link',
+                'target' => '_blank',
+                'rel' => 'noopener',
+            ]) ?>
 
         </nav>
 

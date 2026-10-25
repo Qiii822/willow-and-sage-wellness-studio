@@ -273,6 +273,14 @@ button {
     color: var(--gold-dark);
 }
 
+/* The section the visitor is in - the hover look, held. */
+.site-nav-link.is-current {
+    color: var(--gold-dark);
+    font-weight: 600;
+
+    background: var(--primary-light);
+}
+
 /* =========================================================
    Header actions
    ========================================================= */
