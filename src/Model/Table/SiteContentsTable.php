@@ -234,6 +234,14 @@ class SiteContentsTable extends Table
                 . 'massage, facials, and natural nail care treatments designed to '
                 . 'help you slow down, unwind, and feel nurtured.',
         ],
+        'services.image' => [
+            'group' => 'Services',
+            'label' => 'Photo beside the introduction',
+            'type' => self::TYPE_IMAGE,
+            'default' => '',
+            'help' => 'JPEG, PNG or WebP, up to 5MB. Landscape works best. The '
+                . 'section leaves the picture out until one is uploaded.',
+        ],
 
         'service.1.title' => [
             'group' => 'Services',

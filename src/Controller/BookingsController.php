@@ -246,6 +246,7 @@ class BookingsController extends AppController
         $this->set('statusLabel', BookingsTable::statusLabel($booking->status, (bool)$charge->cancelled_by_staff));
         $this->set('statusClass', BookingsTable::statusClass($booking->status, (bool)$charge->cancelled_by_staff));
         $this->set('paymentMethods', SquareApiService::PAYMENT_METHODS);
+        $this->set('checkoutOffers', $this->checkoutOffers());
         // Recording a payment is admin-only, like the payments page itself.
         $this->set('canTakePayment', $this->isAdminIdentity($this->request->getAttribute('identity')));
         // Offered only when Square would actually accept it, so the button
@@ -297,6 +298,16 @@ class BookingsController extends AppController
             return $this->redirect($back);
         }
 
+        $offers = $this->checkoutOffers();
+        $offerId = (string)$this->request->getData('offer_id');
+
+        // Deleted in Square, and so by the sync, while the page sat open.
+        if ($offerId !== '' && !isset($offers[$offerId])) {
+            $this->Flash->error('That offer is no longer available - please choose another.');
+
+            return $this->redirect($back);
+        }
+
         try {
             $squarePayment = (new SquareApiService())->recordBookingPayment(
                 $booking->square_booking_id,
@@ -304,7 +315,7 @@ class BookingsController extends AppController
                 $method,
                 $booking->square_customer_id,
                 $booking->location_id,
-                trim((string)$this->request->getData('note')),
+                $this->paymentNote($offers[$offerId] ?? null, trim((string)$this->request->getData('note'))),
                 count($existing),
             );
         } catch (Throwable $e) {
@@ -630,6 +641,72 @@ class BookingsController extends AppController
             // Square has it, so it is not lost - the next sync fills it in.
             Log::warning('Booking payment saved in Square but not locally: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * The studio's Square discounts, for taking one off when paying.
+     *
+     * Every one, shown on the home page or not: a friends-and-family or a
+     * cash discount is given at the counter without ever being advertised.
+     * A discount with neither a percentage nor an amount - one Square asks
+     * for on the day - has nothing to work out, so it is left out.
+     *
+     * @return array<string, array{title: string, label: string, percent: int|null, amount_cents: int|null}>
+     */
+    protected function checkoutOffers(): array
+    {
+        $offers = [];
+
+        foreach ($this->fetchTable('Offers')->find()->orderBy(['Offers.title' => 'ASC'])->all() as $offer) {
+            $percent = (int)$offer->discount_percent > 0 ? (int)$offer->discount_percent : null;
+            // A percentage wins when both are somehow set, as on the offer card.
+            $amount = $percent === null && (int)$offer->discount_amount_cents > 0
+                ? (int)$offer->discount_amount_cents
+                : null;
+
+            if ($percent === null && $amount === null) {
+                continue;
+            }
+
+            $offers[(string)$offer->id] = [
+                'title' => (string)$offer->title,
+                'label' => $percent !== null
+                    ? $percent . '% off'
+                    : '$' . number_format($amount / 100, 2) . ' off',
+                'percent' => $percent,
+                'amount_cents' => $amount,
+            ];
+        }
+
+        return $offers;
+    }
+
+    /**
+     * The note a payment goes to Square with: the offer taken off, if any,
+     * ahead of whatever staff typed.
+     *
+     * Square keeps it with the payment and the sync brings it back, so the
+     * offer is on record wherever the payment is looked at - this page, the
+     * payments page, and Square's own dashboard.
+     *
+     * @param array{title: string, label: string}|null $offer
+     * @param string $typed
+     * @return string
+     */
+    protected function paymentNote(?array $offer, string $typed): string
+    {
+        $parts = [];
+
+        if ($offer !== null) {
+            $parts[] = 'Offer: ' . $offer['title'] . ' (' . $offer['label'] . ')';
+        }
+
+        if ($typed !== '') {
+            $parts[] = $typed;
+        }
+
+        // Square refuses a payment note over 500 characters.
+        return mb_substr(implode(' - ', $parts), 0, 500);
     }
 
     /**

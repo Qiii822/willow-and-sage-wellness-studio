@@ -297,6 +297,13 @@ class SquareAuthService
                     new RevokeTokenRequest([
                         'clientId' => $clientId,
                         'accessToken' => $accessToken,
+                        /*
+                         * Only this copy's token. Left to its default, Square
+                         * revokes every token the app holds for the merchant -
+                         * so disconnecting a development machine from the
+                         * studio's account would cut the live site off too.
+                         */
+                        'revokeOnlyAccessToken' => true,
                     ])
                 );
             }

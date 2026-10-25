@@ -22,12 +22,15 @@
  * @var string $statusLabel What to call this booking's status on screen.
  * @var string $statusClass The badge class that goes with it.
  * @var array<string, string> $paymentMethods
+ * @var array<string, array{title: string, label: string, percent: int|null, amount_cents: int|null}> $checkoutOffers
  * @var bool $canTakePayment
  * @var bool $canCancel Still to come, and not already called off.
  */
 
 $this->assign('title', 'Booking');
 $this->setLayout('dashboard');
+
+$this->Html->script('booking_pay', ['block' => true]);
 
 $formatMoney = fn (int $cents): string => '$' . number_format($cents / 100, 2);
 $formatMinutes = function (int $minutes): string {
@@ -271,6 +274,7 @@ if ($booking->start_at) {
                                 <th>Amount</th>
                                 <th>Status</th>
                                 <th>Method</th>
+                                <th>Note</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -292,6 +296,8 @@ if ($booking->start_at) {
                                         <?php endif; ?>
                                     </td>
                                     <td><?= h($payment->source_type === 'EXTERNAL' ? 'Card (studio card reader)' : ucfirst(strtolower((string)$payment->source_type))) ?></td>
+                                    <?php // Where an offer taken off at payment is recorded. ?>
+                                    <td><?= h($payment->note ?: '-') ?></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>
@@ -310,6 +316,33 @@ if ($booking->start_at) {
                         'url' => ['action' => 'pay', $booking->id],
                         'class' => 'booking-pay-form',
                     ]) ?>
+
+                    <?php /*
+                     * The studio's Square discounts, as chosen at the counter.
+                     * Picking one works the amount out from the quoted price;
+                     * the amount can still be changed after. Whichever is
+                     * picked goes into the payment's note in Square.
+                     */ ?>
+                    <?php if ($checkoutOffers !== []): ?>
+                        <div class="filter-field">
+                            <label for="pay-offer">Offer</label>
+                            <select
+                                name="offer_id"
+                                id="pay-offer"
+                                data-pay-offer
+                                data-base-cents="<?= (int)$suggestedCents ?>"
+                            >
+                                <option value="">No offer</option>
+                                <?php foreach ($checkoutOffers as $offerId => $offer): ?>
+                                    <option
+                                        value="<?= h($offerId) ?>"
+                                        <?= $offer['percent'] !== null ? 'data-percent="' . (int)$offer['percent'] . '"' : '' ?>
+                                        <?= $offer['amount_cents'] !== null ? 'data-amount-cents="' . (int)$offer['amount_cents'] . '"' : '' ?>
+                                    ><?= h($offer['title'] . ' - ' . $offer['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="filter-field">
                         <label for="pay-amount">Amount (AUD)</label>

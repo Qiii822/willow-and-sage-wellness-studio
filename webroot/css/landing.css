@@ -754,6 +754,47 @@ button.site-avatar[aria-expanded="true"] {
     line-height: 1.75;
 }
 
+/*
+ * The studio introduction on the home page. It is a block of its own, so
+ * the gap under it comes from the strip's padding alone - the intro's own
+ * margin, meant for content sharing its strip, would only add a second gap
+ * on top. And half the usual padding: it introduces whatever follows it,
+ * so it should sit close to it rather than a full block away.
+ */
+.feature-strip.feature-strip-intro {
+    padding-bottom: 48px;
+}
+
+.intro-block .section-intro {
+    margin-bottom: 0;
+}
+
+/* Left aligned with a photo: wording on the left, photo on the right. */
+.intro-block-left.has-photo {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 54px;
+}
+
+/* Centred with a photo: the photo under the wording. */
+.intro-block-centre .intro-photo {
+    max-width: 900px;
+    margin: 40px auto 0;
+}
+
+.intro-photo img {
+    display: block;
+
+    width: 100%;
+    height: auto;
+    max-height: 440px;
+
+    object-fit: cover;
+
+    border-radius: 18px;
+}
+
 .feature-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -924,6 +965,12 @@ button.site-avatar[aria-expanded="true"] {
 
     .feature-strip {
         padding: 64px 24px;
+    }
+
+    /* Too narrow for two columns: the photo goes under the wording. */
+    .intro-block-left.has-photo {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 30px;
     }
 
     .site-footer-inner {
