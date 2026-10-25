@@ -39,12 +39,18 @@ $this->Html->css('services', ['block' => true]);
                 <?php $count = count($services); ?>
                 <?php $slug = \App\Model\Table\ServicesTable::categorySlug($category); ?>
 
+                <?php /*
+                 * Straight to this category's treatments: the menu filtered
+                 * to it, and scrolled past the page's header to the list
+                 * itself, which the services page then highlights.
+                 */ ?>
                 <a
                     class="services-overview-card"
                     href="<?= h($this->Url->build([
                         'controller' => 'Services',
                         'action' => 'index',
                         '?' => ['category' => $slug],
+                        '#' => 'cat-' . $slug,
                     ])) ?>"
                 >
 
@@ -59,8 +65,14 @@ $this->Html->css('services', ['block' => true]);
                      * bait. Prices live on the full menu, where each one sits
                      * beside what it actually buys.
                      */ ?>
-                    <p class="services-overview-count">
-                        <?= $count ?> treatment<?= $count === 1 ? '' : 's' ?>
+                    <?php /*
+                     * Worded and underlined as a link, so the card reads as
+                     * somewhere to go rather than a label - the whole card is
+                     * the link, but nothing else about it says so.
+                     */ ?>
+                    <p class="services-overview-link">
+                        View <?= $count ?> treatment<?= $count === 1 ? '' : 's' ?>
+                        <span aria-hidden="true">&rarr;</span>
                     </p>
 
                 </a>

@@ -130,6 +130,39 @@
     letter-spacing: -0.8px;
 }
 
+/*
+ * The category a home page link jumped to, lit up for a moment so the eye
+ * lands on what was asked for rather than on the top of the page.
+ */
+.services-category:target h2 {
+    border-radius: 10px;
+
+    animation: services-arrived 2.4s ease-out;
+}
+
+@keyframes services-arrived {
+    0%,
+    45% {
+        background: var(--primary-light);
+        box-shadow: 0 0 0 10px var(--primary-light);
+    }
+
+    100% {
+        background: transparent;
+        box-shadow: 0 0 0 10px transparent;
+    }
+}
+
+/* Without the fade: the highlight simply stays. */
+@media (prefers-reduced-motion: reduce) {
+    .services-category:target h2 {
+        background: var(--primary-light);
+        box-shadow: 0 0 0 10px var(--primary-light);
+
+        animation: none;
+    }
+}
+
 .services-list {
     margin: 0;
     padding: 0;
@@ -281,9 +314,16 @@
     background: #fffdfa;
     border: 1px solid rgba(24, 20, 17, 0.07);
     border-radius: 18px;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
-.services-overview-card:hover {
+/* The whole card lights up, the way the header links do. */
+.services-overview-card:hover,
+.services-overview-card:focus-visible {
+    background: var(--primary-light);
     border-color: var(--gold-dark);
 }
 
@@ -300,11 +340,33 @@
     font-weight: 600;
 }
 
-.services-overview-count {
+/*
+ * The link line. Dark text with a gold underline rather than gold text:
+ * the gold on this card reaches only about 3.7:1, short of the 4.5:1 that
+ * text this size needs, while the underline only has to be seen.
+ */
+.services-overview-link {
     margin: 0;
 
-    color: var(--text-secondary);
-    font-size: 14px;
+    color: var(--text-primary);
+    font-size: 14.5px;
+    font-weight: 600;
+
+    text-decoration: underline;
+    text-decoration-color: var(--gold-dark);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.services-overview-link span {
+    display: inline-block;
+
+    transition: transform 0.2s ease;
+}
+
+.services-overview-card:hover .services-overview-link span,
+.services-overview-card:focus-visible .services-overview-link span {
+    transform: translateX(3px);
 }
 
 .services-overview-action {
