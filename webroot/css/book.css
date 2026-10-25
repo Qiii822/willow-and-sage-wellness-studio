@@ -913,6 +913,30 @@
     outline-offset: 2px;
 }
 
+/* Morning, Afternoon and Evening, as Square's booking page splits a day. */
+.book-period + .book-period {
+    margin-top: 20px;
+}
+
+.book-period h3 {
+    margin: 0 0 10px;
+
+    color: var(--text-secondary);
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.book-period-empty {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 14.5px;
+}
+
+.book-period-empty[hidden] {
+    display: none;
+}
+
 /* =========================================================
    Summary
    ========================================================= */
@@ -965,6 +989,20 @@
     font-weight: 600;
 
     border-top: 1px solid var(--border);
+}
+
+/* Filled in only when the visitor's clock is not the studio's. */
+.book-summary-zone {
+    display: block;
+    margin-top: 2px;
+
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 400;
+}
+
+.book-summary-zone:empty {
+    display: none;
 }
 
 .book-summary-line,

@@ -234,10 +234,10 @@ class MyBookingsController extends AppController
             [$earliest, $latest] = $this->calendarBounds($zone);
             $from = $this->weekFrom($this->request->getQuery('from'), $zone, $earliest, $latest);
 
-            $slots = $api->searchAvailability(
+            $slots = $this->searchWindow(
+                $api,
                 $this->BookingDraftsTable()->variationIds($draft),
                 $from,
-                $from->modify('+' . $this->windowDays() . ' days'),
             );
 
             /*

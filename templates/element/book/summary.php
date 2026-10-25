@@ -28,8 +28,13 @@ $money = static function (?int $cents): string {
     </ul>
 
     <?php if ($timezone !== null && $draft->start_at !== null): ?>
+        <?php $this->Html->script('local_times', ['block' => true]); ?>
         <p class="book-summary-when">
-            <?= h($draft->startAtLocal($timezone)) ?>
+            <span
+                data-local-time="<?= h($draft->startAtUtc()?->format(DATE_RFC3339)) ?>"
+                data-local-format="short"
+            ><?= h($draft->startAtLocal($timezone)) ?></span>
+            <span class="book-summary-zone" data-zone-note="<?= h($timezone) ?>"></span>
         </p>
     <?php endif; ?>
 

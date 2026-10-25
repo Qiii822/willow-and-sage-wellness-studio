@@ -13,6 +13,7 @@ $this->assign('title', 'My bookings - ' . $this->SiteContent->raw('site.title'))
 $this->Html->css('landing', ['block' => true]);
 $this->Html->css('services', ['block' => true]);
 $this->Html->css('book', ['block' => true]);
+$this->Html->script('local_times', ['block' => true]);
 
 $zone = new DateTimeZone($timezone);
 ?>
@@ -27,9 +28,11 @@ $zone = new DateTimeZone($timezone);
             <h1>My bookings</h1>
             <p>
                 Everything booked with <strong><?= h($phone) ?></strong>.
-                All times are
-                <?= h(str_replace('_', ' ', explode('/', $timezone)[1] ?? $timezone)) ?>
-                time, where the studio is.
+                <span data-zone-note="<?= h($timezone) ?>">
+                    All times are
+                    <?= h(str_replace('_', ' ', explode('/', $timezone)[1] ?? $timezone)) ?>
+                    time, where the studio is.
+                </span>
             </p>
         </header>
 
@@ -49,10 +52,10 @@ $zone = new DateTimeZone($timezone);
 
                 <?php
                 /*
-                 * Already a correct instant, carrying the server's timezone
-                 * rather than the studio's - so it is converted, never
-                 * relabelled, or an Adelaide appointment would read as the
-                 * Melbourne clock the server happens to keep.
+                 * Already a correct instant, carrying the server's timezone -
+                 * so it is converted, never relabelled. The two are both
+                 * Adelaide today, but converting keeps this right if the
+                 * server's zone and Square's location ever differ.
                  */
                 $local = $booking['start_at']->setTimezone($zone);
                 ?>
@@ -60,8 +63,15 @@ $zone = new DateTimeZone($timezone);
                 <article class="mybooking">
 
                     <div class="mybooking-when">
-                        <p class="mybooking-date"><?= h($local->format('l j F')) ?></p>
-                        <p class="mybooking-time"><?= h($local->format('g:i a')) ?></p>
+                        <p
+                            class="mybooking-date"
+                            data-local-time="<?= h($local->format(DATE_RFC3339)) ?>"
+                            data-local-format="date"
+                        ><?= h($local->format('l j F')) ?></p>
+                        <p
+                            class="mybooking-time"
+                            data-local-time="<?= h($local->format(DATE_RFC3339)) ?>"
+                        ><?= h($local->format('g:i a')) ?></p>
                     </div>
 
                     <div class="mybooking-what">

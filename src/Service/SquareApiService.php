@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use Cake\Cache\Cache;
-use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Text;
 use DateTimeImmutable;
@@ -22,7 +21,6 @@ use Square\Customers\Requests\CreateCustomerRequest;
 use Square\Customers\Requests\GetCustomersRequest;
 use Square\Customers\Requests\ListCustomersRequest;
 use Square\Customers\Requests\SearchCustomersRequest;
-use Square\Environments;
 use Square\Payments\Requests\CreatePaymentRequest;
 use Square\Payments\Requests\GetPaymentsRequest;
 use Square\Payments\Requests\ListPaymentsRequest;
@@ -102,13 +100,9 @@ class SquareApiService
             throw new RuntimeException('No access token available on the active Square connection.');
         }
 
-        $environment = Configure::read('debug')
-            ? Environments::Sandbox
-            : Environments::Production;
-
         return new SquareClient(
             token: $accessToken,
-            options: ['baseUrl' => $environment->value],
+            options: ['baseUrl' => SquareAuthService::environment()->value],
         );
     }
 
@@ -569,14 +563,24 @@ class SquareApiService
      * answer its calendar and its staff app use. Hard-coding one means
      * every booking silently shifts if the studio's setting ever differs.
      *
+     * SQUARE_LOCATION_ID names the studio when the account has more than one
+     * location - a real account usually does, and the first one Square lists
+     * need not be the one customers book at. Left unset, the first is used,
+     * which is all a single-location sandbox needs.
+     *
      * @return array{id: string, name: string, timezone: string, longest_day_minutes: int|null}
-     * @throws \RuntimeException When Square reports no location.
+     * @throws \RuntimeException When Square reports no location, or not the one named.
      */
     public function getPrimaryLocation(): array
     {
         $response = $this->getClient()->locations->list();
+        $wanted = (string)env('SQUARE_LOCATION_ID', '');
 
         foreach ($response->getLocations() ?? [] as $location) {
+            if ($wanted !== '' && $location->getId() !== $wanted) {
+                continue;
+            }
+
             return [
                 'id' => (string)$location->getId(),
                 'name' => (string)$location->getName(),
@@ -587,7 +591,9 @@ class SquareApiService
             ];
         }
 
-        throw new RuntimeException('Square reports no location for this account.');
+        throw new RuntimeException($wanted === ''
+            ? 'Square reports no location for this account.'
+            : "Square has no location {$wanted} on this account - check SQUARE_LOCATION_ID.");
     }
 
     /**
@@ -780,6 +786,13 @@ class SquareApiService
             ];
         }
 
+        /*
+         * Exactly what Square offers, with nothing added. How far apart the
+         * starts are - every 15 minutes, every half hour - is the seller's
+         * own setting in Square (alignment_time on the booking profile), and
+         * Square's booking page follows the same one, so changing it there
+         * changes it here too.
+         */
         return $slots;
     }
 

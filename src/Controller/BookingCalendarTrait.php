@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\SquareApiService;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -30,6 +31,20 @@ trait BookingCalendarTrait
     protected const WINDOW_WEEKS = 4;
 
     /**
+     * How many days each availability search covers - Square's maximum.
+     *
+     * Not the four weeks on show, and not a rounding detail: Square does not
+     * return every free start, and which ones it leaves out depends on how
+     * long the searched range is. Its own booking page searches 32 days, so
+     * searching anything shorter offered a different set of times for the
+     * same day - checked against the studio's page, a 28-day search showed
+     * 26 times where Square showed 30, and 32 days matched it exactly. The
+     * days past the four weeks are fetched only to keep that set the same,
+     * and are dropped before the page sees them.
+     */
+    protected const SEARCH_DAYS = 32;
+
+    /**
      * How far ahead Square will take a booking on this account.
      *
      * It checks the far end of the search window, not the near one, so the
@@ -51,6 +66,37 @@ trait BookingCalendarTrait
     }
 
     /**
+     * Searches Square for the window starting on $from, the way its own
+     * booking page does, and keeps only what falls inside the window.
+     *
+     * @param \App\Service\SquareApiService $api
+     * @param array<int, string> $variationIds
+     * @param \DateTimeImmutable $from First day of the window.
+     * @param string|null $teamMemberId Null means anyone available.
+     * @return array<int, array<string, mixed>>
+     */
+    protected function searchWindow(
+        SquareApiService $api,
+        array $variationIds,
+        DateTimeImmutable $from,
+        ?string $teamMemberId = null,
+    ): array {
+        $slots = $api->searchAvailability(
+            $variationIds,
+            $from,
+            $from->modify('+' . self::SEARCH_DAYS . ' days'),
+            $teamMemberId,
+        );
+
+        $end = $from->modify('+' . $this->windowDays() . ' days');
+
+        return array_values(array_filter(
+            $slots,
+            fn(array $slot): bool => new DateTimeImmutable($slot['start_at']) < $end,
+        ));
+    }
+
+    /**
      * The soonest and the furthest first-day a window may start on.
      *
      * @param \DateTimeZone $zone
@@ -62,10 +108,10 @@ trait BookingCalendarTrait
 
         return [
             $today->modify('+1 day'),
-            // A day of slack on top of the month, so the window's end stays
-            // comfortably inside Square's limit rather than sitting on it.
+            // Room for the whole search, not just the weeks on show, plus a
+            // day of slack so its end stays inside Square's limit.
             $today->modify(
-                '+' . (self::BOOKING_HORIZON_DAYS - $this->windowDays() - 1) . ' days',
+                '+' . (self::BOOKING_HORIZON_DAYS - self::SEARCH_DAYS - 1) . ' days',
             ),
         ];
     }

@@ -33,6 +33,7 @@ $this->Html->css('landing', ['block' => true]);
 $this->Html->css('services', ['block' => true]);
 $this->Html->css('book', ['block' => true]);
 $this->Html->script('book_calendar', ['block' => true]);
+$this->Html->script('local_times', ['block' => true]);
 
 $here = ['action' => 'time', $draft->token];
 
@@ -65,8 +66,10 @@ foreach ($weeks as $week) {
                 <?php if ($therapist !== null): ?>
                     With <strong><?= h($therapist) ?></strong>.
                 <?php endif; ?>
-                All times are <?= h(str_replace('_', ' ', explode('/', $timezone)[1] ?? $timezone)) ?>
-                time, where the studio is.
+                <span data-zone-note="<?= h($timezone) ?>">
+                    All times are <?= h(str_replace('_', ' ', explode('/', $timezone)[1] ?? $timezone)) ?>
+                    time, where the studio is.
+                </span>
             </p>
         </header>
 
@@ -141,25 +144,10 @@ foreach ($weeks as $week) {
 
                     <h2><?= h($date->format('l j F')) ?></h2>
 
-                    <div class="book-slots">
-
-                        <?php foreach ($slots as $slot): ?>
-
-                            <?php /*
-                             * A button per slot rather than radios plus a
-                             * submit: choosing the time is the decision, so
-                             * it should also be the action.
-                             */ ?>
-                            <button
-                                type="submit"
-                                name="start_at"
-                                value="<?= h($slot['start_at']) ?>"
-                                class="book-slot"
-                            ><?= h($slot['label']) ?></button>
-
-                        <?php endforeach; ?>
-
-                    </div>
+                    <?= $this->element('book/day_slots', [
+                        'slots' => $slots,
+                        'timezone' => $timezone,
+                    ]) ?>
 
                 </section>
 

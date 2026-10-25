@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Http\Response;
-use Cake\Core\Configure;
 use Cake\Http\Exception\ForbiddenException;
 use App\Service\SquareAuthService;
 use App\Service\SyncService;
+use Square\Environments;
 
 /**
  * Handles the app's connection to Square.
@@ -69,8 +69,9 @@ class AuthController extends AppController
         // Build auth parameters (we do this because we need to add session=false in prod)
         $authParams = ['scope' => $scope];
 
-        if (!Configure::read('debug')) {
-            // Only add session=false in production, as required by Square
+        // Only against production Square, which requires it - not whenever
+        // debug is off, since a development machine can be pointed at production.
+        if (SquareAuthService::environment() === Environments::Production) {
             $authParams['session'] = 'false';
         }
 

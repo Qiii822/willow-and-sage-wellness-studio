@@ -83,7 +83,7 @@ class CustomerBookingLookup
                 'square_booking_id' => $booking->square_booking_id,
                 /*
                  * The sync writes this column in the server's own timezone
-                 * (config/bootstrap.php pins that to Australia/Melbourne),
+                 * (config/bootstrap.php pins that to Australia/Adelaide),
                  * so the value read back is already a correct instant and
                  * must not be relabelled - only converted for display.
                  */

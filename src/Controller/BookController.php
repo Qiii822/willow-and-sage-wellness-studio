@@ -530,8 +530,9 @@ class BookController extends AppController
      * Slots for everything in the draft, across the fetched month.
      *
      * One call covers four weeks, so the arrows can move between them
-     * without going back to Square. Square refuses a range over 32 days,
-     * which is what stops this being wider still.
+     * without going back to Square. It searches the 32 days Square's own
+     * booking page does - see BookingCalendarTrait::SEARCH_DAYS for why
+     * that decides which times appear.
      *
      * @param \App\Service\SquareApiService $api
      * @param \App\Model\Entity\BookingDraft $draft
@@ -540,10 +541,10 @@ class BookController extends AppController
      */
     protected function slotsFor(SquareApiService $api, $draft, DateTimeImmutable $from): array
     {
-        return $api->searchAvailability(
+        return $this->searchWindow(
+            $api,
             $this->BookingDrafts->variationIds($draft),
             $from,
-            $from->modify('+' . $this->windowDays() . ' days'),
             $draft->team_member_id,
         );
     }

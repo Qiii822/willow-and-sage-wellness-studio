@@ -37,18 +37,42 @@ class SquareAuthService
     }
 
     /**
+     * Which Square this app talks to.
+     *
+     * SQUARE_ENVIRONMENT decides ("sandbox" or "production"); left unset it
+     * follows debug mode, which is how this used to work. It used to follow
+     * debug mode only, so production credentials on a development machine
+     * were sent to the sandbox's sign-in page - which answers "Unable to
+     * find client by that client_id" and does not say why.
+     *
+     * Sign-in, token refresh and every API call must agree on this, or a
+     * token from one Square is presented to the other.
+     *
+     * @return \Square\Environments
+     */
+    public static function environment(): Environments
+    {
+        $configured = strtolower((string)env('SQUARE_ENVIRONMENT', ''));
+
+        if ($configured === 'production') {
+            return Environments::Production;
+        }
+
+        if ($configured === 'sandbox') {
+            return Environments::Sandbox;
+        }
+
+        return Configure::read('debug') ? Environments::Sandbox : Environments::Production;
+    }
+
+    /**
      * Builds the League OAuth2 provider configured for Square's endpoints.
      *
      * @return \League\OAuth2\Client\Provider\GenericProvider
      */
     public function createProvider(): GenericProvider
     {
-        // Determine which Square environment to hit based on CakePHP debug mode
-        $environment = Configure::read('debug')
-            ? Environments::Sandbox
-            : Environments::Production;
-
-        $baseUrl = $environment->value;
+        $baseUrl = self::environment()->value;
 
         // Configure the provider with the correct Square endpoints and PKCE support.
         return new GenericProvider([
@@ -255,10 +279,7 @@ class SquareAuthService
                 $clientId = env('SQUARE_CLIENT_ID', '');
                 $clientSecret = env('SQUARE_CLIENT_SECRET', '');
 
-                // Determine which Square environment based on config
-                $environment = Configure::read('debug')
-                    ? Environments::Sandbox
-                    : Environments::Production;
+                $environment = self::environment();
 
                 // The revoke endpoint requires "Authorization: Client {APPLICATION_SECRET}"
                 // instead of the usual "Bearer {token}" format

@@ -21,6 +21,7 @@ $this->Html->css('landing', ['block' => true]);
 $this->Html->css('services', ['block' => true]);
 $this->Html->css('book', ['block' => true]);
 $this->Html->script('book_calendar', ['block' => true]);
+$this->Html->script('local_times', ['block' => true]);
 
 $here = ['action' => 'reschedule', $bookingId];
 
@@ -53,8 +54,12 @@ foreach ($weeks as $week) {
             <h1>Change your time</h1>
             <p>
                 <?= h(implode(', ', $booking['treatments'])) ?>, currently
-                <strong><?= h($current->format('l j F, g:i a')) ?></strong>.
+                <strong
+                    data-local-time="<?= h($current->format(DATE_RFC3339)) ?>"
+                    data-local-format="long"
+                ><?= h($current->format('l j F, g:i a')) ?></strong>.
                 Choose a new time below and we will move it.
+                <span data-zone-note="<?= h($timezone) ?>"></span>
             </p>
         </header>
 
@@ -91,20 +96,10 @@ foreach ($weeks as $week) {
 
                     <h2><?= h($date->format('l j F')) ?></h2>
 
-                    <div class="book-slots">
-
-                        <?php foreach ($slots as $slot): ?>
-
-                            <button
-                                type="submit"
-                                name="start_at"
-                                value="<?= h($slot['start_at']) ?>"
-                                class="book-slot"
-                            ><?= h($slot['label']) ?></button>
-
-                        <?php endforeach; ?>
-
-                    </div>
+                    <?= $this->element('book/day_slots', [
+                        'slots' => $slots,
+                        'timezone' => $timezone,
+                    ]) ?>
 
                 </section>
 

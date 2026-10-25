@@ -105,10 +105,14 @@ if (Configure::read('debug')) {
 }
 
 /*
- * Set the default server timezone. Using UTC makes time calculations / conversions easier.
- * Check https://php.net/manual/en/timezones.php for list of valid timezone strings.
+ * The studio's own clock, which is what Square's location is set to. Every
+ * datetime the ORM writes is stored as wall-clock time in this zone, and the
+ * staff pages print it as-is, so anything else shows appointments shifted -
+ * Melbourne, which this used to be, put a 9:30 booking at 10:00.
+ * Changing it means shifting the stored datetimes to match, as
+ * 20261022000000_ShiftDatetimesToAdelaide did.
  */
-date_default_timezone_set("Australia/Melbourne");
+date_default_timezone_set('Australia/Adelaide');
 
 /*
  * Configure the mbstring extension to use the correct encoding.
