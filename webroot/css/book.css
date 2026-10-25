@@ -377,6 +377,8 @@
 }
 
 .book-cart-name {
+    flex: 1 1 auto;
+
     color: var(--text-primary);
     font-weight: 600;
 }
@@ -385,6 +387,30 @@
     flex: 0 0 auto;
 
     color: var(--text-secondary);
+}
+
+/* The mark that says a row can be taken off. */
+.book-cart-cross {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+
+    width: 22px;
+    height: 22px;
+    margin-top: -1px;
+
+    color: var(--text-secondary);
+    font-size: 17px;
+    line-height: 1;
+
+    border-radius: 50%;
+}
+
+.book-cart-remove:hover .book-cart-cross {
+    color: #fff;
+
+    background: var(--gold-dark);
 }
 
 .book-cart-totals {

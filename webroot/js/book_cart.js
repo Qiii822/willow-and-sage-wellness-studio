@@ -98,8 +98,20 @@
                     'aria-label',
                     'Remove ' + row.dataset.name + ' from your treatments'
                 );
+                /*
+                 * The whole row removes it, but without a mark saying so the
+                 * list reads as a plain receipt and nobody thinks to click.
+                 * The label above is what a screen reader hears instead.
+                 */
+                var cross = document.createElement('span');
+
+                cross.className = 'book-cart-cross';
+                cross.setAttribute('aria-hidden', 'true');
+                cross.textContent = '×';
+
                 remove.appendChild(name);
                 remove.appendChild(cost);
+                remove.appendChild(cross);
                 item.appendChild(remove);
                 list.appendChild(item);
 
